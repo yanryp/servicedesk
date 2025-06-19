@@ -84,9 +84,12 @@ router.post('/login', asyncHandler(async (req: Request, res: Response, next: Nex
     return next(Object.assign(new Error('Email and password are required.'), { status: 400 }));
   }
 
-  // Find user by email
+  // Find user by email with department information
   const user = await prisma.user.findUnique({
-    where: { email }
+    where: { email },
+    include: {
+      department: true
+    }
   });
 
   if (!user) {
@@ -98,9 +101,15 @@ router.post('/login', asyncHandler(async (req: Request, res: Response, next: Nex
     return next(Object.assign(new Error('Invalid credentials.'), { status: 401 })); // Password incorrect
   }
 
-  // Generate JWT
+  // Generate JWT with department information
   const token = jwt.sign(
-    { id: user.id, username: user.username, role: user.role, email: user.email },
+    { 
+      id: user.id, 
+      username: user.username, 
+      role: user.role, 
+      email: user.email,
+      departmentId: user.departmentId 
+    },
     JWT_SECRET,
     { expiresIn: '1h' } // Token expires in 1 hour
   );
@@ -108,7 +117,14 @@ router.post('/login', asyncHandler(async (req: Request, res: Response, next: Nex
   res.json({ 
     message: 'Login successful!',
     token,
-    user: { id: user.id, username: user.username, email: user.email, role: user.role }
+    user: { 
+      id: user.id, 
+      username: user.username, 
+      email: user.email, 
+      role: user.role,
+      departmentId: user.departmentId,
+      department: user.department
+    }
   });
 }));
 

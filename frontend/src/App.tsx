@@ -131,7 +131,15 @@ function App() {
                       <UserIcon className="w-4 h-4 text-slate-600" />
                       <div className="flex flex-col">
                         <span className="text-sm font-medium text-slate-700">{user?.username}</span>
-                        <span className="text-xs text-slate-500 -mt-0.5">{user?.role}</span>
+                        <div className="flex items-center space-x-2 -mt-0.5">
+                          <span className="text-xs text-slate-500">{user?.role}</span>
+                          {user?.department && (
+                            <>
+                              <span className="text-xs text-slate-400">•</span>
+                              <span className="text-xs text-blue-600 font-medium">{user.department.name}</span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <button

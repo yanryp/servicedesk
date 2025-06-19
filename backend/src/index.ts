@@ -10,6 +10,7 @@ import reportingRoutes from './routes/reportingRoutes'; // Import reporting rout
 import testRoutes from './routes/testRoutes';
 import categoryRoutes from './routes/categoryRoutes'; // Import category routes
 import templateRoutes from './routes/templateRoutes'; // Import template routes
+import departmentRoutes from './routes/departmentRoutes'; // Import department routes
 import { startEscalationCronJob } from './services/escalationService'; // Import escalation service
 
 const app: Express = express();
@@ -33,6 +34,7 @@ app.use('/api/tickets', ticketRouter); // Mount ticket router
 app.use('/api/reports', reportingRoutes);
 app.use('/api/categories', categoryRoutes); // Use category routes
 app.use('/api/templates', templateRoutes); // Use template routes
+app.use('/api/departments', departmentRoutes); // Use department routes
 app.use('/api/test', testRoutes); // Mount reporting router
 
 const port = process.env.PORT || 3001;

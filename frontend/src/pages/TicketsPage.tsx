@@ -158,11 +158,21 @@ const TicketsPage: React.FC = () => {
           </div>
         </div>
         <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-          My Support Tickets
+          {user?.role === 'technician' ? `${user.department?.name || ''} Support Tickets` : 'My Support Tickets'}
         </h1>
         <p className="mt-2 text-slate-600">
-          Track and manage your support requests
+          {user?.role === 'technician' 
+            ? `Department tickets for ${user.department?.name || 'your department'}` 
+            : 'Track and manage your support requests'
+          }
         </p>
+        {user?.role === 'technician' && user.department && (
+          <div className="mt-3">
+            <span className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+              📁 {user.department.name} Department
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Filters */}

@@ -13,23 +13,40 @@ model User {
   passwordHash        String             @map("password_hash") @db.VarChar(255)
   email               String             @unique @db.VarChar(255)
   role                String             @db.VarChar(50)
+  departmentId        Int?               @map("department_id")
   createdAt           DateTime?          @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt           DateTime?          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   managerId           Int?               @map("manager_id")
   uploadedAttachments TicketAttachment[]
   assignedTickets     Ticket[]           @relation("TicketAssignee")
   createdTickets      Ticket[]           @relation("TicketCreator")
+  department          Department?        @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   manager             User?              @relation("UserManager", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   subordinates        User[]             @relation("UserManager")
 
   @@map("users")
 }
 
+model Department {
+  id           Int    @id @default(autoincrement())
+  name         String @unique @db.VarChar(255)
+  description  String?
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  users        User[]
+  categories   Category[]
+
+  @@map("departments")
+}
+
 model Category {
   id            Int           @id @default(autoincrement())
-  name          String        @unique @db.VarChar(255)
+  name          String        @db.VarChar(255)
+  departmentId  Int?          @map("department_id")
   subCategories SubCategory[]
+  department    Department?   @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
+  @@unique([departmentId, name])
   @@map("categories")
 }
 

@@ -21,15 +21,32 @@ export type UserRole = 'admin' | 'manager' | 'technician' | 'requester';
 
 export type CustomFieldType = 'text' | 'number' | 'date' | 'dropdown' | 'radio' | 'checkbox';
 
+// Department interface
+export interface Department {
+  id: number;
+  name: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+  users?: User[];
+  categories?: Category[];
+  _count?: {
+    users: number;
+    categories: number;
+  };
+}
+
 // User interfaces
 export interface User {
   id: number;
   username: string;
   email: string;
   role: UserRole;
+  departmentId?: number;
   managerId?: number;
   createdAt: string;
   updatedAt: string;
+  department?: Department;
   manager?: User;
   subordinates?: User[];
 }
@@ -39,6 +56,8 @@ export interface AuthUser {
   username: string;
   email: string;
   role: UserRole;
+  departmentId?: number;
+  department?: Department;
 }
 
 export interface LoginRequest {
@@ -65,6 +84,8 @@ export interface AuthResponse {
 export interface Category {
   id: number;
   name: string;
+  departmentId?: number;
+  department?: Department;
   subCategories?: SubCategory[];
 }
 

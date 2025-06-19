@@ -321,10 +321,18 @@ router.get('/', protect, asyncHandler(async (req: AuthenticatedRequest, res) => 
     const queryParams: (string | number)[] = [];
     let paramIndex = 1;
 
-    // Role-based filtering
-    if (user.role === 'user') {
-      whereClauses.push(`t.created_by_user_id = $${paramIndex++}`);
-      queryParams.push(user.id);
+    // Role-based filtering with department access control
+    if (user.role === 'admin') {
+      // Admins can see all tickets - no additional filter
+    } else if (user.role === 'technician') {
+      // Technicians can only see tickets from their department
+      if (user.departmentId) {
+        whereClauses.push(`cat.department_id = $${paramIndex++}`);
+        queryParams.push(user.departmentId);
+      } else {
+        // If technician has no department, they see no tickets
+        whereClauses.push(`1 = 0`);
+      }
     } else if (user.role === 'manager') {
       // Managers see their own tickets AND tickets pending approval from their reports
       whereClauses.push(`(
@@ -333,6 +341,10 @@ router.get('/', protect, asyncHandler(async (req: AuthenticatedRequest, res) => 
         (t.status = 'pending-approval' AND t.created_by_user_id IN (SELECT id FROM users WHERE manager_id = $${paramIndex++}))
       )`);
       queryParams.push(user.id, user.id);
+    } else {
+      // Requesters can only see their own tickets
+      whereClauses.push(`t.created_by_user_id = $${paramIndex++}`);
+      queryParams.push(user.id);
     }
 
     // Filter by status
@@ -363,8 +375,14 @@ router.get('/', protect, asyncHandler(async (req: AuthenticatedRequest, res) => 
 
     const whereClause = whereClauses.length > 0 ? ` WHERE ${whereClauses.join(' AND ')}` : '';
 
-    // Count query
-    const countQueryText = `SELECT COUNT(DISTINCT t.id) FROM tickets t` + whereClause;
+    // Count query with necessary joins for department filtering
+    const countQueryText = `
+      SELECT COUNT(DISTINCT t.id) 
+      FROM tickets t
+      LEFT JOIN items i ON t.item_id = i.id
+      LEFT JOIN sub_categories scat ON i.sub_category_id = scat.id
+      LEFT JOIN categories cat ON scat.category_id = cat.id
+    ` + whereClause;
     const countResult = await pool.query(countQueryText, queryParams);
     const totalTickets = parseInt(countResult.rows[0].count, 10);
     const totalPages = Math.ceil(totalTickets / limit);
@@ -472,11 +490,29 @@ router.get('/:ticketId',
 
     const ticket = ticketResult.rows[0];
 
-    // Authorization check
+    // Authorization check with department-based access
     const isOwner = user.id === ticket.created_by_user_id;
-    const isAdminOrTech = user.role === 'admin' || user.role === 'technician';
+    const isAdmin = user.role === 'admin';
+    const isTechnicianInSameDept = user.role === 'technician' && user.departmentId && ticket.category_id && user.departmentId === ticket.department_id;
+    
+    // Get category department info for technician access check
+    let canAccessAsTechnician = false;
+    if (user.role === 'technician' && user.departmentId) {
+      const deptCheckQuery = `
+        SELECT cat.department_id 
+        FROM tickets t
+        LEFT JOIN items i ON t.item_id = i.id
+        LEFT JOIN sub_categories scat ON i.sub_category_id = scat.id
+        LEFT JOIN categories cat ON scat.category_id = cat.id
+        WHERE t.id = $1
+      `;
+      const deptResult = await pool.query(deptCheckQuery, [ticketId]);
+      if (deptResult.rows.length > 0 && deptResult.rows[0].department_id === user.departmentId) {
+        canAccessAsTechnician = true;
+      }
+    }
 
-    if (!isOwner && !isAdminOrTech) {
+    if (!isOwner && !isAdmin && !canAccessAsTechnician) {
       return res.status(403).json({ message: 'You are not authorized to view this ticket.' });
     }
 

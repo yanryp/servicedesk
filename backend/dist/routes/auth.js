@@ -83,9 +83,12 @@ router.post('/login', asyncHandler((req, res, next) => __awaiter(void 0, void 0,
     if (!email || !password) {
         return next(Object.assign(new Error('Email and password are required.'), { status: 400 }));
     }
-    // Find user by email
+    // Find user by email with department information
     const user = yield prisma_1.default.user.findUnique({
-        where: { email }
+        where: { email },
+        include: {
+            department: true
+        }
     });
     if (!user) {
         return next(Object.assign(new Error('Invalid credentials.'), { status: 401 })); // User not found
@@ -94,13 +97,26 @@ router.post('/login', asyncHandler((req, res, next) => __awaiter(void 0, void 0,
     if (!passwordMatch) {
         return next(Object.assign(new Error('Invalid credentials.'), { status: 401 })); // Password incorrect
     }
-    // Generate JWT
-    const token = jsonwebtoken_1.default.sign({ id: user.id, username: user.username, role: user.role, email: user.email }, JWT_SECRET, { expiresIn: '1h' } // Token expires in 1 hour
+    // Generate JWT with department information
+    const token = jsonwebtoken_1.default.sign({
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        email: user.email,
+        departmentId: user.departmentId
+    }, JWT_SECRET, { expiresIn: '1h' } // Token expires in 1 hour
     );
     res.json({
         message: 'Login successful!',
         token,
-        user: { id: user.id, username: user.username, email: user.email, role: user.role }
+        user: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            role: user.role,
+            departmentId: user.departmentId,
+            department: user.department
+        }
     });
 })));
 // Basic error handling middleware (add to index.ts or a dedicated error handling module later)

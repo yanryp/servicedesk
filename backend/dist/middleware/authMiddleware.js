@@ -21,7 +21,7 @@ const protect = (req, res, next) => {
             const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET);
             console.log('Decoded Token:', decoded); // Add logging
             // Attach user to the request object
-            req.user = { id: decoded.id, role: decoded.role, email: decoded.email };
+            req.user = { id: decoded.id, role: decoded.role, email: decoded.email, departmentId: decoded.departmentId };
             next();
         }
         catch (error) {
@@ -34,6 +34,7 @@ const protect = (req, res, next) => {
     }
     if (!token) {
         res.status(401).json({ message: 'Not authorized, no token' });
+        return;
     }
 };
 exports.protect = protect;

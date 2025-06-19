@@ -23,6 +23,7 @@ const reportingRoutes_1 = __importDefault(require("./routes/reportingRoutes")); 
 const testRoutes_1 = __importDefault(require("./routes/testRoutes"));
 const categoryRoutes_1 = __importDefault(require("./routes/categoryRoutes")); // Import category routes
 const templateRoutes_1 = __importDefault(require("./routes/templateRoutes")); // Import template routes
+const departmentRoutes_1 = __importDefault(require("./routes/departmentRoutes")); // Import department routes
 const escalationService_1 = require("./services/escalationService"); // Import escalation service
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)()); // Enable CORS for all routes
@@ -42,6 +43,7 @@ app.use('/api/tickets', ticketRoutes_1.default); // Mount ticket router
 app.use('/api/reports', reportingRoutes_1.default);
 app.use('/api/categories', categoryRoutes_1.default); // Use category routes
 app.use('/api/templates', templateRoutes_1.default); // Use template routes
+app.use('/api/departments', departmentRoutes_1.default); // Use department routes
 app.use('/api/test', testRoutes_1.default); // Mount reporting router
 const port = process.env.PORT || 3001;
 app.get('/', (req, res) => {
