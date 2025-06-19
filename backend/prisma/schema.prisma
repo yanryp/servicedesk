@@ -1,0 +1,163 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  Int                @id @default(autoincrement())
+  username            String             @unique @db.VarChar(255)
+  passwordHash        String             @map("password_hash") @db.VarChar(255)
+  email               String             @unique @db.VarChar(255)
+  role                String             @db.VarChar(50)
+  createdAt           DateTime?          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime?          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  managerId           Int?               @map("manager_id")
+  uploadedAttachments TicketAttachment[]
+  assignedTickets     Ticket[]           @relation("TicketAssignee")
+  createdTickets      Ticket[]           @relation("TicketCreator")
+  manager             User?              @relation("UserManager", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subordinates        User[]             @relation("UserManager")
+
+  @@map("users")
+}
+
+model Category {
+  id            Int           @id @default(autoincrement())
+  name          String        @unique @db.VarChar(255)
+  subCategories SubCategory[]
+
+  @@map("categories")
+}
+
+model SubCategory {
+  id         Int       @id @default(autoincrement())
+  name       String    @db.VarChar(255)
+  categoryId Int?      @map("category_id")
+  items      Item[]
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([categoryId, name])
+  @@map("sub_categories")
+}
+
+model Item {
+  id            Int              @id @default(autoincrement())
+  name          String           @db.VarChar(255)
+  subCategoryId Int?             @map("sub_category_id")
+  subCategory   SubCategory?     @relation(fields: [subCategoryId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  templates     TicketTemplate[]
+  tickets       Ticket[]
+
+  @@unique([subCategoryId, name])
+  @@map("items")
+}
+
+model TicketTemplate {
+  id                     Int                     @id @default(autoincrement())
+  name                   String                  @db.VarChar(255)
+  itemId                 Int?                    @map("item_id")
+  description            String?
+  customFieldDefinitions CustomFieldDefinition[]
+  item                   Item?                   @relation(fields: [itemId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  tickets                Ticket[]
+
+  @@unique([itemId, name])
+  @@map("ticket_templates")
+}
+
+model CustomFieldDefinition {
+  id                      Int                      @id @default(autoincrement())
+  templateId              Int?                     @map("template_id")
+  fieldName               String                   @map("field_name") @db.VarChar(255)
+  fieldLabel              String?                  @map("field_label") @db.VarChar(255)
+  fieldType               String                   @map("field_type") @db.VarChar(50)
+  options                 Json?
+  isRequired              Boolean?                 @default(false) @map("is_required")
+  placeholder             String?
+  default_value           String?
+  template                TicketTemplate?          @relation(fields: [templateId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  ticketCustomFieldValues TicketCustomFieldValue[]
+
+  @@unique([templateId, fieldName])
+  @@map("custom_field_definitions")
+}
+
+model Ticket {
+  id                Int                      @id @default(autoincrement())
+  title             String                   @db.VarChar(255)
+  description       String
+  status            ticket_status            @default(open)
+  priority          ticket_priority          @default(medium)
+  createdByUserId   Int                      @map("created_by_user_id")
+  assignedToUserId  Int?                     @map("assigned_to_user_id")
+  createdAt         DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime                 @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  resolvedAt        DateTime?                @map("resolved_at") @db.Timestamptz(6)
+  slaDueDate        DateTime?                @map("sla_due_date") @db.Timestamptz(6)
+  itemId            Int?                     @map("item_id")
+  templateId        Int?                     @map("template_id")
+  managerComments   String?                  @map("manager_comments")
+  attachments       TicketAttachment[]
+  customFieldValues TicketCustomFieldValue[]
+  assignedTo        User?                    @relation("TicketAssignee", fields: [assignedToUserId], references: [id], onUpdate: NoAction)
+  createdBy         User                     @relation("TicketCreator", fields: [createdByUserId], references: [id], onUpdate: NoAction)
+  item              Item?                    @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  template          TicketTemplate?          @relation(fields: [templateId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("tickets")
+}
+
+model TicketAttachment {
+  id               Int       @id @default(autoincrement())
+  ticketId         Int       @map("ticket_id")
+  fileName         String    @map("file_name") @db.VarChar(255)
+  filePath         String    @map("file_path") @db.VarChar(255)
+  fileSize         Int       @map("file_size")
+  fileType         String?   @map("file_type") @db.VarChar(100)
+  uploadedByUserId Int?      @map("uploaded_by_user_id")
+  createdAt        DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  ticket           Ticket    @relation(fields: [ticketId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  uploadedBy       User?     @relation(fields: [uploadedByUserId], references: [id], onUpdate: NoAction)
+
+  @@index([ticketId], map: "idx_ticket_attachments_ticket_id")
+  @@map("ticket_attachments")
+}
+
+model TicketCustomFieldValue {
+  id                Int                   @id @default(autoincrement())
+  ticketId          Int                   @map("ticket_id")
+  fieldDefinitionId Int                   @map("field_definition_id")
+  value             String?
+  fieldDefinition   CustomFieldDefinition @relation(fields: [fieldDefinitionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  ticket            Ticket                @relation(fields: [ticketId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([ticketId, fieldDefinitionId])
+  @@map("ticket_custom_field_values")
+}
+
+enum ticket_priority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum ticket_status {
+  open
+  in_progress
+  pending_requester_response
+  resolved
+  closed
+  awaiting_approval
+  approved
+  rejected
+  pending_approval           @map("pending-approval")
+  awaiting_changes           @map("awaiting-changes")
+  assigned
+  cancelled
+}

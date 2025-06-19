@@ -1,0 +1,552 @@
+
+> backend@1.0.0 dev
+> nodemon src/index.ts
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: ts,json[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[server]: Server is running at http://localhost:3001
+Successfully connected to the database. Test query result: [ { now: 2025-06-19T02:48:38.861Z } ]
+[database]: Prisma connected successfully
+SLA Escalation cron job started. Runs every hour.
+Error in auth route: Error: Invalid role. Must be one of: admin, technician, requester, manager
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:36:31
+    at Generator.next (<anonymous>)
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:8:71
+    at new Promise (<anonymous>)
+    at __awaiter (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:4:12)
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:25:97
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:21:21
+    at Layer.handleRequest (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/node_modules/router/lib/layer.js:152:17)
+    at next (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/node_modules/router/lib/route.js:117:3)
+Error in auth route: Error: Email and password are required.
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:84:31
+    at Generator.next (<anonymous>)
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:8:71
+    at new Promise (<anonymous>)
+    at __awaiter (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:4:12)
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:80:94
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:21:21
+    at Layer.handleRequest (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/node_modules/router/lib/layer.js:152:17)
+    at next (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/node_modules/router/lib/route.js:117:3)
+Decoded Token: {
+  id: 2,
+  username: 'admin1',
+  role: 'admin',
+  email: 'admin@example.com',
+  iat: 1750301631,
+  exp: 1750305231
+}
+Decoded Token: {
+  id: 2,
+  username: 'admin1',
+  role: 'admin',
+  email: 'admin@example.com',
+  iat: 1750301631,
+  exp: 1750305231
+}
+Decoded Token: {
+  id: 4,
+  username: 'requester1',
+  role: 'requester',
+  email: 'requester@example.com',
+  iat: 1750301773,
+  exp: 1750305373
+}
+Error sending email: Error: connect ECONNREFUSED 127.0.0.1:587
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1555:16) {
+  errno: -61,
+  code: 'ESOCKET',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 587,
+  command: 'CONN'
+}
+Ticket #1 created by user 4 who has no manager. It will remain pending.
+Decoded Token: {
+  id: 4,
+  username: 'requester1',
+  role: 'requester',
+  email: 'requester@example.com',
+  iat: 1750301773,
+  exp: 1750305373
+}
+Decoded Token: {
+  id: 2,
+  username: 'admin1',
+  role: 'admin',
+  email: 'admin@example.com',
+  iat: 1750301631,
+  exp: 1750305231
+}
+column "sort_order" does not exist
+Decoded Token: {
+  id: 2,
+  username: 'admin1',
+  role: 'admin',
+  email: 'admin@example.com',
+  iat: 1750301850,
+  exp: 1750305450
+}
+column "sort_order" does not exist
+Decoded Token: {
+  id: 2,
+  username: 'admin1',
+  role: 'admin',
+  email: 'admin@example.com',
+  iat: 1750301850,
+  exp: 1750305450
+}
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[server]: Server is running at http://localhost:3001
+Successfully connected to the database. Test query result: [ { now: 2025-06-19T02:58:28.937Z } ]
+[database]: Prisma connected successfully
+SLA Escalation cron job started. Runs every hour.
+Decoded Token: {
+  id: 2,
+  username: 'admin1',
+  role: 'admin',
+  email: 'admin@example.com',
+  iat: 1750301850,
+  exp: 1750305450
+}
+Running SLA escalation check...
+No overdue tickets found.
+Error in auth route: Error: Invalid credentials.
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:93:31
+    at Generator.next (<anonymous>)
+    at fulfilled (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:5:58)
+Error in auth route: Error: Invalid credentials.
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:93:31
+    at Generator.next (<anonymous>)
+    at fulfilled (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:5:58)
+Error in auth route: Error: Invalid credentials.
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:98:31
+    at Generator.next (<anonymous>)
+    at fulfilled (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:5:58)
+Error in auth route: Error: Invalid credentials.
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:98:31
+    at Generator.next (<anonymous>)
+    at fulfilled (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:5:58)
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+error: column "u.username" must appear in the GROUP BY clause or be used in an aggregate function
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/node_modules/pg-pool/index.js:45:11
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+error: column "u.username" must appear in the GROUP BY clause or be used in an aggregate function
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/node_modules/pg-pool/index.js:45:11
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+Decoded Token: {
+  id: 4,
+  username: 'requester1',
+  role: 'requester',
+  email: 'requester@example.com',
+  iat: 1750303501,
+  exp: 1750307101
+}
+error: column "u.username" must appear in the GROUP BY clause or be used in an aggregate function
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/node_modules/pg-pool/index.js:45:11
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[server]: Server is running at http://localhost:3001
+[database]: Prisma connected successfully
+SLA Escalation cron job started. Runs every hour.
+Successfully connected to the database. Test query result: [ { now: 2025-06-19T03:31:16.797Z } ]
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[server]: Server is running at http://localhost:3001
+Successfully connected to the database. Test query result: [ { now: 2025-06-19T03:31:41.977Z } ]
+[database]: Prisma connected successfully
+SLA Escalation cron job started. Runs every hour.
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[server]: Server is running at http://localhost:3001
+[database]: Prisma connected successfully
+SLA Escalation cron job started. Runs every hour.
+Successfully connected to the database. Test query result: [ { now: 2025-06-19T03:40:25.637Z } ]
+Error in auth route: Error: Invalid credentials.
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:98:31
+    at Generator.next (<anonymous>)
+    at fulfilled (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:5:58)
+Error in auth route: Error: Invalid credentials.
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:93:31
+    at Generator.next (<anonymous>)
+    at fulfilled (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:5:58)
+Error in auth route: Error: Username or email already exists.
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:50:31
+    at Generator.next (<anonymous>)
+    at fulfilled (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:5:58)
+Error in auth route: Error: Invalid credentials.
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:98:31
+    at Generator.next (<anonymous>)
+    at fulfilled (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:5:58)
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[server]: Server is running at http://localhost:3001
+Successfully connected to the database. Test query result: [ { now: 2025-06-19T03:42:26.098Z } ]
+[database]: Prisma connected successfully
+SLA Escalation cron job started. Runs every hour.
+Token verification failed: JsonWebTokenError: jwt malformed
+    at Object.module.exports [as verify] (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/node_modules/jsonwebtoken/verify.js:70:17)
+    at protect (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/middleware/authMiddleware.ts:28:27)
+    at Layer.handleRequest (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/node_modules/router/lib/layer.js:152:17)
+    at next (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/node_modules/router/lib/route.js:117:3)
+    at handle (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/node_modules/router/lib/layer.js:152:17)
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/node_modules/router/index.js:295:15
+    at processParams (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/node_modules/router/index.js:582:12)
+    at next (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/node_modules/router/index.js:291:5)
+Error in auth route: Error: Username or email already exists.
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:50:31
+    at Generator.next (<anonymous>)
+    at fulfilled (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:5:58)
+Decoded Token: {
+  id: 6,
+  username: 'testuser2',
+  role: 'requester',
+  email: 'test2@example.com',
+  iat: 1750304604,
+  exp: 1750308204
+}
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[server]: Server is running at http://localhost:3001
+Successfully connected to the database. Test query result: [ { now: 2025-06-19T03:43:51.342Z } ]
+[database]: Prisma connected successfully
+SLA Escalation cron job started. Runs every hour.
+Error in auth route: Error: Username or email already exists.
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:50:31
+    at Generator.next (<anonymous>)
+    at fulfilled (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:5:58)
+Decoded Token: {
+  id: 6,
+  username: 'testuser2',
+  role: 'requester',
+  email: 'test2@example.com',
+  iat: 1750304664,
+  exp: 1750308264
+}
+Error in auth route: Error: Invalid credentials.
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:93:31
+    at Generator.next (<anonymous>)
+    at fulfilled (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:5:58)
+Error in auth route: Error: Invalid credentials.
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:93:31
+    at Generator.next (<anonymous>)
+    at fulfilled (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:5:58)
+Error in auth route: Error: Invalid credentials.
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:93:31
+    at Generator.next (<anonymous>)
+    at fulfilled (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:5:58)
+Error in auth route: Error: Username or email already exists.
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:50:31
+    at Generator.next (<anonymous>)
+    at fulfilled (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:5:58)
+Decoded Token: {
+  id: 6,
+  username: 'testuser2',
+  role: 'requester',
+  email: 'test2@example.com',
+  iat: 1750304971,
+  exp: 1750308571
+}
+Error in auth route: Error: Username or email already exists.
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:50:31
+    at Generator.next (<anonymous>)
+    at fulfilled (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:5:58)
+Decoded Token: {
+  id: 6,
+  username: 'testuser2',
+  role: 'requester',
+  email: 'test2@example.com',
+  iat: 1750304983,
+  exp: 1750308583
+}
+Error in auth route: Error: Username or email already exists.
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:50:31
+    at Generator.next (<anonymous>)
+    at fulfilled (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:5:58)
+Decoded Token: {
+  id: 6,
+  username: 'testuser2',
+  role: 'requester',
+  email: 'test2@example.com',
+  iat: 1750305002,
+  exp: 1750308602
+}
+Error in auth route: Error: Username or email already exists.
+    at /Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:50:31
+    at Generator.next (<anonymous>)
+    at fulfilled (/Users/yanrypangouw/Documents/Projects/Web/ticketing-system/backend/src/routes/auth.ts:5:58)
+Decoded Token: {
+  id: 6,
+  username: 'testuser2',
+  role: 'requester',
+  email: 'test2@example.com',
+  iat: 1750305017,
+  exp: 1750308617
+}
+Error sending email: Error: connect ECONNREFUSED ::1:587
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1555:16) {
+  errno: -61,
+  code: 'ESOCKET',
+  syscall: 'connect',
+  address: '::1',
+  port: 587,
+  command: 'CONN'
+}
+Ticket #2 created by user 6 who has no manager. It will remain pending.
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[server]: Server is running at http://localhost:3001
+Successfully connected to the database. Test query result: [ { now: 2025-06-19T03:53:43.508Z } ]
+[database]: Prisma connected successfully
+SLA Escalation cron job started. Runs every hour.
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[server]: Server is running at http://localhost:3001
+Successfully connected to the database. Test query result: [ { now: 2025-06-19T03:53:56.546Z } ]
+[database]: Prisma connected successfully
+SLA Escalation cron job started. Runs every hour.
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[server]: Server is running at http://localhost:3001
+Successfully connected to the database. Test query result: [ { now: 2025-06-19T03:57:53.352Z } ]
+[database]: Prisma connected successfully
+SLA Escalation cron job started. Runs every hour.
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[server]: Server is running at http://localhost:3001
+[database]: Prisma connected successfully
+SLA Escalation cron job started. Runs every hour.
+Successfully connected to the database. Test query result: [ { now: 2025-06-19T03:58:23.051Z } ]
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Error sending email: Error: connect ECONNREFUSED ::1:587
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1555:16) {
+  errno: -61,
+  code: 'ESOCKET',
+  syscall: 'connect',
+  address: '::1',
+  port: 587,
+  command: 'CONN'
+}
+Ticket #6 created by user 5 who has no manager. It will remain pending.
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Decoded Token: {
+  id: 6,
+  username: 'testuser2',
+  role: 'requester',
+  email: 'test2@example.com',
+  iat: 1750305277,
+  exp: 1750308877
+}
+Error sending email: Error: connect ECONNREFUSED ::1:587
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1555:16) {
+  errno: -61,
+  code: 'ESOCKET',
+  syscall: 'connect',
+  address: '::1',
+  port: 587,
+  command: 'CONN'
+}
+Ticket #7 created by user 6 who has no manager. It will remain pending.
+Running SLA escalation check...
+No overdue tickets found.
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Error sending email: Error: connect ECONNREFUSED ::1:587
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1555:16) {
+  errno: -61,
+  code: 'ESOCKET',
+  syscall: 'connect',
+  address: '::1',
+  port: 587,
+  command: 'CONN'
+}
+Ticket #8 created by user 5 who has no manager. It will remain pending.
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
+Decoded Token: {
+  id: 5,
+  username: 'req1',
+  role: 'requester',
+  email: 'req1@test.com',
+  iat: 1750303679,
+  exp: 1750307279
+}
