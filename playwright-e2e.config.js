@@ -4,7 +4,7 @@ module.exports = {
   testMatch: ['bsg-workflow.spec.js'],
   timeout: 60000,
   use: {
-    baseURL: 'http://localhost:3005',
+    baseURL: 'http://localhost:3000',
     headless: false,
     viewport: { width: 1280, height: 720 },
     actionTimeout: 10000,
