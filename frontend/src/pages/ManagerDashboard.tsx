@@ -68,7 +68,16 @@ const ManagerDashboard: React.FC = () => {
   };
 
   const formatTimeAgo = (dateString: string) => {
+    if (!dateString) return 'Unknown date';
+    
     const date = new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      console.error('Invalid date string:', dateString);
+      return 'Invalid date';
+    }
+    
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
     

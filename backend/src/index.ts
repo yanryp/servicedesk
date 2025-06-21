@@ -3,20 +3,59 @@ dotenv.config();
 
 import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import prisma, { disconnectPrisma, checkPrismaConnection } from './db/prisma'; // Initialize Prisma client
 import authRouter from './routes/auth'; // Import the auth router
-import ticketRouter from './routes/ticketRoutes'; // Import ticket router
+import ticketRouter from './routes/ticketRoutes'; // Import ticket router (legacy)
+import enhancedTicketRouter from './routes/enhancedTicketRoutes'; // Import enhanced ticket router
+import serviceCatalogRouter from './routes/serviceCatalogRoutes'; // Import service catalog router
+import categorizationRouter from './routes/categorizationRoutes'; // Import categorization router
+import categorizationAnalyticsRouter from './routes/categorizationAnalyticsRoutes'; // Import analytics router
 import reportingRoutes from './routes/reportingRoutes'; // Import reporting router
 import testRoutes from './routes/testRoutes';
 import categoryRoutes from './routes/categoryRoutes'; // Import category routes
 import templateRoutes from './routes/templateRoutes'; // Import template routes
 import departmentRoutes from './routes/departmentRoutes'; // Import department routes
+import masterDataRoutes from './routes/masterDataRoutes'; // Import master data routes
+import fieldTypeRoutes from './routes/fieldTypeRoutes'; // Import field type routes
+import templateManagementRoutes from './routes/templateManagementRoutes'; // Import template management routes
+import bsgTemplateRoutes from './routes/bsgTemplateRoutes'; // Import BSG template routes
+import templateFieldsRoutes from './routes/templateFieldsRoutes'; // Import template fields routes
+import ticketCommentsRoutes from './routes/ticketCommentsRoutes'; // Import ticket comments routes
 import { startEscalationCronJob } from './services/escalationService'; // Import escalation service
 
 const app: Express = express();
 
-app.use(cors()); // Enable CORS for all routes
-app.use(express.json()); // Middleware to parse JSON bodies
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    }
+  },
+  crossOriginEmbedderPolicy: false,
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
+}));
+
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true,
+  optionsSuccessStatus: 200
+})); // Enable CORS for all routes
+app.use(express.json({ limit: '10mb' })); // Middleware to parse JSON bodies with size limit
+app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Parse URL-encoded bodies
 
 // Health check endpoint
 app.get('/health', async (req: Request, res: Response) => {
@@ -30,12 +69,32 @@ app.get('/health', async (req: Request, res: Response) => {
 
 // Mount the authentication router
 app.use('/api/auth', authRouter);
-app.use('/api/tickets', ticketRouter); // Mount ticket router
-app.use('/api/reports', reportingRoutes);
+
+// ITIL-enhanced routes (new)
+app.use('/api/v2/tickets', enhancedTicketRouter); // Enhanced ticket router with ITIL support
+app.use('/api/service-catalog', serviceCatalogRouter); // Service catalog router
+app.use('/api/categorization', categorizationRouter); // Ticket categorization routes
+app.use('/api/analytics/categorization', categorizationAnalyticsRouter); // Categorization analytics
+
+// BSG Template System routes (new scalable system)
+app.use('/api/master-data', masterDataRoutes); // Master data for dropdowns (branches, terminals, banks)
+app.use('/api/field-types', fieldTypeRoutes); // Dynamic field type definitions
+app.use('/api/template-management', templateManagementRoutes); // Template discovery and management
+app.use('/api/bsg-templates', bsgTemplateRoutes); // BSG template import and management
+app.use('/api/service-templates', templateFieldsRoutes); // Template custom fields routes
+
+// Ticket Comments and Conversation System
+app.use('/api', ticketCommentsRoutes); // Ticket comments and conversation routes
+
+// Legacy routes (for backward compatibility)
+app.use('/api/tickets', ticketRouter); // Mount legacy ticket router
 app.use('/api/categories', categoryRoutes); // Use category routes
 app.use('/api/templates', templateRoutes); // Use template routes
+
+// Other routes
+app.use('/api/reports', reportingRoutes);
 app.use('/api/departments', departmentRoutes); // Use department routes
-app.use('/api/test', testRoutes); // Mount reporting router
+app.use('/api/test', testRoutes); // Mount test routes
 
 const port = process.env.PORT || 3001;
 

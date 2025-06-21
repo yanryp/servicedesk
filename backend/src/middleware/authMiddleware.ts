@@ -12,7 +12,15 @@ if (!JWT_SECRET) {
 
 // Extend Express Request type to include 'user' property
 export interface AuthenticatedRequest extends Request {
-  user?: { id: number; role: string; email: string; departmentId?: number }; // Define the structure of your decoded user payload
+  user?: { 
+    id: number; 
+    role: string; 
+    email: string; 
+    departmentId?: number;
+    username?: string;
+    isKasdaUser?: boolean;
+    isBusinessReviewer?: boolean;
+  }; // Define the structure of your decoded user payload
 }
 
 export const protect = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -25,12 +33,30 @@ export const protect = (req: AuthenticatedRequest, res: Response, next: NextFunc
 
       // Verify token
       // @ts-ignore - Bypassing a persistent TS error for jwt.verify until types are fully resolved
-      const decoded = jwt.verify(token, JWT_SECRET) as { id: number; role: string; email: string; departmentId?: number; iat: number; exp: number };
+      const decoded = jwt.verify(token, JWT_SECRET) as { 
+        id: number; 
+        role: string; 
+        email: string; 
+        departmentId?: number;
+        username?: string;
+        isKasdaUser?: boolean;
+        isBusinessReviewer?: boolean;
+        iat: number; 
+        exp: number; 
+      };
 
       console.log('Decoded Token:', decoded); // Add logging
 
       // Attach user to the request object
-      req.user = { id: decoded.id, role: decoded.role, email: decoded.email, departmentId: decoded.departmentId };
+      req.user = { 
+        id: decoded.id, 
+        role: decoded.role, 
+        email: decoded.email, 
+        departmentId: decoded.departmentId,
+        username: decoded.username,
+        isKasdaUser: decoded.isKasdaUser,
+        isBusinessReviewer: decoded.isBusinessReviewer
+      };
 
       next();
     } catch (error: any) {

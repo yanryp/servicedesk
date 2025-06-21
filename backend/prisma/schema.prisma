@@ -8,33 +8,74 @@ datasource db {
 }
 
 model User {
-  id                  Int                @id @default(autoincrement())
-  username            String             @unique @db.VarChar(255)
-  passwordHash        String             @map("password_hash") @db.VarChar(255)
-  email               String             @unique @db.VarChar(255)
-  role                String             @db.VarChar(50)
-  departmentId        Int?               @map("department_id")
-  createdAt           DateTime?          @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt           DateTime?          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  managerId           Int?               @map("manager_id")
-  uploadedAttachments TicketAttachment[]
-  assignedTickets     Ticket[]           @relation("TicketAssignee")
-  createdTickets      Ticket[]           @relation("TicketCreator")
-  department          Department?        @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  manager             User?              @relation("UserManager", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  subordinates        User[]             @relation("UserManager")
+  id                    Int                 @id @default(autoincrement())
+  username              String              @unique @db.VarChar(255)
+  passwordHash          String              @map("password_hash") @db.VarChar(255)
+  email                 String              @unique @db.VarChar(255)
+  role                  String              @db.VarChar(50)
+  departmentId          Int?                @map("department_id")
+  createdAt             DateTime?           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime?           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  managerId             Int?                @map("manager_id")
+  
+  // User type flags
+  isKasdaUser           Boolean             @default(false) @map("is_kasda_user")
+  isBusinessReviewer    Boolean             @default(false) @map("is_business_reviewer")
+  
+  // Relations
+  uploadedAttachments   TicketAttachment[]
+  assignedTickets       Ticket[]            @relation("TicketAssignee")
+  createdTickets        Ticket[]            @relation("TicketCreator")
+  department            Department?         @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  manager               User?               @relation("UserManager", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subordinates          User[]              @relation("UserManager")
+  
+  // KASDA specific relations
+  kasdaProfile          KasdaUserProfile?
+  businessApprovals     BusinessApproval[]  @relation("BusinessApprovalReviewer")
+  
+  // Ticket categorization relations
+  techCategorizedTickets Ticket[]           @relation("TechCategorizer")
+  classificationAudits   TicketClassificationAudit[]
+  
+  // Template management relations
+  createdTemplates       TemplateMetadata[] @relation("TemplateCreator")
+  approvedTemplates      TemplateMetadata[] @relation("TemplateApprover")
+  templateUsageLogs      TemplateUsageLog[]
+
+  // Comment system relations
+  authoredComments       TicketComment[]      @relation("CommentAuthor")
+  editedComments         TicketComment[]      @relation("CommentEditor")
+  deletedComments        TicketComment[]      @relation("CommentDeleter")
+  commentNotifications   CommentNotification[] @relation("NotificationRecipient")
+
+  // BSG Template relations
+  bsgTemplateUsageLogs   BSGTemplateUsageLog[] @relation("BSGTemplateUsageUser")
 
   @@map("users")
 }
 
 model Department {
-  id           Int    @id @default(autoincrement())
-  name         String @unique @db.VarChar(255)
-  description  String?
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  users        User[]
-  categories   Category[]
+  id               Int                @id @default(autoincrement())
+  name             String             @unique @db.VarChar(255)
+  description      String?
+  departmentType   String             @default("internal") @map("department_type") @db.VarChar(50) // internal, business, government
+  isServiceOwner   Boolean            @default(false) @map("is_service_owner") // handles service requests vs technical issues
+  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  users            User[]
+  categories       Category[]
+  serviceCatalog   ServiceCatalog[]
+  slaPolicy        DepartmentSlaPolicy[]
+  
+  // Template management relations
+  masterDataEntities MasterDataEntity[]
+  templateCategories TemplateCategory[]
+  templateMetadata   TemplateMetadata[]
+  templateUsageLogs  TemplateUsageLog[]
+
+  // BSG Template relations
+  bsgTemplateUsageLogs BSGTemplateUsageLog[] @relation("BSGTemplateUsageDept")
 
   @@map("departments")
 }
@@ -81,6 +122,10 @@ model TicketTemplate {
   customFieldDefinitions CustomFieldDefinition[]
   item                   Item?                   @relation(fields: [itemId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   tickets                Ticket[]
+  
+  // Template management relations
+  metadata               TemplateMetadata?
+  usageLogs              TemplateUsageLog[]
 
   @@unique([itemId, name])
   @@map("ticket_templates")
@@ -104,26 +149,86 @@ model CustomFieldDefinition {
 }
 
 model Ticket {
-  id                Int                      @id @default(autoincrement())
-  title             String                   @db.VarChar(255)
-  description       String
-  status            ticket_status            @default(open)
-  priority          ticket_priority          @default(medium)
-  createdByUserId   Int                      @map("created_by_user_id")
-  assignedToUserId  Int?                     @map("assigned_to_user_id")
-  createdAt         DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt         DateTime                 @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  resolvedAt        DateTime?                @map("resolved_at") @db.Timestamptz(6)
-  slaDueDate        DateTime?                @map("sla_due_date") @db.Timestamptz(6)
-  itemId            Int?                     @map("item_id")
-  templateId        Int?                     @map("template_id")
-  managerComments   String?                  @map("manager_comments")
-  attachments       TicketAttachment[]
-  customFieldValues TicketCustomFieldValue[]
-  assignedTo        User?                    @relation("TicketAssignee", fields: [assignedToUserId], references: [id], onUpdate: NoAction)
-  createdBy         User                     @relation("TicketCreator", fields: [createdByUserId], references: [id], onUpdate: NoAction)
-  item              Item?                    @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  template          TicketTemplate?          @relation(fields: [templateId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                     Int                         @id @default(autoincrement())
+  title                  String                      @db.VarChar(255)
+  description            String
+  status                 ticket_status               @default(open)
+  priority               ticket_priority             @default(medium)
+  createdByUserId        Int                         @map("created_by_user_id")
+  assignedToUserId       Int?                        @map("assigned_to_user_id")
+  createdAt              DateTime                    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime                    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  resolvedAt             DateTime?                   @map("resolved_at") @db.Timestamptz(6)
+  slaDueDate             DateTime?                   @map("sla_due_date") @db.Timestamptz(6)
+  
+  // Legacy fields (for backward compatibility)
+  itemId                 Int?                        @map("item_id")
+  templateId             Int?                        @map("template_id")
+  
+  // New ITIL Service Catalog fields
+  serviceCatalogId       Int?                        @map("service_catalog_id")
+  serviceItemId          Int?                        @map("service_item_id")
+  serviceTemplateId      Int?                        @map("service_template_id")
+  requestType            request_type               @default(service_request) @map("request_type")
+  businessImpact         business_impact            @default(medium) @map("business_impact")
+  
+  // KASDA/Government specific fields
+  isKasdaTicket          Boolean                    @default(false) @map("is_kasda_ticket")
+  governmentEntityId     Int?                       @map("government_entity_id")
+  requiresBusinessApproval Boolean                  @default(false) @map("requires_business_approval")
+  
+  // Comments and resolution
+  managerComments        String?                    @map("manager_comments")
+  businessComments       String?                    @map("business_comments")
+  
+  // Ticket Categorization Fields (for Analytics)
+  // User classifications (initial)
+  userRootCause          root_cause_type?           @map("user_root_cause")
+  userIssueCategory      issue_category_type?       @map("user_issue_category")
+  userCategorizedAt      DateTime?                  @map("user_categorized_at") @db.Timestamptz(6)
+  userCategorizedIP      String?                    @map("user_categorized_ip") @db.VarChar(45)
+  
+  // Technician classifications (validated)
+  techRootCause          root_cause_type?           @map("tech_root_cause")
+  techIssueCategory      issue_category_type?       @map("tech_issue_category")
+  techCategorizedAt      DateTime?                  @map("tech_categorized_at") @db.Timestamptz(6)
+  techCategorizedBy      Int?                       @map("tech_categorized_by")
+  techOverrideReason     String?                    @map("tech_override_reason") @db.VarChar(500)
+  
+  // Final confirmed classifications (mandatory before closure)
+  confirmedRootCause     root_cause_type?           @map("confirmed_root_cause")
+  confirmedIssueCategory issue_category_type?       @map("confirmed_issue_category")
+  isClassificationLocked Boolean                    @default(false) @map("is_classification_locked")
+  
+  // Relations
+  classificationAudit    TicketClassificationAudit[]
+  techCategorizedByUser  User?                      @relation("TechCategorizer", fields: [techCategorizedBy], references: [id], onUpdate: NoAction)
+  attachments            TicketAttachment[]
+  customFieldValues      TicketCustomFieldValue[]
+  serviceFieldValues     TicketServiceFieldValue[]
+  businessApproval       BusinessApproval?
+  assignedTo             User?                      @relation("TicketAssignee", fields: [assignedToUserId], references: [id], onUpdate: NoAction)
+  createdBy              User                       @relation("TicketCreator", fields: [createdByUserId], references: [id], onUpdate: NoAction)
+  
+  // Legacy relations (for backward compatibility)
+  item                   Item?                      @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  template               TicketTemplate?            @relation(fields: [templateId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  // New service catalog relations
+  serviceCatalog         ServiceCatalog?            @relation("ServiceCatalogTickets", fields: [serviceCatalogId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  serviceItem            ServiceItem?               @relation("ServiceItemTickets", fields: [serviceItemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  serviceTemplate        ServiceTemplate?           @relation("ServiceTemplateTickets", fields: [serviceTemplateId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  governmentEntity       GovernmentEntity?          @relation("GovernmentEntityTickets", fields: [governmentEntityId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  // Template management relations
+  templateUsageLogs      TemplateUsageLog[]
+
+  // BSG Template relations  
+  bsgFieldValues         BSGTicketFieldValue[]     @relation("TicketBSGFieldValues")
+  bsgUsageLogs           BSGTemplateUsageLog[]     @relation("BSGTemplateUsageTicket")
+
+  // Comment system relations
+  comments               TicketComment[]
 
   @@map("tickets")
 }
@@ -177,4 +282,688 @@ enum ticket_status {
   awaiting_changes           @map("awaiting-changes")
   assigned
   cancelled
+}
+
+// ITIL-aligned Service Catalog Models
+model ServiceCatalog {
+  id                Int               @id @default(autoincrement())
+  name              String            @db.VarChar(255)
+  description       String?
+  serviceType       service_type      @default(business_service) @map("service_type")
+  categoryLevel     Int               @default(1) @map("category_level") // 1=Business Service, 2=Technical Service
+  parentId          Int?              @map("parent_id")
+  departmentId      Int               @map("department_id") // Service owner department
+  isActive          Boolean           @default(true) @map("is_active")
+  requiresApproval  Boolean           @default(false) @map("requires_approval")
+  estimatedTime     Int?              @map("estimated_time") // minutes
+  businessImpact    business_impact   @default(medium) @map("business_impact")
+  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
+  // Relations
+  parent            ServiceCatalog?   @relation("ServiceHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children          ServiceCatalog[]  @relation("ServiceHierarchy")
+  department        Department        @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  serviceItems      ServiceItem[]
+  tickets           Ticket[]          @relation("ServiceCatalogTickets")
+
+  @@unique([departmentId, name])
+  @@map("service_catalog")
+}
+
+model ServiceItem {
+  id                  Int                @id @default(autoincrement())
+  serviceCatalogId    Int                @map("service_catalog_id")
+  name                String             @db.VarChar(255)
+  description         String?
+  requestType         request_type       @default(service_request) @map("request_type")
+  isKasdaRelated      Boolean           @default(false) @map("is_kasda_related") // Special flag for government services
+  requiresGovApproval Boolean           @default(false) @map("requires_gov_approval")
+  isActive            Boolean           @default(true) @map("is_active")
+  sortOrder           Int               @default(0) @map("sort_order")
+  createdAt           DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
+  // Relations
+  serviceCatalog      ServiceCatalog    @relation(fields: [serviceCatalogId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  templates           ServiceTemplate[]
+  tickets             Ticket[]          @relation("ServiceItemTickets")
+
+  @@unique([serviceCatalogId, name])
+  @@map("service_items")
+}
+
+model ServiceTemplate {
+  id                      Int                      @id @default(autoincrement())
+  serviceItemId           Int                      @map("service_item_id")
+  name                    String                   @db.VarChar(255)
+  description             String?
+  templateType            template_type            @default(standard) @map("template_type")
+  isKasdaTemplate         Boolean                 @default(false) @map("is_kasda_template")
+  requiresBusinessApproval Boolean                 @default(false) @map("requires_business_approval")
+  isVisible               Boolean                 @default(true) @map("is_visible")
+  sortOrder               Int                     @default(0) @map("sort_order")
+  estimatedResolutionTime Int?                     @map("estimated_resolution_time") // minutes
+  createdAt               DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime                @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
+  // Relations
+  serviceItem             ServiceItem             @relation(fields: [serviceItemId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  customFieldDefinitions  ServiceFieldDefinition[]
+  tickets                 Ticket[]                @relation("ServiceTemplateTickets")
+  
+  // Template management relations
+  metadata                TemplateMetadata?
+  usageLogs               TemplateUsageLog[]
+
+  @@unique([serviceItemId, name])
+  @@map("service_templates")
+}
+
+model ServiceFieldDefinition {
+  id                      Int                      @id @default(autoincrement())
+  serviceTemplateId       Int                      @map("service_template_id")
+  fieldName               String                   @map("field_name") @db.VarChar(255)
+  fieldLabel              String                   @map("field_label") @db.VarChar(255)
+  fieldType               field_type               @map("field_type")
+  options                 Json?                    // For dropdown, radio, checkbox options
+  isRequired              Boolean                  @default(false) @map("is_required")
+  isKasdaSpecific         Boolean                 @default(false) @map("is_kasda_specific")
+  placeholder             String?
+  defaultValue            String?                 @map("default_value")
+  validationRules         Json?                   @map("validation_rules")
+  sortOrder               Int                     @default(0) @map("sort_order")
+  isVisible               Boolean                 @default(true) @map("is_visible")
+  createdAt               DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime                @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
+  // Relations
+  serviceTemplate         ServiceTemplate         @relation(fields: [serviceTemplateId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  ticketFieldValues       TicketServiceFieldValue[]
+
+  @@unique([serviceTemplateId, fieldName])
+  @@map("service_field_definitions")
+}
+
+// Government Entity Management for KASDA
+model GovernmentEntity {
+  id              Int             @id @default(autoincrement())
+  entityName      String          @map("entity_name") @db.VarChar(255)
+  entityType      String          @map("entity_type") @db.VarChar(100) // SKPD, OPD, etc.
+  entityLevel     String          @map("entity_level") @db.VarChar(50) // Provincial, City, Regency
+  contactPerson   String?         @map("contact_person") @db.VarChar(255)
+  contactEmail    String?         @map("contact_email") @db.VarChar(255)
+  contactPhone    String?         @map("contact_phone") @db.VarChar(50)
+  address         String?
+  isActive        Boolean         @default(true) @map("is_active")
+  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
+  // Relations
+  kasdaUsers      KasdaUserProfile[]
+  tickets         Ticket[]        @relation("GovernmentEntityTickets")
+
+  @@map("government_entities")
+}
+
+model KasdaUserProfile {
+  id                      Int               @id @default(autoincrement())
+  userId                  Int               @unique @map("user_id")
+  governmentEntityId      Int               @map("government_entity_id")
+  positionTitle           String            @map("position_title") @db.VarChar(255)
+  authorityLevel          String            @map("authority_level") @db.VarChar(100)
+  treasuryAccountAccess   String[]         @map("treasury_account_access") // Array of account numbers
+  budgetCodes             String[]         @map("budget_codes") // Array of budget codes (DPA/DPPA)
+  fiscalYear              Int              @map("fiscal_year")
+  governmentIdNumber      String?          @map("government_id_number") @db.VarChar(100)
+  isActive                Boolean          @default(true) @map("is_active")
+  createdAt               DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
+  // Relations
+  user                    User             @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  governmentEntity        GovernmentEntity @relation(fields: [governmentEntityId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("kasda_user_profiles")
+}
+
+// Business Department Approvals for Government Services
+model BusinessApproval {
+  id                      Int            @id @default(autoincrement())
+  ticketId                Int            @unique @map("ticket_id")
+  businessReviewerId      Int            @map("business_reviewer_id")
+  approvalStatus          approval_status @default(pending) @map("approval_status")
+  businessComments        String?        @map("business_comments")
+  govDocsVerified         Boolean        @default(false) @map("gov_docs_verified")
+  authorizationLetterPath String?        @map("authorization_letter_path")
+  approvedAt              DateTime?      @map("approved_at") @db.Timestamptz(6)
+  createdAt               DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
+  // Relations
+  ticket                  Ticket         @relation(fields: [ticketId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  businessReviewer        User           @relation("BusinessApprovalReviewer", fields: [businessReviewerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("business_approvals")
+}
+
+// Department-specific SLA Policies
+model DepartmentSlaPolicy {
+  id                   Int         @id @default(autoincrement())
+  departmentId         Int         @map("department_id")
+  serviceType          String      @map("service_type") @db.VarChar(100)
+  businessHoursOnly    Boolean     @default(true) @map("business_hours_only")
+  responseTimeHours    Int         @map("response_time_hours")
+  resolutionTimeHours  Int         @map("resolution_time_hours")
+  escalationRules      Json?       @map("escalation_rules")
+  isActive             Boolean     @default(true) @map("is_active")
+  createdAt            DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
+  // Relations
+  department           Department  @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([departmentId, serviceType])
+  @@map("department_sla_policies")
+}
+
+model TicketServiceFieldValue {
+  id                    Int                    @id @default(autoincrement())
+  ticketId              Int                    @map("ticket_id")
+  fieldDefinitionId     Int                    @map("field_definition_id")
+  value                 String?
+  createdAt             DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
+  // Relations
+  ticket                Ticket                 @relation(fields: [ticketId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  fieldDefinition       ServiceFieldDefinition @relation(fields: [fieldDefinitionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([ticketId, fieldDefinitionId])
+  @@map("ticket_service_field_values")
+}
+
+// New Enums for ITIL Service Management
+enum service_type {
+  business_service
+  technical_service
+  government_service
+}
+
+enum request_type {
+  service_request
+  incident
+  problem
+  change_request
+}
+
+enum template_type {
+  standard
+  government
+  kasda_specific
+  internal_only
+}
+
+enum field_type {
+  text
+  textarea
+  number
+  email
+  phone
+  date
+  datetime
+  dropdown
+  radio
+  checkbox
+  file_upload
+  government_id
+  budget_code
+  treasury_account
+}
+
+enum business_impact {
+  low
+  medium
+  high
+  critical
+}
+
+enum approval_status {
+  pending
+  approved
+  rejected
+  review_required
+}
+
+// New enums for ticket categorization
+enum root_cause_type {
+  human_error
+  system_error
+  external_factor
+  undetermined
+}
+
+enum issue_category_type {
+  request       // Service Request
+  complaint     // Complaint
+  problem       // Problem/Issue
+}
+
+// Audit Trail Model for Ticket Classification Changes
+model TicketClassificationAudit {
+  id                Int                 @id @default(autoincrement())
+  ticketId          Int                 @map("ticket_id")
+  changedBy         Int                 @map("changed_by")
+  fieldChanged      String              @map("field_changed") @db.VarChar(100) // 'user_root_cause', 'tech_issue_category', etc.
+  oldValue          String?             @map("old_value") @db.VarChar(100)
+  newValue          String?             @map("new_value") @db.VarChar(100)
+  reason            String?             @db.VarChar(500) // Required for technician overrides
+  ipAddress         String?             @map("ip_address") @db.VarChar(45)
+  userAgent         String?             @map("user_agent") @db.VarChar(500)
+  sessionId         String?             @map("session_id") @db.VarChar(255)
+  createdAt         DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  
+  // Relations
+  ticket            Ticket              @relation(fields: [ticketId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user              User                @relation(fields: [changedBy], references: [id], onUpdate: NoAction)
+  
+  @@index([ticketId], map: "idx_classification_audit_ticket")
+  @@index([changedBy], map: "idx_classification_audit_user")
+  @@index([createdAt], map: "idx_classification_audit_date")
+  @@map("ticket_classification_audit")
+}
+
+// ============================================================================
+// SCALABLE TEMPLATE SYSTEM MODELS
+// ============================================================================
+
+// Generic Master Data System for scalable dropdown options
+model MasterDataEntity {
+  id                  Int                  @id @default(autoincrement())
+  type                String               @db.VarChar(50) // 'branch', 'olibs_menu', 'product', 'bank_code'
+  code                String               @db.VarChar(50)
+  name                String               @db.VarChar(255)
+  nameIndonesian      String?              @map("name_indonesian") @db.VarChar(255)
+  description         String?
+  metadata            Json?                // Flexible additional data
+  parentId            Int?                 @map("parent_id") // For hierarchical data
+  departmentId        Int?                 @map("department_id") // Department-specific data
+  isActive            Boolean              @default(true) @map("is_active")
+  sortOrder           Int                  @default(0) @map("sort_order")
+  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  parent              MasterDataEntity?    @relation("MasterDataHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children            MasterDataEntity[]   @relation("MasterDataHierarchy")
+  department          Department?          @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([type, code])
+  @@index([type, isActive])
+  @@index([parentId])
+  @@map("master_data_entities")
+}
+
+// Enhanced field type definitions for dynamic form building
+model FieldTypeDefinition {
+  id                  Int                  @id @default(autoincrement())
+  name                String               @unique @db.VarChar(50) // 'currency_idr', 'branch_dropdown'
+  displayName         String               @map("display_name") @db.VarChar(100)
+  displayNameId       String?              @map("display_name_id") @db.VarChar(100) // Indonesian name
+  category            String               @db.VarChar(50) // 'input', 'selection', 'banking', 'date_time'
+  description         String?
+  validationRules     Json?                @map("validation_rules") // JSON schema for validation
+  formattingRules     Json?                @map("formatting_rules") // How to format/display values
+  uiConfig            Json?                @map("ui_config") // UI-specific configuration
+  isActive            Boolean              @default(true) @map("is_active")
+  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("field_type_definitions")
+}
+
+// Template categories for better organization
+model TemplateCategory {
+  id                  Int                  @id @default(autoincrement())
+  name                String               @db.VarChar(100)
+  nameIndonesian      String               @map("name_indonesian") @db.VarChar(100)
+  description         String?
+  parentId            Int?                 @map("parent_id")
+  departmentId        Int?                 @map("department_id")
+  icon                String?              @db.VarChar(50) // Icon class or name
+  color               String?              @db.VarChar(20) // Hex color for UI
+  sortOrder           Int                  @default(0) @map("sort_order")
+  isActive            Boolean              @default(true) @map("is_active")
+  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  parent              TemplateCategory?    @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children            TemplateCategory[]   @relation("CategoryHierarchy")
+  department          Department?          @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  templates           TemplateMetadata[]
+
+  @@unique([name, parentId])
+  @@index([departmentId])
+  @@map("template_categories")
+}
+
+// Enhanced template metadata for scalable template management
+model TemplateMetadata {
+  id                  Int                  @id @default(autoincrement())
+  templateId          Int?                 @map("template_id") // Link to existing TicketTemplate
+  serviceTemplateId   Int?                 @map("service_template_id") // Link to ServiceTemplate
+  categoryId          Int                  @map("category_id")
+  name                String               @db.VarChar(255)
+  nameIndonesian      String               @map("name_indonesian") @db.VarChar(255)
+  description         String?
+  businessProcess     String?              @map("business_process") @db.VarChar(100)
+  complexity          String               @default("medium") @db.VarChar(20) // 'simple', 'medium', 'complex'
+  estimatedTime       Int                  @default(30) @map("estimated_time") // minutes
+  popularityScore     Float                @default(0) @map("popularity_score") // For smart ordering
+  usageCount          Int                  @default(0) @map("usage_count")
+  tags                String[]             // Array of tags for search
+  searchKeywords      String?              @map("search_keywords") @db.VarChar(500) // For full-text search
+  searchKeywordsId    String?              @map("search_keywords_id") @db.VarChar(500) // Indonesian keywords
+  isPublic            Boolean              @default(true) @map("is_public")
+  isActive            Boolean              @default(true) @map("is_active")
+  departmentId        Int?                 @map("department_id") // Template owner
+  createdBy           Int                  @map("created_by")
+  approvedBy          Int?                 @map("approved_by")
+  approvedAt          DateTime?            @map("approved_at") @db.Timestamptz(6)
+  version             String               @default("1.0.0") @db.VarChar(20)
+  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  category            TemplateCategory     @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  template            TicketTemplate?      @relation(fields: [templateId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  serviceTemplate     ServiceTemplate?     @relation(fields: [serviceTemplateId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  department          Department?          @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  creator             User                 @relation("TemplateCreator", fields: [createdBy], references: [id], onUpdate: NoAction)
+  approver            User?                @relation("TemplateApprover", fields: [approvedBy], references: [id], onUpdate: NoAction)
+
+  @@unique([templateId])
+  @@unique([serviceTemplateId])
+  @@index([categoryId])
+  @@index([popularityScore])
+  @@index([departmentId])
+  @@index([isActive, isPublic])
+  @@map("template_metadata")
+}
+
+// Template usage analytics for performance optimization
+model TemplateUsageLog {
+  id                  Int                  @id @default(autoincrement())
+  templateId          Int?                 @map("template_id")
+  serviceTemplateId   Int?                 @map("service_template_id")
+  userId              Int                  @map("user_id")
+  departmentId        Int?                 @map("department_id")
+  ticketId            Int?                 @map("ticket_id") // If usage resulted in ticket creation
+  usageType           String               @map("usage_type") @db.VarChar(20) // 'view', 'create', 'search'
+  sessionId           String?              @map("session_id") @db.VarChar(255)
+  ipAddress           String?              @map("ip_address") @db.VarChar(45)
+  userAgent           String?              @map("user_agent") @db.VarChar(500)
+  completionTime      Int?                 @map("completion_time") // seconds to complete form
+  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // Relations
+  template            TicketTemplate?      @relation(fields: [templateId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  serviceTemplate     ServiceTemplate?     @relation(fields: [serviceTemplateId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user                User                 @relation(fields: [userId], references: [id], onUpdate: NoAction)
+  department          Department?          @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ticket              Ticket?              @relation(fields: [ticketId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([templateId])
+  @@index([serviceTemplateId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("template_usage_logs")
+}
+
+// ============================================================================
+// TICKET CONVERSATION SYSTEM
+// ============================================================================
+
+// Ticket comments/conversations for communication between users and technicians
+model TicketComment {
+  id                  Int                  @id @default(autoincrement())
+  ticketId            Int                  @map("ticket_id")
+  authorId            Int                  @map("author_id")
+  content             String               // Main comment content
+  commentType         comment_type         @default(comment) @map("comment_type")
+  isInternal          Boolean              @default(false) @map("is_internal") // Internal notes vs public comments
+  isSystemGenerated   Boolean              @default(false) @map("is_system_generated") // Auto-generated comments
+  parentCommentId     Int?                 @map("parent_comment_id") // For threaded conversations
+  mentions            Int[]                // Array of user IDs mentioned in comment
+  attachments         Json?                // Attachment metadata array
+  editedAt            DateTime?            @map("edited_at") @db.Timestamptz(6)
+  editedBy            Int?                 @map("edited_by")
+  isDeleted           Boolean              @default(false) @map("is_deleted")
+  deletedAt           DateTime?            @map("deleted_at") @db.Timestamptz(6)
+  deletedBy           Int?                 @map("deleted_by")
+  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  ticket              Ticket               @relation(fields: [ticketId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  author              User                 @relation("CommentAuthor", fields: [authorId], references: [id], onUpdate: NoAction)
+  editor              User?                @relation("CommentEditor", fields: [editedBy], references: [id], onUpdate: NoAction)
+  deleter             User?                @relation("CommentDeleter", fields: [deletedBy], references: [id], onUpdate: NoAction)
+  parentComment       TicketComment?       @relation("CommentThread", fields: [parentCommentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies             TicketComment[]      @relation("CommentThread")
+  notifications       CommentNotification[]
+
+  @@index([ticketId])
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([parentCommentId])
+  @@map("ticket_comments")
+}
+
+// Notification system for comment mentions and replies
+model CommentNotification {
+  id                  Int                  @id @default(autoincrement())
+  commentId           Int                  @map("comment_id")
+  recipientId         Int                  @map("recipient_id")
+  notificationType    notification_type    @map("notification_type")
+  isRead              Boolean              @default(false) @map("is_read")
+  readAt              DateTime?            @map("read_at") @db.Timestamptz(6)
+  emailSent           Boolean              @default(false) @map("email_sent")
+  emailSentAt         DateTime?            @map("email_sent_at") @db.Timestamptz(6)
+  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // Relations
+  comment             TicketComment        @relation(fields: [commentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  recipient           User                 @relation("NotificationRecipient", fields: [recipientId], references: [id], onUpdate: NoAction)
+
+  @@unique([commentId, recipientId])
+  @@index([recipientId, isRead])
+  @@map("comment_notifications")
+}
+
+
+// Enums for comment system
+enum comment_type {
+  comment           // Regular comment
+  status_change     // Comment when status changes
+  assignment_change // Comment when assignment changes
+  resolution        // Resolution comment
+  closure           // Closure comment
+  escalation        // Escalation comment
+  approval          // Approval/rejection comment
+}
+
+enum notification_type {
+  mention           // User was mentioned in comment
+  reply             // Reply to user's comment
+  new_comment       // New comment on user's ticket
+  status_update     // Status change notification
+  assignment        // Assignment notification
+}
+
+// BSG Template System Models
+
+model BSGTemplateCategory {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique @db.VarChar(100)  // 'OLIBS', 'KLAIM', 'XCARD'
+  displayName String    @map("display_name") @db.VarChar(150)
+  description String?
+  icon        String?   @db.VarChar(50)  // for UI icons
+  sortOrder   Int       @default(0) @map("sort_order")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  templates   BSGTemplate[]
+
+  @@map("bsg_template_categories")
+}
+
+model BSGTemplate {
+  id             Int      @id @default(autoincrement())
+  categoryId     Int      @map("category_id")
+  name           String   @db.VarChar(200)  // 'Perubahan Menu & Limit Transaksi'
+  displayName    String   @map("display_name") @db.VarChar(250)
+  description    String?
+  templateNumber Int?     @map("template_number")  // The "No." from CSV
+  isActive       Boolean  @default(true) @map("is_active")
+  popularityScore Int     @default(0) @map("popularity_score")
+  usageCount     Int      @default(0) @map("usage_count")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  category       BSGTemplateCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  fields         BSGTemplateField[]
+  usageLogs      BSGTemplateUsageLog[]
+
+  @@unique([categoryId, templateNumber])
+  @@index([categoryId, isActive])
+  @@map("bsg_templates")
+}
+
+model BSGFieldType {
+  id            Int      @id @default(autoincrement())
+  name          String   @unique @db.VarChar(50)  // 'text', 'date', 'dropdown'
+  displayName   String   @map("display_name") @db.VarChar(100)
+  htmlInputType String?  @map("html_input_type") @db.VarChar(30)
+  validationPattern String? @map("validation_pattern") @db.VarChar(500)
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // Relations
+  templateFields BSGTemplateField[]
+
+  @@map("bsg_field_types")
+}
+
+model BSGTemplateField {
+  id               Int      @id @default(autoincrement())
+  templateId       Int      @map("template_id")
+  fieldTypeId      Int      @map("field_type_id")
+  fieldName        String   @map("field_name") @db.VarChar(100)
+  fieldLabel       String   @map("field_label") @db.VarChar(150)
+  fieldDescription String?  @map("field_description")
+  isRequired       Boolean  @default(false) @map("is_required")
+  maxLength        Int?     @map("max_length")
+  sortOrder        Int      @default(0) @map("sort_order")
+  placeholderText  String?  @map("placeholder_text") @db.VarChar(200)
+  helpText         String?  @map("help_text") @db.VarChar(500)
+  validationRules  Json?    @map("validation_rules")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // Relations
+  template         BSGTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  fieldType        BSGFieldType @relation(fields: [fieldTypeId], references: [id])
+  options          BSGFieldOption[]
+  ticketValues     BSGTicketFieldValue[]
+
+  @@unique([templateId, fieldName])
+  @@index([templateId, sortOrder])
+  @@map("bsg_template_fields")
+}
+
+model BSGMasterData {
+  id          Int      @id @default(autoincrement())
+  dataType    String   @map("data_type") @db.VarChar(50)  // 'branch', 'olibs_menu'
+  code        String?  @db.VarChar(50)
+  name        String   @db.VarChar(200)
+  displayName String?  @map("display_name") @db.VarChar(250)
+  parentId    Int?     @map("parent_id")
+  metadata    Json?    // Additional properties
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  parent      BSGMasterData?  @relation("BSGMasterDataHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children    BSGMasterData[] @relation("BSGMasterDataHierarchy")
+  ticketFieldValues BSGTicketFieldValue[]
+
+  @@index([dataType, isActive])
+  @@index([parentId])
+  @@map("bsg_master_data")
+}
+
+model BSGFieldOption {
+  id            Int      @id @default(autoincrement())
+  fieldId       Int      @map("field_id")
+  masterDataType String? @map("master_data_type") @db.VarChar(50)
+  optionValue   String?  @map("option_value") @db.VarChar(200)
+  optionLabel   String?  @map("option_label") @db.VarChar(250)
+  isDefault     Boolean  @default(false) @map("is_default")
+  sortOrder     Int      @default(0) @map("sort_order")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // Relations
+  field         BSGTemplateField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@map("bsg_field_options")
+}
+
+model BSGTicketFieldValue {
+  id           Int      @id @default(autoincrement())
+  ticketId     Int      @map("ticket_id")
+  fieldId      Int      @map("field_id")
+  fieldValue   String?  @map("field_value")
+  masterDataId Int?     @map("master_data_id")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  ticket       Ticket            @relation("TicketBSGFieldValues", fields: [ticketId], references: [id], onDelete: Cascade)
+  field        BSGTemplateField  @relation(fields: [fieldId], references: [id])
+  masterData   BSGMasterData?    @relation(fields: [masterDataId], references: [id])
+
+  @@unique([ticketId, fieldId])
+  @@index([ticketId])
+  @@map("bsg_ticket_field_values")
+}
+
+model BSGTemplateUsageLog {
+  id              Int      @id @default(autoincrement())
+  templateId      Int      @map("template_id")
+  userId          Int      @map("user_id")
+  departmentId    Int?     @map("department_id")
+  ticketId        Int?     @map("ticket_id")
+  actionType      String   @map("action_type") @db.VarChar(20)  // 'viewed', 'started', 'completed'
+  sessionId       String?  @map("session_id") @db.VarChar(100)
+  ipAddress       String?  @map("ip_address") @db.Inet
+  userAgent       String?  @map("user_agent")
+  completionTimeMs Int?    @map("completion_time_ms")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // Relations
+  template        BSGTemplate @relation(fields: [templateId], references: [id])
+  user            User        @relation("BSGTemplateUsageUser", fields: [userId], references: [id])
+  department      Department? @relation("BSGTemplateUsageDept", fields: [departmentId], references: [id])
+  ticket          Ticket?     @relation("BSGTemplateUsageTicket", fields: [ticketId], references: [id])
+
+  @@index([templateId, actionType])
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@map("bsg_template_usage_logs")
 }

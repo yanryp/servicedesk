@@ -424,6 +424,75 @@ router.get('/', protect, asyncHandler(async (req: AuthenticatedRequest, res) => 
     });
 }));
 
+// @route   GET /api/tickets/pending-approvals
+// @desc    Get tickets pending approval for manager 
+// @access  Private (Manager only)
+router.get('/pending-approvals', protect, asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const managerId = req.user!.id;
+
+  // Check if user is a manager
+  if (req.user!.role !== 'manager') {
+    return res.status(403).json({ message: 'Access denied. Manager role required.' });
+  }
+
+  const client = await pool.connect();
+  try {
+    // Get tickets where the creator's manager is the current user and status is pending approval
+    const query = `
+      SELECT 
+        t.*,
+        c.name as category_name,
+        sc.name as subcategory_name,
+        i.name as item_name,
+        u.username as creator_username,
+        u.email as creator_email,
+        d.name as creator_department
+      FROM tickets t
+      LEFT JOIN items i ON t.item_id = i.id
+      LEFT JOIN sub_categories sc ON i.sub_category_id = sc.id  
+      LEFT JOIN categories c ON sc.category_id = c.id
+      JOIN users u ON t.created_by_user_id = u.id
+      LEFT JOIN departments d ON u.department_id = d.id
+      WHERE u.manager_id = $1 
+        AND t.status = 'pending-approval'
+      ORDER BY t.created_at DESC
+    `;
+
+    const result = await client.query(query, [managerId]);
+    const rawTickets = result.rows;
+
+    // Transform flat fields to nested objects to match frontend expectations
+    const tickets = rawTickets.map(ticket => ({
+      ...ticket,
+      createdBy: {
+        username: ticket.creator_username,
+        email: ticket.creator_email
+      },
+      item: {
+        name: ticket.item_name
+      },
+      // Clean up flat fields to avoid confusion
+      creator_username: undefined,
+      creator_email: undefined,
+      creator_department: undefined,
+      item_name: undefined,
+      category_name: undefined,
+      subcategory_name: undefined
+    }));
+
+    res.status(200).json(tickets);
+
+  } catch (error) {
+    console.error('Error fetching pending approvals:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error while fetching pending approvals' 
+    });
+  } finally {
+    client.release();
+  }
+}));
+
 // @route   GET /api/tickets/:ticketId
 // @desc    Get a single ticket by ID
 // @access  Private
@@ -1198,5 +1267,147 @@ router.put(
     }
   })
 );
+
+// @route   POST /api/tickets/:ticketId/approve
+// @desc    Approve a ticket (Manager only)  
+// @access  Private (Manager only)
+router.post('/:ticketId/approve', protect, asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const ticketId = parseInt(req.params.ticketId);
+  const { comments } = req.body;
+  const managerId = req.user!.id;
+
+  // Check if user is a manager
+  if (req.user!.role !== 'manager') {
+    return res.status(403).json({ message: 'Access denied. Manager role required.' });
+  }
+
+  const client = await pool.connect();
+  try {
+    // Get the ticket and verify manager authority
+    const ticketResult = await client.query(`
+      SELECT t.*, u.manager_id, u.username as creator_username 
+      FROM tickets t 
+      JOIN users u ON t.created_by_user_id = u.id 
+      WHERE t.id = $1
+    `, [ticketId]);
+
+    const ticket = ticketResult.rows[0];
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found.' });
+    }
+
+    if (ticket.manager_id !== managerId) {
+      return res.status(403).json({ message: 'You are not authorized to approve this ticket.' });
+    }
+
+    if (ticket.status !== 'pending-approval') {
+      return res.status(400).json({ message: 'Ticket is not pending approval.' });
+    }
+
+    // Approve the ticket
+    const slaDueDate = getSlaDueDate(ticket.priority);
+    const updateResult = await client.query(
+      `UPDATE tickets SET status = 'approved', manager_comments = $1, sla_due_date = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING *`,
+      [comments || null, slaDueDate, ticketId]
+    );
+
+    const updatedTicket = updateResult.rows[0];
+
+    // Send notification to requester
+    try {
+      const creatorResult = await client.query('SELECT email FROM users WHERE id = $1', [ticket.created_by_user_id]);
+      const creator = creatorResult.rows[0];
+      if (creator && creator.email) {
+        const subject = `Ticket Approved: #${ticket.id} - ${ticket.title}`;
+        const text = `Your ticket "${ticket.title}" (#${ticket.id}) has been approved by your manager. It will now proceed to the next stage.`;
+        const html = `<p>Your ticket "<b>${ticket.title}</b>" (#${ticket.id}) has been approved by your manager. It will now proceed to the next stage.</p>`;
+        await sendEmail({ to: creator.email, subject, text, html });
+      }
+    } catch (emailError) {
+      console.error('Error sending approval notification:', emailError);
+    }
+
+    res.status(200).json(updatedTicket);
+
+  } catch (error) {
+    console.error('Error approving ticket:', error);
+    res.status(500).json({ message: 'Server error during ticket approval.' });
+  } finally {
+    client.release();
+  }
+}));
+
+// @route   POST /api/tickets/:ticketId/reject  
+// @desc    Reject a ticket (Manager only)
+// @access  Private (Manager only)
+router.post('/:ticketId/reject', protect, asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const ticketId = parseInt(req.params.ticketId);
+  const { comments } = req.body;
+  const managerId = req.user!.id;
+
+  // Check if user is a manager
+  if (req.user!.role !== 'manager') {
+    return res.status(403).json({ message: 'Access denied. Manager role required.' });
+  }
+
+  // Comments are required for rejection
+  if (!comments || comments.trim() === '') {
+    return res.status(400).json({ message: 'Comments are required when rejecting a ticket.' });
+  }
+
+  const client = await pool.connect();
+  try {
+    // Get the ticket and verify manager authority
+    const ticketResult = await client.query(`
+      SELECT t.*, u.manager_id, u.username as creator_username 
+      FROM tickets t 
+      JOIN users u ON t.created_by_user_id = u.id 
+      WHERE t.id = $1
+    `, [ticketId]);
+
+    const ticket = ticketResult.rows[0];
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found.' });
+    }
+
+    if (ticket.manager_id !== managerId) {
+      return res.status(403).json({ message: 'You are not authorized to reject this ticket.' });
+    }
+
+    if (ticket.status !== 'pending-approval') {
+      return res.status(400).json({ message: 'Ticket is not pending approval.' });
+    }
+
+    // Reject the ticket
+    const updateResult = await client.query(
+      `UPDATE tickets SET status = 'rejected', manager_comments = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`,
+      [comments, ticketId]
+    );
+
+    const updatedTicket = updateResult.rows[0];
+
+    // Send notification to requester
+    try {
+      const creatorResult = await client.query('SELECT email FROM users WHERE id = $1', [ticket.created_by_user_id]);
+      const creator = creatorResult.rows[0];
+      if (creator && creator.email) {
+        const subject = `Ticket Rejected: #${ticket.id} - ${ticket.title}`;
+        const text = `Your ticket "${ticket.title}" (#${ticket.id}) has been rejected by your manager.\nReason: ${comments}`;
+        const html = `<p>Your ticket "<b>${ticket.title}</b>" (#${ticket.id}) has been rejected by your manager.</p><p><b>Reason:</b> ${comments}</p>`;
+        await sendEmail({ to: creator.email, subject, text, html });
+      }
+    } catch (emailError) {
+      console.error('Error sending rejection notification:', emailError);
+    }
+
+    res.status(200).json(updatedTicket);
+
+  } catch (error) {
+    console.error('Error rejecting ticket:', error);
+    res.status(500).json({ message: 'Server error during ticket rejection.' });
+  } finally {
+    client.release();
+  }
+}));
 
 export default router;
