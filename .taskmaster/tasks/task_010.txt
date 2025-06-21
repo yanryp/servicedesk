@@ -1,0 +1,11 @@
+# Task ID: 10
+# Title: Develop Email Notification System
+# Status: pending
+# Dependencies: 3, 8, 9
+# Priority: medium
+# Description: Integrate an email service to send notifications for ticket updates, mentions, and SLA alerts.
+# Details:
+
+
+# Test Strategy:
+

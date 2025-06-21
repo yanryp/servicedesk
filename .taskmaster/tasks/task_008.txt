@@ -1,0 +1,11 @@
+# Task ID: 8
+# Title: Develop Ticket Commenting and Conversation System
+# Status: pending
+# Dependencies: 3
+# Priority: medium
+# Description: Implement functionality for users to add comments, reply in threads, and use mentions on tickets.
+# Details:
+
+
+# Test Strategy:
+

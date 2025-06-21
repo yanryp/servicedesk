@@ -1,0 +1,11 @@
+# Task ID: 6
+# Title: Develop Master Data Management Module
+# Status: pending
+# Dependencies: 3
+# Priority: high
+# Description: Create API endpoints and UI for managing master data (branches, bank codes, etc.) to be used in custom field dropdowns.
+# Details:
+
+
+# Test Strategy:
+

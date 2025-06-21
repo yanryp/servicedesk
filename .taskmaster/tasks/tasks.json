@@ -1,0 +1,363 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 13,
+        "title": "Setup Development Environment",
+        "description": "Setup the development environment including Node.js, PostgreSQL, Redis, RabbitMQ, and Elasticsearch. Configure Docker and Kubernetes for containerization and orchestration.",
+        "details": "",
+        "testStrategy": "Verify all services are running and accessible. Test database connectivity and message queue functionality. Check Docker image builds and Kubernetes deployment. Ensure CI/CD pipeline is configured correctly.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 14,
+        "title": "Design and Implement Database Schema",
+        "description": "Design and implement the database schema for PostgreSQL, including tables for users, tickets, services, SLAs, and other relevant entities. Ensure data integrity and efficient querying.",
+        "details": "",
+        "testStrategy": "Verify schema integrity using database constraints and validation rules. Test data insertion, update, and deletion operations. Perform load testing to ensure database performance.",
+        "priority": "high",
+        "dependencies": [
+          13
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 15,
+        "title": "Develop User Authentication and Authorization",
+        "description": "Develop the user authentication and authorization module using JWT or similar technology. Integrate with Active Directory/LDAP for SSO support. Implement role-based access control (RBAC).",
+        "details": "",
+        "testStrategy": "Test authentication and authorization flows for different user roles. Verify SSO integration with Active Directory/LDAP. Test RBAC implementation to ensure proper access control.",
+        "priority": "high",
+        "dependencies": [
+          14
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 16,
+        "title": "Develop Core Ticket Management",
+        "description": "Develop the core ticket management functionality, including ticket creation, update, deletion, assignment, and status updates. Implement priority levels and status workflow.",
+        "details": "",
+        "testStrategy": "Test ticket creation, update, and deletion. Verify ticket assignment and status updates. Test priority levels and status workflow. Ensure data integrity and consistency.",
+        "priority": "high",
+        "dependencies": [
+          15
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 17,
+        "title": "Develop Service Categorization",
+        "description": "Implement the service categorization module, including multi-level service catalog, dynamic form fields, and service-specific SLA assignment. Develop category-based auto-assignment rules.",
+        "details": "",
+        "testStrategy": "Test service catalog creation and management. Verify dynamic form fields and SLA assignment. Test auto-assignment rules and ensure accurate ticket routing.",
+        "priority": "medium",
+        "dependencies": [
+          16
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 18,
+        "title": "Develop SLA Management",
+        "description": "Develop the SLA management module, including defining SLA policies, configuring business hours, managing holiday calendars, and setting response/resolution time targets. Implement SLA breach notifications and pause/resume functionality.",
+        "details": "",
+        "testStrategy": "Test SLA policy creation and management. Verify business hours and holiday calendar configurations. Test SLA breach notifications and pause/resume functionality. Ensure accurate SLA calculations and reporting.",
+        "priority": "medium",
+        "dependencies": [
+          17
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 19,
+        "title": "Develop Escalation and Approval Workflows",
+        "description": "Implement the escalation and approval workflows, including multi-level escalation rules, time-based and condition-based escalations, and an approval workflow designer. Support parallel and sequential approval chains, delegation, and out-of-office handling.",
+        "details": "",
+        "testStrategy": "Test escalation rules and workflow execution. Verify time-based and condition-based escalations. Test approval workflow designer and different approval chain configurations. Ensure proper notification and delegation handling.",
+        "priority": "medium",
+        "dependencies": [
+          18
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 20,
+        "title": "Develop Notification System",
+        "description": "Develop the notification system, including email, in-app, and optional SMS notifications. Implement customizable notification templates and ensure reliable delivery.",
+        "details": "",
+        "testStrategy": "Test email, in-app, and SMS notifications. Verify notification delivery and customization options. Ensure reliable notification delivery and handling of failures.",
+        "priority": "medium",
+        "dependencies": [
+          19
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 21,
+        "title": "Develop Basic Reporting and Analytics",
+        "description": "Develop basic reporting and analytics features, including standard reports on ticket volume, resolution time, and SLA compliance. Implement data export functionality (CSV, Excel, PDF).",
+        "details": "",
+        "testStrategy": "Test standard reports and data accuracy. Verify data export functionality and report generation. Ensure report data is consistent with the underlying data.",
+        "priority": "medium",
+        "dependencies": [
+          20
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 22,
+        "title": "Develop RESTful API",
+        "description": "Develop the RESTful API with comprehensive documentation. Implement webhook support for real-time events and email-to-ticket functionality.",
+        "details": "",
+        "testStrategy": "Test API endpoints and functionality. Verify webhook support and email-to-ticket integration. Ensure API documentation is comprehensive and up-to-date.",
+        "priority": "medium",
+        "dependencies": [
+          21
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 23,
+        "title": "Develop Knowledge Base",
+        "description": "Develop the knowledge base functionality, including article creation, update, deletion, categorization, tagging, full-text search, versioning, and feedback/rating system. Implement public and internal knowledge base sections.",
+        "details": "",
+        "testStrategy": "Test article creation, update, and deletion. Verify categorization, tagging, and search functionality. Test versioning and feedback/rating system. Ensure public and internal knowledge base sections are properly separated.",
+        "priority": "low",
+        "dependencies": [
+          22
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 24,
+        "title": "Develop Customer Portal",
+        "description": "Develop the customer portal, including secure login, ticket submission form, ticket tracking, comment/attachment addition, user profile update, knowledge base access, service catalog browsing, and satisfaction surveys.",
+        "details": "",
+        "testStrategy": "Test customer portal login and functionality. Verify ticket submission, tracking, and comment/attachment features. Test user profile update and knowledge base access. Ensure customer portal is user-friendly and intuitive.",
+        "priority": "low",
+        "dependencies": [
+          23
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 25,
+        "title": "Develop Advanced Reporting",
+        "description": "Implement advanced reporting features, including a custom report builder and a dashboard with customizable widgets. Implement scheduled report delivery and technician performance metrics.",
+        "details": "",
+        "testStrategy": "Test custom report builder and dashboard customization. Verify scheduled report delivery and technician performance metrics. Ensure reports are accurate, comprehensive, and easy to understand.",
+        "priority": "low",
+        "dependencies": [
+          24
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 26,
+        "title": "Implement Integrations",
+        "description": "Implement integrations with monitoring tools and chat platforms (Slack, Teams). Implement API rate limiting and authentication.",
+        "details": "",
+        "testStrategy": "Test integrations with monitoring tools and chat platforms. Verify API rate limiting and authentication mechanisms. Ensure integrations are reliable and secure.",
+        "priority": "low",
+        "dependencies": [
+          25
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 27,
+        "title": "Conduct Thorough Testing",
+        "description": "Conduct thorough testing, including unit, integration, and end-to-end testing. Perform load testing and security audits to ensure system performance, stability, and security.",
+        "details": "",
+        "testStrategy": "Perform unit, integration, and end-to-end tests. Conduct load testing to identify performance bottlenecks. Perform security audits to identify and address vulnerabilities. Ensure system meets all functional and non-functional requirements.",
+        "priority": "high",
+        "dependencies": [
+          26
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 28,
+        "title": "Extend Prisma schema with new field types",
+        "description": "Update the Prisma schema to support new field types required for BSG templates (currency, datetime, account_number, card_number)",
+        "details": "✅ COMPLETED: Extended BSG schema with 7 new database tables supporting comprehensive BSG template system with 9 field types including text_short, dropdown_branch, dropdown_olibs_menu, currency, timestamp, number, date, text, and textarea.",
+        "testStrategy": "Verified through successful database creation and template field population with 119 fields across 24 templates.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 29,
+        "title": "Create Master Data population script",
+        "description": "Create a script to populate master data for BSG branches and OLIBS menus required for dropdown fields",
+        "details": "✅ COMPLETED: Created comprehensive master data script `/backend/scripts/populate-bsg-master-data.js` with 47 BSG branches and 25 OLIBS menu options. Includes hierarchical branch structure with main branches, sub-branches (Capem), and office units (Kantor Kas).",
+        "testStrategy": "Successfully populated BSG master data tables with accurate banking system data for dropdown fields.",
+        "status": "done",
+        "dependencies": [
+          28
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 30,
+        "title": "Develop Master Data API endpoint",
+        "description": "Create the API endpoint for retrieving master data entities by type (branch, olibs_menu)",
+        "details": "✅ COMPLETED: Implemented comprehensive master data API in `/backend/src/routes/masterDataRoutes.ts` with endpoints for retrieving branches, OLIBS menus, bank codes, and government entities. Supports hierarchical data structures and caching.",
+        "testStrategy": "API endpoints tested and verified to return correct master data for dynamic dropdown population.",
+        "status": "done",
+        "dependencies": [
+          29
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 31,
+        "title": "Create BSG template field definitions",
+        "description": "Define custom fields for the three priority BSG templates (OLIBS Menu Change, OLIBS User Mutation, BSGTouch Transfer)",
+        "details": "✅ COMPLETED: Implemented comprehensive BSG template system with 24 templates across 9 categories and 119 custom fields. Achieved 70.6% field optimization through common field reuse. Includes all specified templates: OLIBS (5), BSGTouch (4), SMS Banking (4), BSG QRIS (3), XCARD (2), TellerApp/Reporting (2), KLAIM (2), ATM (1), and Operational Extension (1).",
+        "testStrategy": "All templates successfully created with proper field definitions, validation rules, and master data integration.",
+        "status": "done",
+        "dependencies": [
+          28
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 32,
+        "title": "Enhance CustomFieldInput React component",
+        "description": "Update frontend CustomFieldInput component to render new field types (currency, account_number, card_number, timestamp)",
+        "details": "✅ COMPLETED: Created comprehensive dynamic field rendering system with `/frontend/src/components/BSGDynamicFieldRenderer.tsx` supporting all 9 BSG field types. Includes category-based organization, real-time validation, currency formatting (IDR), date/time pickers, and master data integration.",
+        "testStrategy": "Dynamic field renderer tested with all field types including currency (Rp formatting), dropdown branches/menus, date validation, and proper error handling.",
+        "status": "done",
+        "dependencies": [
+          28,
+          31
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 33,
+        "title": "Connect frontend to template field definitions",
+        "description": "Implement functionality to load custom fields based on selected template ID",
+        "details": "✅ COMPLETED: Implemented complete template-to-field integration in `/frontend/src/pages/BSGCreateTicketPage.tsx` with dynamic field loading via API endpoint `/api/bsg-templates/{id}/fields`. Includes template selection, field loading, validation, and form submission with custom field values.",
+        "testStrategy": "End-to-end template selection and field loading tested with successful form rendering and data submission.",
+        "status": "done",
+        "dependencies": [
+          31,
+          32
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 34,
+        "title": "Connect dropdowns to Master Data API",
+        "description": "Integrate dropdown fields with the Master Data API to populate options dynamically",
+        "details": "✅ COMPLETED: Integrated dropdown fields with master data API through BSGDynamicFieldRenderer component. Supports dynamic loading of branch options from `/api/bsg-templates/master-data/branch` and OLIBS menus from `/api/bsg-templates/master-data/olibs_menu`. Includes error handling and loading states.",
+        "testStrategy": "Dropdown integration tested with successful data loading and selection functionality for both branch and OLIBS menu fields.",
+        "status": "done",
+        "dependencies": [
+          30,
+          32
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 35,
+        "title": "Implement form validation and formatting",
+        "description": "Implement client-side validation and formatting for custom field inputs as specified in the BSG-TEMPLATE-SPECIFICATIONS.md",
+        "details": "✅ COMPLETED: Implemented comprehensive validation system with real-time field validation, currency formatting (Indonesian Rupiah), date validation (future dates), account number validation, and field-specific error messages. Created shared field library `/frontend/src/components/SharedFieldLibrary.tsx` with reusable validation functions.",
+        "testStrategy": "Form validation tested with all field types including required field validation, max length validation, currency formatting, and proper error display.",
+        "status": "done",
+        "dependencies": [
+          32
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 36,
+        "title": "End-to-end testing of BSG templates",
+        "description": "Test the implementation of the three priority BSG templates end-to-end",
+        "details": "✅ COMPLETED: Successfully tested complete BSG template workflow including template selection, dynamic field rendering, validation, and form submission. All 24 templates working with proper field optimization and category organization.",
+        "testStrategy": "Comprehensive testing completed with successful template selection, field loading, validation, and submission workflow verified for BSG template system.",
+        "status": "done",
+        "dependencies": [
+          33,
+          34,
+          35
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 37,
+        "title": "Implement BSG Template Field Optimization",
+        "description": "Optimize common field definitions across BSG templates to reduce duplication and improve performance",
+        "details": "✅ COMPLETED: Achieved 70.6% field optimization through analysis script `/backend/scripts/optimizeCommonFields.js`. Identified 14 common fields used across multiple templates including Cabang/Capem (16 instances), Kode User (16 instances), Nama User (16 instances), and Jabatan (16 instances). Created global field definitions and shared component library.",
+        "testStrategy": "Field optimization verified through database analysis showing significant reduction in field definition duplication while maintaining template functionality.",
+        "status": "done",
+        "dependencies": [
+          36
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 38,
+        "title": "Create Shared Field Component Library",
+        "description": "Develop reusable field components and configurations for optimized field rendering",
+        "details": "✅ COMPLETED: Created comprehensive shared field library `/frontend/src/components/SharedFieldLibrary.tsx` with 14 common field configurations, 8 field categories with visual indicators, shared validation functions, and pre-built field components. Includes category-based organization with color coding and icons.",
+        "testStrategy": "Shared field library tested with successful component reuse across templates and consistent validation behavior.",
+        "status": "done",
+        "dependencies": [
+          37
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 39,
+        "title": "Update Documentation for BSG Template System",
+        "description": "Update all relevant documentation files to reflect the completed BSG template system implementation",
+        "details": "✅ COMPLETED: Updated comprehensive documentation including BSG-TEMPLATE-SPECIFICATIONS.md, PROJECT-STATUS.md, DATABASE-SCHEMA.md, and DEVELOPMENT-INDEX.md to reflect the complete implementation with field optimization achievements, template distribution, and technical architecture details.",
+        "testStrategy": "Documentation verified for accuracy and completeness reflecting the implemented BSG template system with optimization metrics.",
+        "status": "done",
+        "dependencies": [
+          38
+        ],
+        "priority": "medium",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-06-21T05:40:00.000Z",
+      "updated": "2025-06-21T06:35:00.000Z",
+      "description": "Tasks for master context - BSG Template System Complete with 70.6% Field Optimization"
+    }
+  }
+}

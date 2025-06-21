@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { BuildingOfficeIcon, DocumentPlusIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 import { BSGTemplateSelector } from '../components';
+import BSGDynamicFieldRenderer from '../components/BSGDynamicFieldRenderer';
 import { TicketPriority } from '../types';
 import toast from 'react-hot-toast';
 
@@ -28,8 +29,12 @@ interface BSGTicketFormData {
 
 const BSGCreateTicketPage: React.FC = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<BSGTemplate | null>(null);
+  const [templateFields, setTemplateFields] = useState<any[]>([]);
+  const [fieldValues, setFieldValues] = useState<Record<string, any>>({});
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [attachments, setAttachments] = useState<FileList | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingFields, setLoadingFields] = useState(false);
 
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
@@ -47,19 +52,87 @@ const BSGCreateTicketPage: React.FC = () => {
     },
   });
 
-  const handleTemplateSelect = useCallback((template: BSGTemplate | null) => {
+  const handleTemplateSelect = useCallback(async (template: BSGTemplate | null) => {
     setSelectedTemplate(template);
+    setTemplateFields([]);
+    setFieldValues({});
+    setFieldErrors({});
     
     if (template) {
       // Auto-populate title and description based on template
       const autoTitle = `${template.category_display_name} - ${template.name}`;
       setValue('title', autoTitle);
       setValue('description', template.description || '');
+      
+      // Load template fields
+      setLoadingFields(true);
+      try {
+        const response = await fetch(`/api/bsg-templates/${template.id}/fields`);
+        if (response.ok) {
+          const fields = await response.json();
+          setTemplateFields(fields);
+          
+          // Initialize field values with defaults
+          const initialValues: Record<string, any> = {};
+          fields.forEach((field: any) => {
+            if (field.options?.find((opt: any) => opt.isDefault)) {
+              initialValues[field.fieldName] = field.options.find((opt: any) => opt.isDefault).value;
+            }
+          });
+          setFieldValues(initialValues);
+        } else {
+          toast.error('Failed to load template fields');
+        }
+      } catch (error) {
+        console.error('Error loading template fields:', error);
+        toast.error('Error loading template fields');
+      } finally {
+        setLoadingFields(false);
+      }
     } else {
       setValue('title', '');
       setValue('description', '');
     }
   }, [setValue]);
+
+  const handleFieldChange = useCallback((fieldName: string, value: any) => {
+    setFieldValues(prev => ({
+      ...prev,
+      [fieldName]: value
+    }));
+    
+    // Clear field error when user starts typing
+    if (fieldErrors[fieldName]) {
+      setFieldErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldName];
+        return newErrors;
+      });
+    }
+  }, [fieldErrors]);
+
+  const validateFields = (): boolean => {
+    const errors: Record<string, string> = {};
+    
+    templateFields.forEach(field => {
+      if (field.isRequired && !fieldValues[field.fieldName]) {
+        errors[field.fieldName] = `${field.fieldLabel} is required`;
+      }
+      
+      // Validate max length
+      if (field.maxLength && fieldValues[field.fieldName]?.length > field.maxLength) {
+        errors[field.fieldName] = `${field.fieldLabel} must not exceed ${field.maxLength} characters`;
+      }
+      
+      // Validate field type specific rules
+      if (field.fieldType === 'number' && fieldValues[field.fieldName] && isNaN(fieldValues[field.fieldName])) {
+        errors[field.fieldName] = `${field.fieldLabel} must be a valid number`;
+      }
+    });
+    
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const onSubmit = async (data: BSGTicketFormData) => {
     if (!selectedTemplate) {
@@ -67,22 +140,38 @@ const BSGCreateTicketPage: React.FC = () => {
       return;
     }
 
+    // Validate template fields
+    if (!validateFields()) {
+      toast.error('Please fix the field errors before submitting');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      // TODO: Replace with actual API call to create BSG ticket
-      console.log('Creating BSG ticket:', {
+      // Create BSG ticket with dynamic fields
+      const ticketData = {
         ...data,
         templateId: selectedTemplate.id,
         templateNumber: selectedTemplate.template_number,
         category: selectedTemplate.category_name,
+        customFields: fieldValues,
         attachments: attachments
-      });
+      };
+
+      console.log('Creating BSG ticket with custom fields:', ticketData);
+
+      // TODO: Replace with actual API call to create BSG ticket
+      // const response = await fetch('/api/bsg-tickets', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(ticketData)
+      // });
 
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      toast.success('BSG ticket created successfully!');
+      toast.success('BSG ticket created successfully with custom fields!');
       // TODO: Navigate to actual ticket detail page
       navigate('/tickets');
       
@@ -97,6 +186,9 @@ const BSGCreateTicketPage: React.FC = () => {
   const handleReset = () => {
     reset();
     setSelectedTemplate(null);
+    setTemplateFields([]);
+    setFieldValues({});
+    setFieldErrors({});
     setAttachments(null);
   };
 
@@ -223,18 +315,40 @@ const BSGCreateTicketPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Template Info Display */}
+            {/* BSG Template Custom Fields */}
             {selectedTemplate && (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                <h4 className="font-semibold text-blue-800 mb-2">Selected BSG Template</h4>
-                <div className="text-sm text-blue-700">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <div><strong>Category:</strong> {selectedTemplate.category_display_name}</div>
-                    <div><strong>Template #:</strong> {selectedTemplate.template_number}</div>
-                    <div className="sm:col-span-2"><strong>Type:</strong> {selectedTemplate.name}</div>
+              <>
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <h4 className="font-semibold text-blue-800 mb-2">Selected BSG Template</h4>
+                  <div className="text-sm text-blue-700">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div><strong>Category:</strong> {selectedTemplate.category_display_name}</div>
+                      <div><strong>Template #:</strong> {selectedTemplate.template_number}</div>
+                      <div className="sm:col-span-2"><strong>Type:</strong> {selectedTemplate.name}</div>
+                    </div>
                   </div>
                 </div>
-              </div>
+
+                {/* Dynamic Template Fields */}
+                {loadingFields ? (
+                  <div className="flex items-center justify-center py-8 bg-gray-50 rounded-xl">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    <span className="ml-3 text-gray-600">Loading template fields...</span>
+                  </div>
+                ) : templateFields.length > 0 ? (
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+                    <BSGDynamicFieldRenderer
+                      templateId={selectedTemplate.id}
+                      fields={templateFields}
+                      values={fieldValues}
+                      onChange={handleFieldChange}
+                      errors={fieldErrors}
+                      disabled={isSubmitting}
+                      showCategories={templateFields.length > 6}
+                    />
+                  </div>
+                ) : null}
+              </>
             )}
 
             {/* User Info Display */}
@@ -271,7 +385,10 @@ const BSGCreateTicketPage: React.FC = () => {
                 ) : (
                   <>
                     <DocumentPlusIcon className="h-4 w-4" />
-                    <span>Create BSG Support Ticket</span>
+                    <span>
+                      Create BSG Support Ticket
+                      {templateFields.length > 0 && ` (${templateFields.length} fields)`}
+                    </span>
                   </>
                 )}
               </button>

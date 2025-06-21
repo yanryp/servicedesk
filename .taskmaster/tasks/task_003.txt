@@ -1,0 +1,11 @@
+# Task ID: 3
+# Title: Develop Core Ticket Management System
+# Status: pending
+# Dependencies: 2
+# Priority: high
+# Description: Implement CRUD operations for tickets, including creation, viewing, updating, and status changes.
+# Details:
+
+
+# Test Strategy:
+

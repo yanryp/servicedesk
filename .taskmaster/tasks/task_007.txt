@@ -1,0 +1,11 @@
+# Task ID: 7
+# Title: Implement Ticket Approval Workflow
+# Status: pending
+# Dependencies: 3
+# Priority: medium
+# Description: Develop the workflow for managers to approve, reject, or request changes for tickets submitted by their team members.
+# Details:
+
+
+# Test Strategy:
+

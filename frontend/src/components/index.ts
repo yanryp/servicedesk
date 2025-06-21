@@ -11,6 +11,8 @@ export { default as BSGDynamicField } from './BSGDynamicField';
 export { default as BSGTemplateDiscovery } from './BSGTemplateDiscovery';
 export { default as BSGTicketCategorization } from './BSGTicketCategorization';
 export { default as BSGTemplateSelector } from './BSGTemplateSelector';
+export { default as BSGDynamicFieldRenderer } from './BSGDynamicFieldRenderer';
+export { default as SharedFieldLibrary } from './SharedFieldLibrary';
 export { default as TicketComments } from './TicketComments';
 
 export * from './CustomFields';
