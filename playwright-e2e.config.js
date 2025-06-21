@@ -1,14 +1,13 @@
-// Simple Playwright configuration
+// E2E Test configuration for BSG workflow
 module.exports = {
   testDir: '.', 
   testMatch: ['bsg-workflow.spec.js'],
-  testIgnore: ['**/backend/**', '**/frontend/**', '**/node_modules/**'],
   timeout: 60000,
   use: {
     baseURL: 'http://localhost:3005',
-    headless: true,
+    headless: false,
     viewport: { width: 1280, height: 720 },
-    actionTimeout: 0,
+    actionTimeout: 10000,
     ignoreHTTPSErrors: true,
   },
   projects: [
@@ -17,5 +16,4 @@ module.exports = {
       use: { browserName: 'chromium' },
     },
   ],
-  // Don't use global setup/teardown for simple test
 };
