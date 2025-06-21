@@ -21,7 +21,15 @@ const protect = (req, res, next) => {
             const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET);
             console.log('Decoded Token:', decoded); // Add logging
             // Attach user to the request object
-            req.user = { id: decoded.id, role: decoded.role, email: decoded.email, departmentId: decoded.departmentId };
+            req.user = {
+                id: decoded.id,
+                role: decoded.role,
+                email: decoded.email,
+                departmentId: decoded.departmentId,
+                username: decoded.username,
+                isKasdaUser: decoded.isKasdaUser,
+                isBusinessReviewer: decoded.isBusinessReviewer
+            };
             next();
         }
         catch (error) {

@@ -41,11 +41,24 @@ apiClient.interceptors.response.use(
       
       switch (status) {
         case 401:
-          // Unauthorized - clear auth and redirect to login
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('authUser');
-          toast.error('Session expired. Please login again.');
-          window.location.href = '/login';
+          // For login endpoint, show the actual error message
+          if (error.config?.url?.includes('/auth/login')) {
+            toast.error(data?.message || 'Invalid email or password. Please check your credentials.');
+          } else {
+            // For other endpoints, treat as session expired
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('authUser');
+            toast.error('Session expired. Please login again.');
+            window.location.href = '/login';
+          }
+          break;
+        case 400:
+          // Bad request - show specific error message
+          toast.error(data?.message || 'Please check your input and try again.');
+          break;
+        case 409:
+          // Conflict - usually duplicate user during registration
+          toast.error(data?.message || 'This email or username is already in use.');
           break;
         case 403:
           toast.error('Access denied. You do not have permission for this action.');

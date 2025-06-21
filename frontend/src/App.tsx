@@ -20,6 +20,8 @@ import TicketDetailPage from './pages/TicketDetailPage';
 import EditTicketPage from './pages/EditTicketPage';
 import ReportingPage from './pages/ReportingPage';
 import ManagerDashboard from './pages/ManagerDashboard';
+import CategorizationAnalyticsPage from './pages/CategorizationAnalyticsPage';
+import UncategorizedTicketsPage from './pages/UncategorizedTicketsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -101,6 +103,15 @@ function App() {
                     <PlusCircleIcon className="w-4 h-4" />
                     <span>Create Ticket</span>
                   </Link>
+                  {(user?.role === 'technician' || user?.role === 'admin' || user?.role === 'manager') && (
+                    <Link 
+                      to="/categorization/queue"
+                      className="flex items-center space-x-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                    >
+                      <TicketIcon className="w-4 h-4" />
+                      <span>Categorization Queue</span>
+                    </Link>
+                  )}
                   {(user?.role === 'admin' || user?.role === 'manager') && (
                     <>
                       <Link 
@@ -109,6 +120,13 @@ function App() {
                       >
                         <UserIcon className="w-4 h-4" />
                         <span>Approvals</span>
+                      </Link>
+                      <Link 
+                        to="/categorization/analytics"
+                        className="flex items-center space-x-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                      >
+                        <ChartBarIcon className="w-4 h-4" />
+                        <span>Analytics</span>
                       </Link>
                       <Link 
                         to="/reporting"
@@ -184,6 +202,8 @@ function App() {
           <Route path="/tickets/:ticketId/edit" element={isAuthenticated ? <EditTicketPage /> : <Navigate to="/login" />} />
           <Route path="/manager" element={<ProtectedRoute roles={['admin', 'manager']}><ManagerDashboard /></ProtectedRoute>} />
           <Route path="/reporting" element={<ProtectedRoute roles={['admin', 'manager']}><ReportingPage /></ProtectedRoute>} />
+          <Route path="/categorization/analytics" element={<ProtectedRoute roles={['admin', 'manager']}><CategorizationAnalyticsPage /></ProtectedRoute>} />
+          <Route path="/categorization/queue" element={<ProtectedRoute roles={['admin', 'manager', 'technician']}><UncategorizedTicketsPage /></ProtectedRoute>} />
         </Routes>
       </main>
     </div>

@@ -4,6 +4,9 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useFileDownloader } from '../hooks/useFileDownloader';
+import TicketCategorization from '../components/TicketCategorization';
+import TicketComments from '../components/TicketComments';
+import { Ticket as FullTicket } from '../types';
 import { 
   TicketIcon,
   CalendarIcon,
@@ -24,30 +27,17 @@ interface Attachment {
   filename: string;
 }
 
-interface Ticket {
-  id: number;
-  title: string;
-  description: string;
-  status: string;
-  priority: string;
-  category: string | null;
-  created_by_user_id: number;
-  created_at: string;
-  updated_at: string;
-  attachments: Attachment[] | null;
-  sla_due_date: string | null;
-}
 
 const TicketDetailPage: React.FC = () => {
   const [rejectionReason, setRejectionReason] = useState('');
   const [isRejecting, setIsRejecting] = useState(false);
   const { ticketId } = useParams<{ ticketId: string }>();
-  const [ticket, setTicket] = useState<Ticket | null>(null);
+  const [ticket, setTicket] = useState<FullTicket | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { user, token } = useAuth();
   const navigate = useNavigate();
-  const { downloadFile, downloadingId, downloadError } = useFileDownloader();
+  const { downloadFile, downloadingId } = useFileDownloader();
 
   useEffect(() => {
     const fetchTicket = async () => {
@@ -160,7 +150,7 @@ const TicketDetailPage: React.FC = () => {
 
   const isManagerOfCreator = user?.role === 'manager';
   const showApprovalButtons = isManagerOfCreator && ticket.status === 'pending-approval';
-  const isOwner = user?.id === ticket.created_by_user_id;
+  const isOwner = user?.id === ticket.createdByUserId;
   const canModify = user?.role === 'admin' || user?.role === 'technician' || isOwner;
 
   const getPriorityColor = (priority: string) => {
@@ -184,8 +174,8 @@ const TicketDetailPage: React.FC = () => {
     }
   };
 
-  const isOverdue = ticket.sla_due_date && 
-    new Date(ticket.sla_due_date) < new Date() && 
+  const isOverdue = ticket.slaDueDate && 
+    new Date(ticket.slaDueDate) < new Date() && 
     ticket.status !== 'closed';
 
   return (
@@ -231,7 +221,7 @@ const TicketDetailPage: React.FC = () => {
             <CalendarIcon className="w-5 h-5 text-slate-500" />
             <div>
               <div className="font-medium text-slate-700">Created</div>
-              <div className="text-slate-600">{new Date(ticket.created_at).toLocaleDateString()}</div>
+              <div className="text-slate-600">{new Date(ticket.createdAt).toLocaleDateString()}</div>
             </div>
           </div>
           
@@ -239,11 +229,11 @@ const TicketDetailPage: React.FC = () => {
             <ClockIcon className="w-5 h-5 text-slate-500" />
             <div>
               <div className="font-medium text-slate-700">Last Updated</div>
-              <div className="text-slate-600">{new Date(ticket.updated_at).toLocaleDateString()}</div>
+              <div className="text-slate-600">{new Date(ticket.updatedAt).toLocaleDateString()}</div>
             </div>
           </div>
           
-          {ticket.sla_due_date && (
+          {ticket.slaDueDate && (
             <div className={`flex items-center space-x-3 p-3 rounded-lg ${isOverdue ? 'bg-red-50' : 'bg-slate-50'}`}>
               <ExclamationTriangleIcon className={`w-5 h-5 ${isOverdue ? 'text-red-500' : 'text-slate-500'}`} />
               <div>
@@ -251,7 +241,7 @@ const TicketDetailPage: React.FC = () => {
                   SLA Due {isOverdue && '(Overdue)'}
                 </div>
                 <div className={`${isOverdue ? 'text-red-600 font-semibold' : 'text-slate-600'}`}>
-                  {new Date(ticket.sla_due_date).toLocaleDateString()}
+                  {new Date(ticket.slaDueDate).toLocaleDateString()}
                 </div>
               </div>
             </div>
@@ -269,11 +259,11 @@ const TicketDetailPage: React.FC = () => {
           <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">{ticket.description}</p>
         </div>
         
-        {ticket.category && (
+        {ticket.item?.subCategory?.category && (
           <div className="mt-6 pt-6 border-t border-slate-200">
             <div className="inline-flex items-center space-x-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg">
               <span className="font-medium">Category:</span>
-              <span>{ticket.category}</span>
+              <span>{ticket.item.subCategory.category.name}</span>
             </div>
           </div>
         )}
@@ -289,13 +279,13 @@ const TicketDetailPage: React.FC = () => {
             {ticket.attachments.map(att => (
               <button
                 key={att.id}
-                onClick={() => downloadFile(att)}
+                onClick={() => downloadFile({ id: att.id, filename: att.fileName })}
                 disabled={downloadingId === att.id}
                 className="flex items-center space-x-3 p-4 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <DocumentArrowDownIcon className="w-8 h-8 text-blue-600" />
                 <div className="flex-1 text-left">
-                  <div className="font-medium text-slate-800 truncate">{att.filename}</div>
+                  <div className="font-medium text-slate-800 truncate">{att.fileName}</div>
                   <div className="text-sm text-slate-600">
                     {downloadingId === att.id ? 'Downloading...' : 'Click to download'}
                   </div>
@@ -304,6 +294,28 @@ const TicketDetailPage: React.FC = () => {
             ))}
           </div>
         </div>
+      )}
+
+      {/* Ticket Categorization */}
+      {ticket && (
+        <TicketCategorization
+          ticket={ticket}
+          onUpdate={setTicket}
+          currentUserRole={user?.role}
+          isCurrentUserCreator={user?.id === ticket.createdByUserId}
+          canEdit={true}
+        />
+      )}
+
+      {/* Ticket Comments */}
+      {ticket && (
+        <TicketComments
+          ticketId={ticket.id}
+          onCommentAdded={() => {
+            // Optionally refresh ticket data when comment is added
+            console.log('Comment added to ticket', ticket.id);
+          }}
+        />
       )}
 
       {/* Manager Approval Section */}

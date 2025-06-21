@@ -7,9 +7,17 @@ import {
   CurrencyDollarIcon,
   DocumentTextIcon,
   ClockIcon,
-  BuildingOfficeIcon,
+  BuildingOffice2Icon as BuildingOfficeIcon,
   IdentificationIcon
 } from '@heroicons/react/24/outline';
+
+// Validation interface
+interface FieldValidation {
+  required?: boolean;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+}
 
 // Common field configurations that can be reused across templates
 export const COMMON_FIELD_CONFIGS = {
@@ -160,13 +168,13 @@ export const validateField = (fieldName: string, value: any, fieldConfig: any): 
   }
   
   // Max length validation
-  if (validation.maxLength && value && value.toString().length > validation.maxLength) {
-    return `${fieldName} must not exceed ${validation.maxLength} characters`;
+  if ((validation as FieldValidation).maxLength && value && value.toString().length > (validation as FieldValidation).maxLength!) {
+    return `${fieldName} must not exceed ${(validation as FieldValidation).maxLength} characters`;
   }
   
   // Min value validation (for numbers)
-  if (validation.min !== undefined && value !== undefined && parseFloat(value) < validation.min) {
-    return `${fieldName} must be at least ${validation.min}`;
+  if ((validation as FieldValidation).min !== undefined && value !== undefined && parseFloat(value) < (validation as FieldValidation).min!) {
+    return `${fieldName} must be at least ${(validation as FieldValidation).min}`;
   }
   
   // Field type specific validation
@@ -359,11 +367,11 @@ export const createFieldFromConfig = (fieldName: string, props: SharedFieldProps
   
   switch (fieldName) {
     case 'Cabang/Capem':
-      return <SharedBranchField key={fieldName} fieldName={fieldName} {...props} />;
+      return <SharedBranchField key={fieldName} {...props} fieldName={fieldName} />;
     case 'Kode User':
-      return <SharedUserCodeField key={fieldName} fieldName={fieldName} {...props} />;
+      return <SharedUserCodeField key={fieldName} {...props} fieldName={fieldName} />;
     case 'Nominal Transaksi':
-      return <SharedCurrencyField key={fieldName} fieldName={fieldName} {...props} />;
+      return <SharedCurrencyField key={fieldName} {...props} fieldName={fieldName} />;
     default:
       return null;
   }

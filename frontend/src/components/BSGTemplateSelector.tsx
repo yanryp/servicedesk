@@ -1,6 +1,6 @@
 // BSG Template Selection Component
 import React, { useState, useEffect } from 'react';
-import { SearchIcon, BuildingOfficeIcon, CubeIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon as SearchIcon, BuildingOffice2Icon as BuildingOfficeIcon, CubeIcon } from '@heroicons/react/24/outline';
 
 interface BSGTemplateCategory {
   id: number;

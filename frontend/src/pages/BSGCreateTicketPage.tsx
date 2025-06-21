@@ -2,7 +2,7 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { BuildingOfficeIcon, DocumentPlusIcon } from '@heroicons/react/24/outline';
+import { BuildingOffice2Icon as BuildingOfficeIcon, DocumentPlusIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 import { BSGTemplateSelector } from '../components';
 import BSGDynamicFieldRenderer from '../components/BSGDynamicFieldRenderer';

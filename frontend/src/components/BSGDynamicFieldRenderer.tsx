@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 // Field category icons mapping
-const FIELD_CATEGORY_ICONS = {
+const FIELD_CATEGORY_ICONS: Record<string, any> = {
   'location': MapPinIcon,
   'user_identity': UserIcon,
   'timing': ClockIcon,
@@ -22,7 +22,7 @@ const FIELD_CATEGORY_ICONS = {
 };
 
 // Field category colors
-const FIELD_CATEGORY_COLORS = {
+const FIELD_CATEGORY_COLORS: Record<string, string> = {
   'location': 'border-blue-300 focus:border-blue-500',
   'user_identity': 'border-green-300 focus:border-green-500',
   'timing': 'border-purple-300 focus:border-purple-500',

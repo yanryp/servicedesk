@@ -1,5 +1,5 @@
 // src/pages/CreateTicketPage.tsx
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { DocumentPlusIcon, PaperClipIcon } from '@heroicons/react/24/outline';
@@ -7,7 +7,9 @@ import { useAuth } from '../context/AuthContext';
 import { ticketsService } from '../services';
 import { CategorySelector, TemplateSelector } from '../components';
 import { CustomFieldsForm, useCustomFieldsValidation } from '../components/CustomFields';
-import { Item, TicketTemplate, TicketPriority, CreateTicketRequest } from '../types';
+import { useTemplateFields } from '../hooks/useTemplateFields';
+import { Item, TicketTemplate, TicketPriority, CreateTicketRequest, RootCauseType, IssueCategoryType } from '../types';
+import { categorizationService } from '../services/categorization';
 import toast from 'react-hot-toast';
 
 interface TicketFormData {
@@ -19,14 +21,33 @@ interface TicketFormData {
 const CreateTicketPage: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<TicketTemplate | null>(null);
-  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
-  const [customFieldErrors, setCustomFieldErrors] = useState<Record<string, string>>({});
   const [attachments, setAttachments] = useState<FileList | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Categorization state
+  const [rootCause, setRootCause] = useState<RootCauseType | ''>('');
+  const [issueCategory, setIssueCategory] = useState<IssueCategoryType | ''>('');
+  const [suggestions, setSuggestions] = useState<any>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
+  // Use new template fields hook
+  const {
+    fieldsData,
+    fields,
+    loading: fieldsLoading,
+    error: fieldsError,
+    fieldValues,
+    updateFieldValue,
+    resetFieldValues,
+    validateFields: validateTemplateFields,
+    loadTemplateFields,
+    clearTemplate
+  } = useTemplateFields();
+
+  // Legacy custom fields validation for backward compatibility
   const { validateFields, convertToApiFormat } = useCustomFieldsValidation(
     selectedTemplate?.customFields || []
   );
@@ -45,27 +66,49 @@ const CreateTicketPage: React.FC = () => {
   const handleItemSelect = useCallback((item: Item | null) => {
     setSelectedItem(item);
     setSelectedTemplate(null);
-    setCustomFieldValues({});
-    setCustomFieldErrors({});
-  }, []);
+    clearTemplate();
+    setRootCause('');
+    setIssueCategory('');
+    setSuggestions(null);
+    
+    // Load categorization suggestions for the selected item
+    if (item) {
+      loadSuggestions(item.id);
+    }
+  }, [clearTemplate]);
 
-  const handleTemplateSelect = useCallback((template: TicketTemplate | null) => {
-    setSelectedTemplate(template);
-    setCustomFieldValues({});
-    setCustomFieldErrors({});
-  }, []);
-
-  const handleCustomFieldsChange = (values: Record<string, string>) => {
-    setCustomFieldValues(values);
-    // Clear errors for changed fields
-    const newErrors = { ...customFieldErrors };
-    Object.keys(values).forEach(fieldId => {
-      if (newErrors[fieldId]) {
-        delete newErrors[fieldId];
-      }
-    });
-    setCustomFieldErrors(newErrors);
+  const loadSuggestions = async (itemId: number) => {
+    try {
+      const data = await categorizationService.getSuggestions(itemId);
+      setSuggestions(data);
+      // Auto-apply suggestions
+      setRootCause(data.suggestions.rootCause);
+      setIssueCategory(data.suggestions.issueCategory);
+    } catch (error) {
+      console.error('Failed to load categorization suggestions:', error);
+    }
   };
+
+  const handleTemplateSelect = useCallback(async (template: TicketTemplate | null) => {
+    setSelectedTemplate(template);
+    
+    // Load template fields if a template is selected
+    if (template?.id) {
+      try {
+        await loadTemplateFields(template.id);
+      } catch (error) {
+        console.error('Failed to load template fields:', error);
+        toast.error('Failed to load template fields');
+      }
+    } else {
+      clearTemplate();
+    }
+  }, [loadTemplateFields, clearTemplate]);
+
+  // Handle custom field changes for new template system
+  const handleTemplateFieldChange = useCallback((fieldName: string, value: string) => {
+    updateFieldValue(fieldName, value);
+  }, [updateFieldValue]);
 
   const onSubmit = async (data: TicketFormData) => {
     if (!selectedItem) {
@@ -73,26 +116,50 @@ const CreateTicketPage: React.FC = () => {
       return;
     }
 
-    // Validate custom fields
-    const fieldErrors = validateFields(customFieldValues);
-    if (Object.keys(fieldErrors).length > 0) {
-      setCustomFieldErrors(fieldErrors);
-      toast.error('Please fix the errors in the custom fields');
-      return;
+    // Validate custom fields based on system type
+    if (fieldsData && fields.length > 0) {
+      // New template system validation
+      const isValid = await validateTemplateFields();
+      if (!isValid) {
+        toast.error('Please fix the errors in the custom fields');
+        return;
+      }
+    } 
+    else if (selectedTemplate?.customFields?.length) {
+      // Legacy template system validation
+      const fieldValidationErrors = validateFields({});
+      if (Object.keys(fieldValidationErrors).length > 0) {
+        toast.error('Please fix the errors in the custom fields');
+        return;
+      }
     }
 
     setIsSubmitting(true);
 
     try {
+      // Prepare custom field values based on system type
+      let preparedCustomFieldValues;
+      if (fieldsData && fields.length > 0) {
+        // New template system - convert to API format
+        preparedCustomFieldValues = Object.entries(fieldValues).map(([fieldName, value]) => ({
+          fieldDefinitionId: fields.find(f => f.fieldName === fieldName)?.id || 0,
+          value: value
+        }));
+      } else if (selectedTemplate?.customFields?.length) {
+        // Legacy template system - use empty object since no legacy values collected
+        preparedCustomFieldValues = convertToApiFormat({});
+      }
+
       const ticketData: CreateTicketRequest = {
         title: data.title,
         description: data.description,
         itemId: selectedItem.id,
         priority: data.priority,
         templateId: selectedTemplate?.id,
-        customFieldValues: convertToApiFormat(customFieldValues),
+        customFieldValues: preparedCustomFieldValues,
+        ...(rootCause && { userRootCause: rootCause }),
+        ...(issueCategory && { userIssueCategory: issueCategory }),
       };
-
 
       const createdTicket = await ticketsService.createTicket(ticketData, attachments || undefined);
       
@@ -110,8 +177,8 @@ const CreateTicketPage: React.FC = () => {
     reset();
     setSelectedItem(null);
     setSelectedTemplate(null);
-    setCustomFieldValues({});
-    setCustomFieldErrors({});
+    clearTemplate();
+    resetFieldValues();
     setAttachments(null);
   };
 
@@ -249,16 +316,172 @@ const CreateTicketPage: React.FC = () => {
                   </p>
                 </div>
               </div>
+
+              {/* Categorization Section */}
+              {selectedItem && (
+                <div className="mt-8 pt-6 border-t border-slate-200">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-slate-800">Issue Classification</h3>
+                    {suggestions && (
+                      <button
+                        type="button"
+                        onClick={() => setShowSuggestions(!showSuggestions)}
+                        className="text-sm text-blue-600 hover:text-blue-800"
+                      >
+                        {showSuggestions ? 'Hide' : 'Show'} Suggestions
+                      </button>
+                    )}
+                  </div>
+
+                  {showSuggestions && suggestions && (
+                    <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+                      <h4 className="font-medium text-blue-900 mb-2">AI Suggestions</h4>
+                      <div className="text-sm text-blue-800 mb-3">
+                        <div>Suggested Root Cause: <strong>{suggestions.suggestions.rootCause.replace('_', ' ')}</strong></div>
+                        <div>Suggested Category: <strong>{suggestions.suggestions.issueCategory}</strong></div>
+                        <div>Confidence: <strong>{suggestions.suggestions.confidence}</strong></div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRootCause(suggestions.suggestions.rootCause);
+                          setIssueCategory(suggestions.suggestions.issueCategory);
+                        }}
+                        className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                      >
+                        Apply Suggestions
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        What caused this issue?
+                      </label>
+                      <select
+                        value={rootCause}
+                        onChange={(e) => setRootCause(e.target.value as RootCauseType)}
+                        disabled={isSubmitting}
+                        className="block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
+                      >
+                        <option value="">Select root cause...</option>
+                        <option value="human_error">User/Process Error</option>
+                        <option value="system_error">Technical/System Error</option>
+                        <option value="external_factor">External Issue</option>
+                        <option value="undetermined">Not Sure / Need Investigation</option>
+                      </select>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Help us understand what you think caused this issue
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        What type of issue is this?
+                      </label>
+                      <select
+                        value={issueCategory}
+                        onChange={(e) => setIssueCategory(e.target.value as IssueCategoryType)}
+                        disabled={isSubmitting}
+                        className="block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
+                      >
+                        <option value="">Select issue type...</option>
+                        <option value="request">Service Request - I need something new or changed</option>
+                        <option value="complaint">Service Complaint - I'm not satisfied with service quality</option>
+                        <option value="problem">Technical Problem - Something is broken or not working</option>
+                      </select>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Choose the category that best describes your issue
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-600">
+                      <strong>Why do we ask for this information?</strong> This classification helps our technicians prioritize and route your ticket to the right team faster. You can leave these blank if you're unsure.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
-          {/* Custom Fields */}
-          {selectedTemplate && selectedTemplate.customFields && selectedTemplate.customFields.length > 0 && (
+          {/* Custom Fields - New Template System */}
+          {fieldsData && fields.length > 0 && (
+            <div className="mt-8 pt-6 border-t border-slate-200">
+              <h2 className="text-xl font-semibold text-slate-800 mb-4">Template Information</h2>
+              {fieldsLoading && (
+                <div className="flex items-center space-x-2 text-blue-600 mb-4">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span>Loading template fields...</span>
+                </div>
+              )}
+              {fieldsError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                  Error loading template fields: {fieldsError}
+                </div>
+              )}
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                {fields.map((field) => (
+                  <div key={field.fieldName} className={field.fieldType === 'textarea' ? 'sm:col-span-2' : ''}>
+                    <label htmlFor={field.fieldName} className="block text-sm font-medium text-slate-700 mb-2">
+                      {field.fieldLabel} {field.isRequired && '*'}
+                    </label>
+                    
+                    {field.fieldType === 'dropdown' ? (
+                      <select
+                        id={field.fieldName}
+                        value={fieldValues[field.fieldName] || ''}
+                        onChange={(e) => handleTemplateFieldChange(field.fieldName, e.target.value)}
+                        disabled={isSubmitting}
+                        className="block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
+                      >
+                        <option value="">{field.placeholder || `Select ${field.fieldLabel}`}</option>
+                        {field.validationRules?.options?.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    ) : field.fieldType === 'textarea' ? (
+                      <textarea
+                        id={field.fieldName}
+                        rows={3}
+                        value={fieldValues[field.fieldName] || ''}
+                        onChange={(e) => handleTemplateFieldChange(field.fieldName, e.target.value)}
+                        disabled={isSubmitting}
+                        placeholder={field.placeholder}
+                        className="block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
+                      />
+                    ) : (
+                      <input
+                        type={field.fieldType === 'number' ? 'number' : field.fieldType === 'date' ? 'date' : field.fieldType === 'datetime' ? 'datetime-local' : 'text'}
+                        id={field.fieldName}
+                        value={fieldValues[field.fieldName] || ''}
+                        onChange={(e) => handleTemplateFieldChange(field.fieldName, e.target.value)}
+                        disabled={isSubmitting}
+                        placeholder={field.placeholder}
+                        className="block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
+                      />
+                    )}
+                    
+                    {field.helpText && (
+                      <p className="mt-1 text-sm text-slate-500">{field.helpText}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Custom Fields - Legacy Template System (fallback) */}
+          {!fieldsData && selectedTemplate && selectedTemplate.customFields && selectedTemplate.customFields.length > 0 && (
             <CustomFieldsForm
               fields={selectedTemplate.customFields}
-              values={customFieldValues}
-              onChange={handleCustomFieldsChange}
-              errors={customFieldErrors}
+              values={{}}
+              onChange={() => {}}
+              errors={{}}
               disabled={isSubmitting}
             />
           )}
