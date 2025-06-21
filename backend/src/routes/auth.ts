@@ -23,17 +23,32 @@ const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => P
 
 // POST /api/auth/register
 router.post('/register', asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-  const { username, email, password, role } = req.body;
+  const { username, email, password, role, departmentId, firstName, lastName, specialization } = req.body;
 
   // Basic validation
-  if (!username || !email || !password || !role) {
-    // Pass error to Express error handler
-    return next(Object.assign(new Error('Username, email, password, and role are required.'), { status: 400 }));
+  if (!username || !email || !password || !role || !departmentId) {
+    return next(Object.assign(new Error('Username, email, password, role, and departmentId are required.'), { status: 400 }));
   }
 
   const validRoles = ['admin', 'technician', 'requester', 'manager'];
   if (!validRoles.includes(role)) {
     return next(Object.assign(new Error(`Invalid role. Must be one of: ${validRoles.join(', ')}`), { status: 400 }));
+  }
+
+  // Additional validation for technician specialization
+  if (role === 'technician' && specialization) {
+    if (!specialization.primarySkill || !specialization.experienceLevel) {
+      return next(Object.assign(new Error('Primary skill and experience level are required for technicians.'), { status: 400 }));
+    }
+  }
+
+  // Verify department exists
+  const department = await prisma.department.findUnique({
+    where: { id: parseInt(departmentId) }
+  });
+
+  if (!department) {
+    return next(Object.assign(new Error('Invalid department ID.'), { status: 400 }));
   }
 
   // Check if user already exists
@@ -53,20 +68,41 @@ router.post('/register', asyncHandler(async (req: Request, res: Response, next: 
   // Hash password
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
+  // Prepare user data
+  const userData: any = {
+    username,
+    email,
+    passwordHash: hashedPassword,
+    role: role as any,
+    departmentId: parseInt(departmentId)
+  };
+
+  // Add technician specialization fields if provided
+  if (role === 'technician' && specialization) {
+    userData.primarySkill = specialization.primarySkill;
+    userData.experienceLevel = specialization.experienceLevel;
+    userData.secondarySkills = specialization.secondarySkills;
+  }
+
   // Create new user
   const newUser = await prisma.user.create({
-    data: {
-      username,
-      email,
-      passwordHash: hashedPassword,
-      role: role as any // Type will be validated by Prisma
-    },
+    data: userData,
     select: {
       id: true,
       username: true,
       email: true,
       role: true,
-      createdAt: true
+      departmentId: true,
+      primarySkill: true,
+      experienceLevel: true,
+      secondarySkills: true,
+      createdAt: true,
+      department: {
+        select: {
+          id: true,
+          name: true
+        }
+      }
     }
   });
 

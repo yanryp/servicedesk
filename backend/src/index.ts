@@ -22,6 +22,9 @@ import templateManagementRoutes from './routes/templateManagementRoutes'; // Imp
 import bsgTemplateRoutes from './routes/bsgTemplateRoutes'; // Import BSG template routes
 import templateFieldsRoutes from './routes/templateFieldsRoutes'; // Import template fields routes
 import ticketCommentsRoutes from './routes/ticketCommentsRoutes'; // Import ticket comments routes
+import autoAssignmentRoutes from './routes/autoAssignmentRoutes'; // Import auto-assignment routes
+import apiTokenRoutes from './routes/apiTokenRoutes'; // Import API token routes
+import externalApiRoutes from './routes/externalApiRoutes'; // Import external API routes
 import { startEscalationCronJob } from './services/escalationService'; // Import escalation service
 
 const app: Express = express();
@@ -85,6 +88,15 @@ app.use('/api/service-templates', templateFieldsRoutes); // Template custom fiel
 
 // Ticket Comments and Conversation System
 app.use('/api', ticketCommentsRoutes); // Ticket comments and conversation routes
+
+// Auto-assignment system
+app.use('/api/auto-assignment', autoAssignmentRoutes); // Auto-assignment management routes
+
+// API Token management
+app.use('/api/tokens', apiTokenRoutes); // API token management routes
+
+// External API (with API token authentication)
+app.use('/api/external-api', externalApiRoutes); // External API routes with token auth
 
 // Legacy routes (for backward compatibility)
 app.use('/api/tickets', ticketRouter); // Mount legacy ticket router

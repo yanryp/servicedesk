@@ -18,6 +18,14 @@ model User {
   updatedAt             DateTime?           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   managerId             Int?                @map("manager_id")
   
+  // Technician specialization fields
+  primarySkill          String?             @map("primary_skill") @db.VarChar(100)
+  experienceLevel       String?             @map("experience_level") @db.VarChar(50)
+  secondarySkills       String?             @map("secondary_skills")
+  isAvailable           Boolean             @default(true) @map("is_available")
+  workloadCapacity      Int                 @default(10) @map("workload_capacity") // max concurrent tickets
+  currentWorkload       Int                 @default(0) @map("current_workload") // current active tickets
+  
   // User type flags
   isKasdaUser           Boolean             @default(false) @map("is_kasda_user")
   isBusinessReviewer    Boolean             @default(false) @map("is_business_reviewer")
@@ -52,6 +60,14 @@ model User {
   // BSG Template relations
   bsgTemplateUsageLogs   BSGTemplateUsageLog[] @relation("BSGTemplateUsageUser")
 
+  // Auto-assignment relations
+  assignmentLogsAsAssignee  TicketAssignmentLog[] @relation("AssignmentLogAssignee")
+  assignmentLogsAsAssigner  TicketAssignmentLog[] @relation("AssignmentLogAssigner") 
+  assignmentLogsAsPrevious  TicketAssignmentLog[] @relation("AssignmentLogPrevious")
+  
+  // API Token relations
+  createdApiTokens       ApiToken[] @relation("ApiTokenCreator")
+
   @@map("users")
 }
 
@@ -76,6 +92,9 @@ model Department {
 
   // BSG Template relations
   bsgTemplateUsageLogs BSGTemplateUsageLog[] @relation("BSGTemplateUsageDept")
+  
+  // Auto-assignment relations
+  autoAssignmentRules  AutoAssignmentRule[]
 
   @@map("departments")
 }
@@ -126,6 +145,9 @@ model TicketTemplate {
   // Template management relations
   metadata               TemplateMetadata?
   usageLogs              TemplateUsageLog[]
+  
+  // Auto-assignment relations
+  autoAssignmentRules    AutoAssignmentRule[]
 
   @@unique([itemId, name])
   @@map("ticket_templates")
@@ -229,6 +251,9 @@ model Ticket {
 
   // Comment system relations
   comments               TicketComment[]
+
+  // Auto-assignment relations
+  assignmentLogs         TicketAssignmentLog[]
 
   @@map("tickets")
 }
@@ -966,4 +991,102 @@ model BSGTemplateUsageLog {
   @@index([userId, createdAt])
   @@index([createdAt])
   @@map("bsg_template_usage_logs")
+}
+
+// Auto-assignment system models
+model AutoAssignmentRule {
+  id                  Int      @id @default(autoincrement())
+  name                String   @db.VarChar(255)
+  description         String?
+  isActive            Boolean  @default(true) @map("is_active")
+  priority            Int      @default(0) // Higher priority rules are evaluated first
+  
+  // Matching criteria (JSON or specific fields)
+  templateId          Int?     @map("template_id")
+  departmentId        Int?     @map("department_id")
+  priority_level      String?  @map("priority_level") @db.VarChar(20) // ticket priority match
+  requiredSkill       String?  @map("required_skill") @db.VarChar(100)
+  
+  // Assignment strategy
+  assignmentStrategy  String   @default("skill_match") @map("assignment_strategy") @db.VarChar(50) // skill_match, round_robin, least_loaded
+  
+  // Workload management
+  respectCapacity     Boolean  @default(true) @map("respect_capacity")
+  maxWorkloadPercent  Int      @default(80) @map("max_workload_percent")
+  
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
+  // Relations
+  template            TicketTemplate? @relation(fields: [templateId], references: [id])
+  department          Department?     @relation(fields: [departmentId], references: [id])
+  assignmentLogs      TicketAssignmentLog[]
+  
+  @@map("auto_assignment_rules")
+}
+
+model TicketAssignmentLog {
+  id                    Int      @id @default(autoincrement())
+  ticketId              Int      @map("ticket_id")
+  assignedToUserId      Int?     @map("assigned_to_user_id")
+  assignmentRuleId      Int?     @map("assignment_rule_id")
+  assignmentMethod      String   @map("assignment_method") @db.VarChar(50) // auto, manual
+  assignmentReason      String?  @map("assignment_reason")
+  assignedByUserId      Int?     @map("assigned_by_user_id")
+  previousAssigneeId    Int?     @map("previous_assignee_id")
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  
+  // Relations
+  ticket                Ticket              @relation(fields: [ticketId], references: [id])
+  assignedToUser        User?               @relation("AssignmentLogAssignee", fields: [assignedToUserId], references: [id])
+  assignmentRule        AutoAssignmentRule? @relation(fields: [assignmentRuleId], references: [id])
+  assignedByUser        User?               @relation("AssignmentLogAssigner", fields: [assignedByUserId], references: [id])
+  previousAssignee      User?               @relation("AssignmentLogPrevious", fields: [previousAssigneeId], references: [id])
+  
+  @@index([ticketId])
+  @@index([assignedToUserId])
+  @@index([createdAt])
+  @@map("ticket_assignment_logs")
+}
+
+// API Token management for external systems
+model ApiToken {
+  id              Int      @id @default(autoincrement())
+  name            String   @db.VarChar(255)
+  description     String?
+  tokenHash       String   @unique @map("token_hash") @db.VarChar(255)
+  scopes          String[] // Array of permitted scopes: ['tickets:read', 'tickets:write', 'users:read']
+  isActive        Boolean  @default(true) @map("is_active")
+  expiresAt       DateTime? @map("expires_at") @db.Timestamptz(6)
+  lastUsedAt      DateTime? @map("last_used_at") @db.Timestamptz(6)
+  usageCount      Int      @default(0) @map("usage_count")
+  createdByUserId Int      @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
+  // Relations
+  createdBy       User     @relation("ApiTokenCreator", fields: [createdByUserId], references: [id])
+  usageLogs       ApiTokenUsageLog[]
+  
+  @@index([tokenHash])
+  @@index([isActive, expiresAt])
+  @@map("api_tokens")
+}
+
+model ApiTokenUsageLog {
+  id            Int       @id @default(autoincrement())
+  tokenId       Int       @map("token_id")
+  endpoint      String    @db.VarChar(255)
+  method        String    @db.VarChar(10)
+  ipAddress     String?   @map("ip_address") @db.Inet
+  userAgent     String?   @map("user_agent")
+  statusCode    Int       @map("status_code")
+  responseTime  Int?      @map("response_time") // milliseconds
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  
+  // Relations
+  token         ApiToken  @relation(fields: [tokenId], references: [id])
+  
+  @@index([tokenId, createdAt])
+  @@map("api_token_usage_logs")
 }
