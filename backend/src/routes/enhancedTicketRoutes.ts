@@ -156,14 +156,8 @@ router.post('/create', protect, upload.array('attachments', 5), asyncHandler(asy
       });
     }
 
-    // KASDA access validation  
-    if (serviceItem.isKasdaRelated && !user?.isKasdaUser && !user?.isBusinessReviewer) {
-      console.log('KASDA access denied - User:', user, 'Service Item KASDA related:', serviceItem.isKasdaRelated);
-      return res.status(403).json({
-        success: false,
-        message: 'Access denied. KASDA services are restricted to authorized users.'
-      });
-    }
+    // Note: Removed KASDA access restrictions - all branch users can create any ticket type
+    // Routing will be determined by ticket content, not user type
 
     // Calculate SLA
     const slaDueDate = calculateSlaDueDate(
@@ -764,6 +758,410 @@ router.get('/:ticketId', protect, asyncHandler(async (req: AuthenticatedRequest,
     res.status(500).json({
       success: false,
       message: 'Failed to fetch ticket'
+    });
+  }
+}));
+
+// BSG-specific ticket creation endpoint
+router.post('/bsg-tickets', protect, upload.array('attachments', 5), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { user } = req;
+    const {
+      templateId,
+      templateNumber,
+      title,
+      description,
+      priority = 'medium',
+      customFields = {}
+    } = req.body;
+
+    // Validate required fields
+    if (!templateId || !title || !description) {
+      return res.status(400).json({
+        success: false,
+        message: 'Template ID, title, and description are required'
+      });
+    }
+
+    // Get BSG template information
+    const bsgTemplate = await prisma.bSGTemplate.findUnique({
+      where: { id: parseInt(templateId) },
+      include: {
+        category: true,
+        fields: {
+          include: {
+            fieldType: true,
+            options: true
+          }
+        }
+      }
+    });
+
+    if (!bsgTemplate) {
+      return res.status(404).json({
+        success: false,
+        message: 'BSG template not found'
+      });
+    }
+
+    // Department routing logic for BSG tickets - based on template category, not user type
+    let targetDepartmentId = user!.departmentId; // Default to user's department
+    
+    // Define template category to department mapping
+    const KASDA_BSGDIRECT_CATEGORIES = [
+      'KASDA', 'BSGDirect', 'KLAIM', 'Government Banking'
+    ];
+    
+    const IT_CATEGORIES = [
+      'OLIBS', 'ATM', 'Core Banking', 'BSGTouch', 'SMS Banking', 'BSG QRIS'
+    ];
+    
+    // Determine if this is a KASDA/BSGDirect ticket based on template category
+    const templateCategory = bsgTemplate.category.name;
+    const isKasdaOrBsgDirectTicket = KASDA_BSGDIRECT_CATEGORIES.some(cat => 
+      templateCategory.includes(cat)
+    );
+    
+    if (isKasdaOrBsgDirectTicket) {
+      // Route KASDA/BSGDirect tickets to "Dukungan dan Layanan" department
+      const dukunganDepartment = await prisma.department.findFirst({
+        where: { name: 'Dukungan dan Layanan' }
+      });
+      if (dukunganDepartment) {
+        targetDepartmentId = dukunganDepartment.id;
+      }
+    } else if (IT_CATEGORIES.some(cat => templateCategory.includes(cat))) {
+      // Route technical banking tickets to "Information Technology" department
+      const itDepartment = await prisma.department.findFirst({
+        where: { name: 'Information Technology' }
+      });
+      if (itDepartment) {
+        targetDepartmentId = itDepartment.id;
+      }
+    }
+    // Otherwise, keep user's default department
+
+    // Calculate SLA based on template category and priority
+    const now = new Date();
+    let slaDurationHours = 24; // Default 24 hours
+
+    switch (priority) {
+      case 'urgent':
+        slaDurationHours = 4;
+        break;
+      case 'high':
+        slaDurationHours = 8;
+        break;
+      case 'medium':
+        slaDurationHours = 24;
+        break;
+      case 'low':
+        slaDurationHours = 48;
+        break;
+    }
+
+    // Banking systems might need faster response
+    if (bsgTemplate.category.name.includes('OLIBS') || bsgTemplate.category.name.includes('KLAIM')) {
+      slaDurationHours = Math.max(2, slaDurationHours / 2); // Faster for critical banking systems
+    }
+
+    const slaDueDate = new Date(now.getTime() + (slaDurationHours * 60 * 60 * 1000));
+
+    // Determine if manager approval is required
+    const requiresApproval = user!.role === 'requester' && 
+                           (priority === 'urgent' || priority === 'high' || 
+                            bsgTemplate.category.name.includes('OLIBS'));
+
+    // Create the BSG ticket with proper field mappings
+    const ticket = await prisma.ticket.create({
+      data: {
+        title,
+        description,
+        priority,
+        status: requiresApproval ? 'pending_approval' : 'open',
+        createdByUserId: user!.id,
+        slaDueDate: slaDueDate,
+        // BSG-specific fields
+        templateId: parseInt(templateId),
+        requestType: 'service_request', // BSG tickets are service requests
+        businessImpact: priority === 'urgent' ? 'high' : priority === 'high' ? 'medium' : 'low',
+        // Mark as KASDA ticket based on template content, not user type
+        isKasdaTicket: isKasdaOrBsgDirectTicket,
+        // Set basic categorization for BSG tickets
+        userIssueCategory: 'request',
+        userRootCause: bsgTemplate.category.name.toLowerCase().includes('password') ? 'human_error' : 'system_error',
+        userCategorizedAt: new Date(),
+        userCategorizedIP: req.ip || req.connection.remoteAddress || '127.0.0.1',
+        confirmedIssueCategory: 'request',
+        confirmedRootCause: bsgTemplate.category.name.toLowerCase().includes('password') ? 'human_error' : 'system_error'
+      }
+    });
+
+    // Handle file attachments
+    if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+      const attachments = req.files.map((file: Express.Multer.File) => ({
+        ticketId: ticket.id,
+        fileName: file.originalname,
+        filePath: file.path,
+        fileSize: file.size,
+        fileType: file.mimetype,
+        uploadedByUserId: user!.id
+      }));
+
+      await prisma.ticketAttachment.createMany({
+        data: attachments
+      });
+    }
+
+    // Handle BSG custom field values
+    if (customFields && Object.keys(customFields).length > 0) {
+      try {
+        const parsedCustomFields = typeof customFields === 'string' ? JSON.parse(customFields) : customFields;
+        
+        // Get the BSG template fields to map field names to IDs
+        const templateFields = await prisma.bSGTemplateField.findMany({
+          where: { templateId: parseInt(templateId) }
+        });
+        
+        // Create field name to ID mapping
+        const fieldNameToIdMap: Record<string, number> = {};
+        templateFields.forEach(field => {
+          fieldNameToIdMap[field.fieldName] = field.id;
+        });
+        
+        // Create BSG field values for this ticket
+        const bsgFieldValues = Object.entries(parsedCustomFields)
+          .filter(([fieldName]) => fieldNameToIdMap[fieldName]) // Only include fields that exist
+          .map(([fieldName, value]) => ({
+            ticketId: ticket.id,
+            fieldId: fieldNameToIdMap[fieldName],
+            fieldValue: String(value)
+          }));
+
+        if (bsgFieldValues.length > 0) {
+          await prisma.bSGTicketFieldValue.createMany({
+            data: bsgFieldValues,
+            skipDuplicates: true
+          });
+        }
+      } catch (error) {
+        console.error('Error saving BSG custom fields:', error);
+        // Don't fail the ticket creation if custom fields fail
+      }
+    }
+
+    // Create approval record if required (simplified for now)
+    if (requiresApproval) {
+      // For now, just log that approval is required
+      // TODO: Implement proper approval workflow
+      console.log(`BSG Ticket ${ticket.id} requires manager approval`);
+    }
+
+    // Auto-assignment logic for BSG tickets
+    if (!requiresApproval && targetDepartmentId) {
+      // Find available technician in target department with BSG skills
+      const availableTechnician = await prisma.user.findFirst({
+        where: {
+          departmentId: targetDepartmentId,
+          role: 'technician',
+          isAvailable: true,
+          // Look for technicians with relevant skills
+          OR: [
+            { primarySkill: { contains: bsgTemplate.category.name, mode: 'insensitive' } },
+            { secondarySkills: { contains: bsgTemplate.category.name, mode: 'insensitive' } },
+            { primarySkill: 'core_banking' },
+            { primarySkill: 'banking_systems' }
+          ]
+        },
+        orderBy: { currentWorkload: 'asc' } // Assign to least busy technician
+      });
+
+      if (availableTechnician) {
+        await prisma.ticket.update({
+          where: { id: ticket.id },
+          data: {
+            assignedToUserId: availableTechnician.id,
+            status: 'assigned'
+          }
+        });
+
+        // Update technician workload
+        await prisma.user.update({
+          where: { id: availableTechnician.id },
+          data: {
+            currentWorkload: { increment: 1 }
+          }
+        });
+      }
+    }
+
+    // Get full ticket details for response
+    const fullTicket = await prisma.ticket.findUnique({
+      where: { id: ticket.id },
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            role: true
+          }
+        },
+        assignedTo: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            role: true
+          }
+        },
+        attachments: true
+      }
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'BSG ticket created successfully',
+      data: fullTicket,
+      routing: {
+        templateCategory: bsgTemplate.category.name,
+        targetDepartment: targetDepartmentId,
+        requiresApproval,
+        isKasdaTicket: isKasdaOrBsgDirectTicket,
+        estimatedResolution: slaDueDate,
+        autoAssigned: !!fullTicket?.assignedToUserId,
+        routingReason: isKasdaOrBsgDirectTicket ? 
+          'KASDA/BSGDirect content - routed to Dukungan dan Layanan' : 
+          'Technical banking content - routed to IT or user department'
+      }
+    });
+
+  } catch (error) {
+    console.error('Error creating BSG ticket:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create BSG ticket',
+      error: process.env.NODE_ENV === 'development' ? error : undefined
+    });
+  }
+}));
+
+// Get tickets pending approval for managers (enhanced version with template info)
+router.get('/pending-approvals', protect, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { user } = req;
+
+    if (user?.role !== 'manager' && user?.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Manager role required.'
+      });
+    }
+
+    // Get tickets where status is pending_approval and user is the manager
+    const pendingTickets = await prisma.ticket.findMany({
+      where: {
+        status: 'pending_approval',
+        OR: [
+          // Traditional manager approval (creator's manager is current user)
+          {
+            createdBy: {
+              managerId: user.id
+            }
+          },
+          // Business approval tickets assigned to this manager as business reviewer
+          {
+            businessApproval: {
+              businessReviewerId: user.id,
+              approvalStatus: 'pending'
+            }
+          }
+        ]
+      },
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            role: true,
+            department: {
+              select: {
+                name: true
+              }
+            }
+          }
+        },
+        assignedTo: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            role: true
+          }
+        },
+        // Legacy template info
+        template: {
+          select: {
+            id: true,
+            name: true,
+            description: true
+          }
+        },
+        item: {
+          select: {
+            name: true
+          }
+        },
+        // Enhanced service catalog info
+        serviceItem: {
+          select: {
+            name: true,
+            requestType: true
+          }
+        },
+        serviceCatalog: {
+          include: {
+            department: true
+          }
+        },
+        governmentEntity: true,
+        businessApproval: {
+          include: {
+            businessReviewer: {
+              select: {
+                id: true,
+                username: true,
+                email: true,
+                role: true
+              }
+            }
+          }
+        },
+        attachments: true,
+        customFieldValues: {
+          include: {
+            fieldDefinition: true
+          }
+        },
+        serviceFieldValues: {
+          include: {
+            fieldDefinition: true
+          }
+        },
+        // BSG field values
+        bsgFieldValues: true
+      },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    res.json(pendingTickets);
+
+  } catch (error) {
+    console.error('Error fetching pending approvals:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch pending approvals'
     });
   }
 }));

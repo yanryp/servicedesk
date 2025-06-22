@@ -2,12 +2,13 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { BuildingOffice2Icon as BuildingOfficeIcon, DocumentPlusIcon } from '@heroicons/react/24/outline';
+import { BuildingOffice2Icon as BuildingOfficeIcon, DocumentPlusIcon, UserIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 import { BSGTemplateSelector } from '../components';
 import BSGDynamicFieldRenderer from '../components/BSGDynamicFieldRenderer';
 import { TicketPriority } from '../types';
 import toast from 'react-hot-toast';
+import BSGTemplateService from '../services/bsgTemplate';
 
 interface BSGTemplate {
   id: number;
@@ -35,6 +36,8 @@ const BSGCreateTicketPage: React.FC = () => {
   const [attachments, setAttachments] = useState<FileList | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingFields, setLoadingFields] = useState(false);
+  const [showUserSelector, setShowUserSelector] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
 
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
@@ -44,8 +47,7 @@ const BSGCreateTicketPage: React.FC = () => {
     handleSubmit,
     formState: { errors },
     reset,
-    setValue,
-    watch
+    setValue
   } = useForm<BSGTicketFormData>({
     defaultValues: {
       priority: 'medium',
@@ -67,14 +69,21 @@ const BSGCreateTicketPage: React.FC = () => {
       // Load template fields
       setLoadingFields(true);
       try {
-        const response = await fetch(`/api/bsg-templates/${template.id}/fields`);
+        const token = localStorage.getItem('authToken');
+        const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+        const response = await fetch(`${baseUrl}/bsg-templates/${template.id}/fields`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
         if (response.ok) {
-          const fields = await response.json();
-          setTemplateFields(fields);
+          const result = await response.json();
+          setTemplateFields(result.data || []);
           
           // Initialize field values with defaults
           const initialValues: Record<string, any> = {};
-          fields.forEach((field: any) => {
+          (result.data || []).forEach((field: any) => {
             if (field.options?.find((opt: any) => opt.isDefault)) {
               initialValues[field.fieldName] = field.options.find((opt: any) => opt.isDefault).value;
             }
@@ -161,19 +170,26 @@ const BSGCreateTicketPage: React.FC = () => {
 
       console.log('Creating BSG ticket with custom fields:', ticketData);
 
-      // TODO: Replace with actual API call to create BSG ticket
-      // const response = await fetch('/api/bsg-tickets', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(ticketData)
-      // });
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Call the API to create BSG ticket
+      const response = await BSGTemplateService.createBSGTicket({
+        title: data.title,
+        description: data.description,
+        priority: data.priority,
+        templateId: selectedTemplate.id,
+        templateNumber: selectedTemplate.template_number,
+        category: selectedTemplate.category_name,
+        customFields: fieldValues,
+        attachments: attachments || undefined
+      });
       
       toast.success('BSG ticket created successfully with custom fields!');
-      // TODO: Navigate to actual ticket detail page
-      navigate('/tickets');
+      
+      // Navigate to the ticket detail page if we have the ticket ID
+      if (response?.data?.id) {
+        navigate(`/tickets/${response.data.id}`);
+      } else {
+        navigate('/tickets');
+      }
       
     } catch (error: any) {
       console.error('Error creating BSG ticket:', error);
@@ -352,14 +368,99 @@ const BSGCreateTicketPage: React.FC = () => {
             )}
 
             {/* User Info Display */}
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-              <h4 className="font-semibold text-slate-800 mb-2">Requester Information</h4>
-              <div className="text-sm text-slate-700 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div><strong>Name:</strong> {user?.username}</div>
-                <div><strong>Email:</strong> {user?.email}</div>
-                <div><strong>Department:</strong> {user?.department?.name || 'Not specified'}</div>
-                <div><strong>Role:</strong> {user?.role}</div>
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold text-blue-800 flex items-center">
+                  <UserIcon className="w-5 h-5 mr-2" />
+                  BSG Employee Information
+                </h4>
+                {user?.role === 'technician' && (
+                  <button
+                    type="button"
+                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                    onClick={() => setShowUserSelector(!showUserSelector)}
+                  >
+                    {showUserSelector ? 'Cancel' : 'Create for another user'}
+                  </button>
+                )}
               </div>
+              <div className="text-sm text-slate-700 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="flex flex-col">
+                  <span className="font-medium text-slate-600">Employee Name:</span>
+                  <span className="text-slate-800">{user?.username}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-medium text-slate-600">Email Address:</span>
+                  <span className="text-slate-800">{user?.email}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-medium text-slate-600">Department/Branch:</span>
+                  <span className="text-slate-800">{user?.department?.name || 'Not specified'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-medium text-slate-600">Position:</span>
+                  <span className="text-slate-800 capitalize">{user?.role}</span>
+                </div>
+                <div className="sm:col-span-2">
+                  <div className="p-3 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-lg border border-blue-200">
+                    <div className="flex items-start space-x-3">
+                      <BuildingOfficeIcon className="w-5 h-5 text-blue-600 mt-0.5" />
+                      <div className="flex-1">
+                        <h5 className="font-medium text-blue-800 mb-1">Smart Ticket Routing</h5>
+                        <p className="text-sm text-blue-700 leading-relaxed">
+                          Select any category based on your issue type. 
+                          The system will automatically route your ticket to the appropriate department:
+                        </p>
+                        <ul className="text-xs text-blue-600 mt-2 space-y-1">
+                          <li>• <strong>KASDA/BSGDirect categories</strong> → Dukungan dan Layanan Department</li>
+                          <li>• <strong>OLIBS/Core Banking/ATM categories</strong> → Information Technology Department</li>
+                          <li>• <strong>Routing based on category selection</strong>, not user type</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* User Selector for Technicians */}
+              {showUserSelector && user?.role === 'technician' && (
+                <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <h5 className="font-medium text-yellow-800 mb-2">Create ticket on behalf of:</h5>
+                  <div className="space-y-3">
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Search by username or email..."
+                        className="block w-full px-3 py-2 border border-yellow-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                        onChange={(e) => {
+                          // TODO: Implement user search functionality
+                          console.log('Searching for:', e.target.value);
+                        }}
+                      />
+                    </div>
+                    {selectedUser && (
+                      <div className="p-3 bg-white border border-yellow-300 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium text-gray-900">{selectedUser.username}</div>
+                            <div className="text-sm text-gray-600">{selectedUser.email}</div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedUser(null)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    <p className="text-xs text-yellow-700">
+                      Note: The ticket will be created under the selected user's name, but you will be noted as the technician who created it.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Form Actions */}

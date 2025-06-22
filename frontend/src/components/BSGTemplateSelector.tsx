@@ -41,37 +41,7 @@ const BSGTemplateSelector: React.FC<BSGTemplateSelectorProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
 
-  // Mock data for development (replace with real API calls)
-  const mockCategories: BSGTemplateCategory[] = [
-    { id: 1, name: 'OLIBS', display_name: 'OLIBS Core Banking', template_count: 5, description: 'Online Banking System templates' },
-    { id: 2, name: 'KLAIM', display_name: 'Transaction Claims', template_count: 2, description: 'Transaction claim and dispute templates' },
-    { id: 3, name: 'XCARD', display_name: 'XCARD Management', template_count: 2, description: 'XCARD system user management' },
-    { id: 4, name: 'TellerApp/Reporting', display_name: 'Teller Applications', template_count: 2, description: 'Teller app and reporting systems' },
-    { id: 5, name: 'BSG QRIS', display_name: 'BSG QRIS', template_count: 3, description: 'QRIS payment system templates' },
-    { id: 6, name: 'BSGTouch', display_name: 'BSGTouch Mobile', template_count: 4, description: 'Mobile banking application' },
-    { id: 7, name: 'ATM', display_name: 'ATM Technical Support', template_count: 1, description: 'ATM technical issues and maintenance' },
-    { id: 8, name: 'SMS BANKING', display_name: 'SMS Banking', template_count: 4, description: 'SMS banking service templates' },
-    { id: 9, name: 'Permintaan Perpanjangan operasional', display_name: 'Operational Extensions', template_count: 1, description: 'Branch operational hour extensions' }
-  ];
-
-  const mockTemplates: { [key: number]: BSGTemplate[] } = {
-    1: [ // OLIBS
-      { id: 1, template_number: 1, name: 'Perubahan Menu & Limit Transaksi', display_name: 'Perubahan Menu & Limit Transaksi', description: 'Permintaan perubahan menu dan limit transaksi untuk user OLIBS', popularity_score: 95, usage_count: 45, category_name: 'OLIBS', category_display_name: 'OLIBS Core Banking' },
-      { id: 2, template_number: 2, name: 'Mutasi User Pegawai', display_name: 'Mutasi User Pegawai', description: 'Mutasi pegawai antar cabang dengan perubahan wewenang OLIBS', popularity_score: 80, usage_count: 32, category_name: 'OLIBS', category_display_name: 'OLIBS Core Banking' },
-      { id: 3, template_number: 3, name: 'Pendaftaran User Baru', display_name: 'Pendaftaran User Baru', description: 'Pendaftaran user baru OLIBS untuk cabang/capem', popularity_score: 90, usage_count: 38, category_name: 'OLIBS', category_display_name: 'OLIBS Core Banking' },
-      { id: 4, template_number: 4, name: 'Non Aktif User', display_name: 'Non Aktif User', description: 'Penonaktifan user OLIBS yang sudah tidak aktif', popularity_score: 70, usage_count: 25, category_name: 'OLIBS', category_display_name: 'OLIBS Core Banking' },
-      { id: 5, template_number: 5, name: 'Override Password', display_name: 'Override Password', description: 'Reset dan override password user OLIBS', popularity_score: 85, usage_count: 42, category_name: 'OLIBS', category_display_name: 'OLIBS Core Banking' }
-    ],
-    2: [ // KLAIM
-      { id: 6, template_number: 6, name: 'BSGTouch – Transfer Antar Bank', display_name: 'BSGTouch – Transfer Antar Bank', description: 'Klaim transaksi transfer antar bank BSGTouch', popularity_score: 75, usage_count: 28, category_name: 'KLAIM', category_display_name: 'Transaction Claims' },
-      { id: 7, template_number: 7, name: 'BSGTouch, BSGQRIS – Klaim Gagal Transaksi', display_name: 'BSGTouch, BSGQRIS – Klaim Gagal Transaksi', description: 'Klaim untuk transaksi gagal BSGTouch dan BSGQRIS', popularity_score: 80, usage_count: 35, category_name: 'KLAIM', category_display_name: 'Transaction Claims' }
-    ],
-    3: [ // XCARD
-      { id: 8, template_number: 8, name: 'Buka Blokir dan Reset Password', display_name: 'Buka Blokir dan Reset Password', description: 'Pembukaan blokir dan reset password XCARD', popularity_score: 60, usage_count: 20, category_name: 'XCARD', category_display_name: 'XCARD Management' },
-      { id: 9, template_number: 9, name: 'Pendaftaran User Baru', display_name: 'Pendaftaran User Baru', description: 'Pendaftaran user baru XCARD', popularity_score: 55, usage_count: 15, category_name: 'XCARD', category_display_name: 'XCARD Management' }
-    ]
-  };
-
+  // Load categories from API
   useEffect(() => {
     loadCategories();
   }, []);
@@ -83,12 +53,26 @@ const BSGTemplateSelector: React.FC<BSGTemplateSelectorProps> = ({
   }, [selectedCategory, searchQuery]);
 
   const loadCategories = async () => {
+    setLoading(true);
+    setError('');
     try {
-      setLoading(true);
-      // For now, use mock data
-      setCategories(mockCategories);
-    } catch (error) {
-      console.error('Error loading BSG categories:', error);
+      const token = localStorage.getItem('authToken');
+      const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+      const response = await fetch(`${baseUrl}/bsg-templates/categories`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        setCategories(result.data || []);
+      } else {
+        throw new Error('Failed to load categories');
+      }
+    } catch (err) {
+      console.error('Error loading BSG categories:', err);
       setError('Failed to load template categories');
     } finally {
       setLoading(false);
@@ -96,23 +80,28 @@ const BSGTemplateSelector: React.FC<BSGTemplateSelectorProps> = ({
   };
 
   const loadTemplates = async (categoryId: number) => {
+    setLoading(true);
+    setError('');
     try {
-      setLoading(true);
-      // For now, use mock data
-      const categoryTemplates = mockTemplates[categoryId] || [];
+      const token = localStorage.getItem('authToken');
+      const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+      const response = await fetch(`${baseUrl}/bsg-templates/templates?categoryId=${categoryId}&search=${searchQuery}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
-      // Apply search filter
-      const filteredTemplates = searchQuery 
-        ? categoryTemplates.filter(template => 
-            template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            template.description?.toLowerCase().includes(searchQuery.toLowerCase())
-          )
-        : categoryTemplates;
-      
-      setTemplates(filteredTemplates);
-    } catch (error) {
-      console.error('Error loading BSG templates:', error);
+      if (response.ok) {
+        const result = await response.json();
+        setTemplates(result.data || []);
+      } else {
+        throw new Error('Failed to load templates');
+      }
+    } catch (err) {
+      console.error('Error loading BSG templates:', err);
       setError('Failed to load templates');
+      setTemplates([]);
     } finally {
       setLoading(false);
     }
@@ -138,7 +127,7 @@ const BSGTemplateSelector: React.FC<BSGTemplateSelectorProps> = ({
     }
   };
 
-  if (error) {
+  if (error && categories.length === 0) {
     return (
       <div className="text-center py-8">
         <div className="text-red-600 mb-2">Error loading BSG templates</div>
@@ -154,34 +143,43 @@ const BSGTemplateSelector: React.FC<BSGTemplateSelectorProps> = ({
   }
 
   return (
-    <div className={`space-y-6 ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
+    <div className={`space-y-6 ${disabled ? 'opacity-50 pointer-events-none' : ''}`} data-testid="bsg-template-discovery">
       {/* Category Selection */}
       <div>
         <h3 className="text-lg font-semibold text-slate-800 mb-4">
           🏦 BSG Banking System Templates
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => handleCategorySelect(category)}
-              className={`p-4 text-left border-2 rounded-xl transition-all duration-200 hover:shadow-md ${
-                selectedCategory?.id === category.id
-                  ? 'border-blue-500 bg-blue-50 shadow-md'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex items-center space-x-3 mb-2">
-                {getCategoryIcon(category.name)}
-                <div className="font-medium text-slate-800">{category.display_name}</div>
-              </div>
-              <div className="text-sm text-gray-600 mb-2">{category.description}</div>
-              <div className="text-xs text-blue-600 font-medium">
-                {category.template_count} template{category.template_count !== 1 ? 's' : ''}
-              </div>
-            </button>
-          ))}
-        </div>
+        
+        {loading && categories.length === 0 ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span className="ml-3 text-gray-600">Loading template categories...</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => handleCategorySelect(category)}
+                className={`p-4 text-left border-2 rounded-xl transition-all duration-200 hover:shadow-md ${
+                  selectedCategory?.id === category.id
+                    ? 'border-blue-500 bg-blue-50 shadow-md'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+                data-testid="template-category"
+              >
+                <div className="flex items-center space-x-3 mb-2">
+                  {getCategoryIcon(category.name)}
+                  <div className="font-medium text-slate-800">{category.display_name}</div>
+                </div>
+                <div className="text-sm text-gray-600 mb-2">{category.description}</div>
+                <div className="text-xs text-blue-600 font-medium">
+                  {category.template_count} template{category.template_count !== 1 ? 's' : ''}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Template Selection */}
@@ -198,70 +196,61 @@ const BSGTemplateSelector: React.FC<BSGTemplateSelectorProps> = ({
                 placeholder="Search templates..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
 
           {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-              <div className="mt-2 text-sm text-gray-500">Loading templates...</div>
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              <span className="ml-3 text-gray-600">Loading templates...</span>
             </div>
           ) : (
-            <div className="space-y-3">
-              {templates.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  {searchQuery ? 'No templates match your search' : 'No templates available'}
-                </div>
-              ) : (
-                templates.map((template) => (
-                  <button
-                    key={template.id}
-                    onClick={() => handleTemplateSelect(template)}
-                    className={`w-full p-4 text-left border-2 rounded-xl transition-all duration-200 hover:shadow-md ${
-                      selectedTemplate?.id === template.id
-                        ? 'border-green-500 bg-green-50 shadow-md'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            #{template.template_number}
-                          </span>
-                          <div className="font-medium text-slate-800">{template.name}</div>
-                        </div>
-                        <div className="text-sm text-gray-600 mb-2">{template.description}</div>
-                        <div className="flex items-center space-x-4 text-xs text-gray-500">
-                          <span>Popularity: {template.popularity_score}%</span>
-                          <span>Used {template.usage_count} times</span>
-                        </div>
-                      </div>
-                      {selectedTemplate?.id === template.id && (
-                        <div className="ml-4 text-green-600">
-                          <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                ))
-              )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {templates.map((template) => (
+                <button
+                  key={template.id}
+                  onClick={() => handleTemplateSelect(template)}
+                  className={`p-4 text-left border-2 rounded-xl transition-all duration-200 hover:shadow-md ${
+                    selectedTemplate?.id === template.id
+                      ? 'border-blue-500 bg-blue-50 shadow-md'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  data-testid="template-card"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="font-medium text-slate-800">{template.display_name}</div>
+                    <div className="text-xs text-blue-600 font-medium">#{template.template_number}</div>
+                  </div>
+                  <div className="text-sm text-gray-600 mb-3">{template.description}</div>
+                  <div className="flex justify-between items-center text-xs">
+                    <div className="text-gray-500">Used {template.usage_count} times</div>
+                    <div className="text-green-600 font-medium">Score: {template.popularity_score}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {!loading && templates.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              {searchQuery ? `No templates found for "${searchQuery}"` : 'No templates available in this category'}
             </div>
           )}
         </div>
       )}
 
-      {/* Selected Template Summary */}
+      {/* Selected Template Display */}
       {selectedTemplate && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-          <h5 className="font-semibold text-green-800 mb-2">✅ Selected Template</h5>
-          <div className="text-sm">
-            <div className="font-medium text-green-700">#{selectedTemplate.template_number} - {selectedTemplate.name}</div>
-            <div className="text-green-600 mt-1">{selectedTemplate.description}</div>
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4" data-testid="selected-template">
+          <h4 className="font-semibold text-blue-800 mb-2">Selected BSG Template</h4>
+          <div className="text-sm text-blue-700">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div><strong>Category:</strong> {selectedTemplate.category_display_name}</div>
+              <div><strong>Template #:</strong> {selectedTemplate.template_number}</div>
+              <div className="sm:col-span-2"><strong>Type:</strong> {selectedTemplate.name}</div>
+            </div>
           </div>
         </div>
       )}

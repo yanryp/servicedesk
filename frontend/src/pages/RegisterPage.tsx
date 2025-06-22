@@ -1,22 +1,27 @@
 // src/pages/RegisterPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { EyeIcon, EyeSlashIcon, UserPlusIcon } from '@heroicons/react/24/outline';
+import { EyeIcon, EyeSlashIcon, UserPlusIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 import { RegisterRequest } from '../types';
+import { departmentService } from '../services';
+import toast from 'react-hot-toast';
 
 const RegisterPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [departments, setDepartments] = useState<any[]>([]);
+  const [loadingDepartments, setLoadingDepartments] = useState(true);
   const navigate = useNavigate();
-  const { register: registerUser, isAuthenticated } = useAuth();
+  const { register: registerUser, isAuthenticated, user } = useAuth();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     watch,
+    reset,
   } = useForm<RegisterRequest & { confirmPassword: string }>({
     defaultValues: {
       role: 'requester',
@@ -24,9 +29,27 @@ const RegisterPage: React.FC = () => {
   });
 
   const password = watch('password');
+  const selectedRole = watch('role');
 
-  // Redirect if already authenticated
-  if (isAuthenticated) {
+  // Load departments on component mount
+  useEffect(() => {
+    const loadDepartments = async () => {
+      try {
+        const departments = await departmentService.getAllDepartments();
+        setDepartments(departments || []);
+      } catch (error) {
+        console.error('Failed to load departments:', error);
+        toast.error('Failed to load departments');
+      } finally {
+        setLoadingDepartments(false);
+      }
+    };
+
+    loadDepartments();
+  }, []);
+
+  // Redirect if not admin or not authenticated
+  if (!isAuthenticated || user?.role !== 'admin') {
     navigate('/');
     return null;
   }
@@ -35,8 +58,26 @@ const RegisterPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       const { confirmPassword, ...registerData } = data;
-      await registerUser(registerData);
-      navigate('/');
+      
+      // Convert departmentId to number and handle technician specialization
+      const enhancedData = {
+        ...registerData,
+        departmentId: registerData.departmentId ? parseInt(registerData.departmentId.toString()) : undefined,
+        // Add technician specialization if role is technician
+        ...(registerData.role === 'technician' && {
+          specialization: {
+            primarySkill: registerData.primarySkill,
+            experienceLevel: registerData.experienceLevel,
+            secondarySkills: registerData.secondarySkills
+          }
+        })
+      };
+
+      await registerUser(enhancedData);
+      toast.success(`User ${registerData.username} created successfully!`);
+      
+      // Reset form for creating another user
+      reset();
     } catch (error) {
       // Error is handled by AuthContext and displayed via toast
     } finally {
@@ -54,10 +95,10 @@ const RegisterPage: React.FC = () => {
             </div>
           </div>
           <h2 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-            Join BSG Helpdesk
+            User Management
           </h2>
           <p className="mt-2 text-slate-600">
-            Create your account to access the support portal
+            Create new user accounts for BSG Helpdesk system
           </p>
         </div>
 
@@ -165,25 +206,125 @@ const RegisterPage: React.FC = () => {
               )}
             </div>
 
-            <div>
-              <label htmlFor="role" className="block text-sm font-medium text-slate-700">
-                Role
-              </label>
-              <select
-                id="role"
-                {...register('role', { required: 'Role is required' })}
-                disabled={isSubmitting}
-                className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
-              >
-                <option value="requester">Requester - Submit and track support tickets</option>
-                <option value="technician">Technician - Resolve and manage tickets</option>
-                <option value="manager">Manager - Approve tickets and oversee team</option>
-                <option value="admin">Admin - Full system access and management</option>
-              </select>
-              {errors.role && (
-                <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
-              )}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="role" className="block text-sm font-medium text-slate-700">
+                  Role
+                </label>
+                <select
+                  id="role"
+                  {...register('role', { required: 'Role is required' })}
+                  disabled={isSubmitting}
+                  className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
+                >
+                  <option value="requester">Requester - Submit and track support tickets</option>
+                  <option value="technician">Technician - Resolve and manage tickets</option>
+                  <option value="manager">Manager - Approve tickets and oversee team</option>
+                  <option value="admin">Admin - Full system access and management</option>
+                </select>
+                {errors.role && (
+                  <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="departmentId" className="block text-sm font-medium text-slate-700">
+                  Department *
+                </label>
+                <select
+                  id="departmentId"
+                  {...register('departmentId', { required: 'Department is required' })}
+                  disabled={isSubmitting || loadingDepartments}
+                  className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
+                >
+                  <option value="">Select Department</option>
+                  {departments.map((dept) => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.departmentId && (
+                  <p className="mt-1 text-sm text-red-600">{errors.departmentId.message}</p>
+                )}
+                {loadingDepartments && (
+                  <p className="mt-1 text-xs text-blue-600">Loading departments...</p>
+                )}
+              </div>
             </div>
+
+            {/* Technician Specialization Fields */}
+            {selectedRole === 'technician' && (
+              <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h3 className="text-lg font-medium text-blue-900 flex items-center">
+                  <BuildingOfficeIcon className="w-5 h-5 mr-2" />
+                  Technician Specialization
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="primarySkill" className="block text-sm font-medium text-slate-700">
+                      Primary Skill Area *
+                    </label>
+                    <select
+                      id="primarySkill"
+                      {...register('primarySkill', { 
+                        required: selectedRole === 'technician' ? 'Primary skill is required for technicians' : false 
+                      })}
+                      disabled={isSubmitting}
+                      className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
+                    >
+                      <option value="">Select Primary Skill</option>
+                      <option value="banking_systems">Banking Systems (Core Banking, OLIBS)</option>
+                      <option value="network_infrastructure">Network & Infrastructure</option>
+                      <option value="hardware_support">Hardware Support</option>
+                      <option value="software_applications">Software Applications</option>
+                      <option value="security_compliance">Security & Compliance</option>
+                      <option value="database_administration">Database Administration</option>
+                    </select>
+                    {errors.primarySkill && (
+                      <p className="mt-1 text-sm text-red-600">{errors.primarySkill.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="experienceLevel" className="block text-sm font-medium text-slate-700">
+                      Experience Level *
+                    </label>
+                    <select
+                      id="experienceLevel"
+                      {...register('experienceLevel', { 
+                        required: selectedRole === 'technician' ? 'Experience level is required for technicians' : false 
+                      })}
+                      disabled={isSubmitting}
+                      className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
+                    >
+                      <option value="">Select Experience Level</option>
+                      <option value="junior">Junior (0-2 years)</option>
+                      <option value="intermediate">Intermediate (2-5 years)</option>
+                      <option value="senior">Senior (5+ years)</option>
+                      <option value="expert">Expert/Lead (10+ years)</option>
+                    </select>
+                    {errors.experienceLevel && (
+                      <p className="mt-1 text-sm text-red-600">{errors.experienceLevel.message}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="secondarySkills" className="block text-sm font-medium text-slate-700">
+                    Secondary Skills (Optional)
+                  </label>
+                  <textarea
+                    id="secondarySkills"
+                    rows={2}
+                    {...register('secondarySkills')}
+                    disabled={isSubmitting}
+                    className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
+                    placeholder="Additional skills or certifications (e.g., AWS, Cisco, Microsoft, etc.)"
+                  />
+                </div>
+              </div>
+            )}
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-slate-700">
@@ -262,18 +403,6 @@ const RegisterPage: React.FC = () => {
                   'Create BSG Helpdesk Account'
                 )}
               </button>
-            </div>
-
-            <div className="text-center">
-              <p className="text-sm text-slate-600">
-                Already have an account?{' '}
-                <Link
-                  to="/login"
-                  className="font-medium text-green-600 hover:text-green-700 transition-colors"
-                >
-                  Sign in here
-                </Link>
-              </p>
             </div>
           </form>
         </div>

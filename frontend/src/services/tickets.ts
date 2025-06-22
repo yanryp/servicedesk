@@ -22,14 +22,14 @@ export const ticketsService = {
     }
     
     const queryString = params.toString();
-    const url = queryString ? `/api/tickets?${queryString}` : '/api/tickets';
+    const url = queryString ? `/tickets?${queryString}` : '/tickets';
     
     return api.get<TicketsResponse>(url);
   },
 
   // Get single ticket by ID
   getTicket: async (ticketId: number): Promise<Ticket> => {
-    return api.get<Ticket>(`/api/tickets/${ticketId}`);
+    return api.get<Ticket>(`/tickets/${ticketId}`);
   },
 
   // Create new ticket with attachments
@@ -62,47 +62,47 @@ export const ticketsService = {
       });
     }
 
-    return api.upload<Ticket>('/api/tickets', formData);
+    return api.upload<Ticket>('/tickets', formData);
   },
 
   // Update ticket
   updateTicket: async (ticketId: number, ticketData: UpdateTicketRequest): Promise<Ticket> => {
-    return api.put<Ticket>(`/api/tickets/${ticketId}`, ticketData);
+    return api.put<Ticket>(`/tickets/${ticketId}`, ticketData);
   },
 
   // Delete ticket
   deleteTicket: async (ticketId: number): Promise<void> => {
-    return api.delete(`/api/tickets/${ticketId}`);
+    return api.delete(`/tickets/${ticketId}`);
   },
 
   // Assign ticket to user
   assignTicket: async (ticketId: number, assignedToUserId: number): Promise<Ticket> => {
-    return api.patch<Ticket>(`/api/tickets/${ticketId}/assign`, { assignedToUserId });
+    return api.patch<Ticket>(`/tickets/${ticketId}/assign`, { assignedToUserId });
   },
 
   // Update ticket status
   updateTicketStatus: async (ticketId: number, status: string): Promise<Ticket> => {
-    return api.patch<Ticket>(`/api/tickets/${ticketId}/status`, { status });
+    return api.patch<Ticket>(`/tickets/${ticketId}/status`, { status });
   },
 
   // Approve ticket (Manager only)
   approveTicket: async (ticketId: number, comments?: string): Promise<Ticket> => {
-    return api.post<Ticket>(`/api/tickets/${ticketId}/approve`, { comments });
+    return api.post<Ticket>(`/tickets/${ticketId}/approve`, { comments });
   },
 
   // Reject ticket (Manager only)
   rejectTicket: async (ticketId: number, comments: string): Promise<Ticket> => {
-    return api.post<Ticket>(`/api/tickets/${ticketId}/reject`, { comments });
+    return api.post<Ticket>(`/tickets/${ticketId}/reject`, { comments });
   },
 
-  // Get pending approvals (Manager only)
+  // Get pending approvals (Manager only) - using enhanced endpoint
   getPendingApprovals: async (): Promise<Ticket[]> => {
-    return api.get<Ticket[]>('/api/tickets/pending-approvals');
+    return api.get<Ticket[]>('/v2/tickets/pending-approvals');
   },
 
   // Download attachment
   downloadAttachment: async (attachmentId: number): Promise<Blob> => {
-    return api.get(`/api/tickets/attachments/${attachmentId}/download`, {
+    return api.get(`/tickets/attachments/${attachmentId}/download`, {
       responseType: 'blob',
     });
   },

@@ -254,7 +254,12 @@ const TicketApprovalCard: React.FC<TicketApprovalCardProps> = ({
               </div>
               <div>
                 <span className="font-medium text-gray-500">Category:</span>
-                <p className="text-gray-900">{ticket.item?.name || 'N/A'}</p>
+                <p className="text-gray-900">
+                  {ticket.template?.name || 
+                   ticket.serviceItem?.name || 
+                   ticket.item?.name || 
+                   (ticket.isKasdaTicket ? 'BSG Banking Support' : 'General Support')}
+                </p>
               </div>
               <div>
                 <span className="font-medium text-gray-500">Submitted:</span>

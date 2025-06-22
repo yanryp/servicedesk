@@ -5,7 +5,7 @@ import { TicketTemplate } from '../types';
 export const templatesService = {
   // Get all templates
   getTemplates: async (): Promise<TicketTemplate[]> => {
-    return api.get<TicketTemplate[]>('/api/templates');
+    return api.get<TicketTemplate[]>('/templates');
   },
 
   // Get template by ID with custom fields
@@ -19,7 +19,7 @@ export const templatesService = {
     description?: string;
     item_id?: number;
   }): Promise<TicketTemplate> => {
-    return api.post<TicketTemplate>('/api/templates', templateData);
+    return api.post<TicketTemplate>('/templates', templateData);
   },
 
   // Update template (Admin/Manager only)

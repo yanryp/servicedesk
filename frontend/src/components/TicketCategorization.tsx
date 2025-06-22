@@ -91,7 +91,10 @@ const TicketCategorization: React.FC<TicketCategorizationProps> = ({
 
       const result = await categorizationService.updateCategorization(ticket.id, requestData);
       
-      if (onUpdate) {
+      // Clear any previous errors on successful update
+      setError(null);
+      
+      if (onUpdate && result && result.ticket) {
         onUpdate(result.ticket);
       }
 

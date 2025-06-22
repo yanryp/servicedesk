@@ -128,3 +128,14 @@ Switching;Error Switching;Error Transfer Antar Bank
 Switching;Error Switching;Error Transaksi ATM
 Switching;Error Switching;Error Koneksi
 Switching;Error Switching;Error Kartu ATM
+KASDA;User Management;User Registration
+KASDA;User Management;Permission Changes
+KASDA;User Management;Access Modification
+KASDA;User Management;Account Deactivation
+KASDA;User Management;Role Assignment
+KASDA;System Access;Login Issues
+KASDA;System Access;Password Reset
+KASDA;System Access;Account Unlock
+KASDA;Technical Support;System Error
+KASDA;Technical Support;Data Issue
+KASDA;Technical Support;Performance Problem

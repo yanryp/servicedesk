@@ -86,6 +86,8 @@ const CreateTicketPage: React.FC = () => {
       setIssueCategory(data.suggestions.issueCategory);
     } catch (error) {
       console.error('Failed to load categorization suggestions:', error);
+      // Don't show error to user - categorization suggestions are optional
+      setSuggestions(null);
     }
   };
 
@@ -217,15 +219,35 @@ const CreateTicketPage: React.FC = () => {
             />
           </div>
 
-          {/* Template Selection */}
+          {/* Template Selection - Hidden but still functional for auto-population */}
           {selectedItem && (
             <div className="mb-8">
-              <h2 className="text-xl font-semibold text-slate-800 mb-4">Template Selection</h2>
-              <TemplateSelector
-                selectedItem={selectedItem}
-                onTemplateSelect={handleTemplateSelect}
-                disabled={isSubmitting}
-              />
+              {/* Templates are auto-loaded based on category selection */}
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <h3 className="font-semibold text-blue-800 mb-2">Selected Category Path</h3>
+                <div className="text-sm text-blue-700">
+                  <div className="flex items-center space-x-2">
+                    <span className="px-2 py-1 bg-blue-100 rounded">{selectedItem.subCategory?.category?.name}</span>
+                    <span>→</span>
+                    <span className="px-2 py-1 bg-blue-100 rounded">{selectedItem.subCategory?.name}</span>
+                    <span>→</span>
+                    <span className="px-2 py-1 bg-blue-200 rounded font-medium">{selectedItem.name}</span>
+                  </div>
+                  <div className="mt-2 text-xs">
+                    <strong>Department:</strong> {selectedItem.subCategory?.category?.department?.name}
+                    {selectedItem.subCategory?.category?.name === 'KASDA' && (
+                      <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 rounded text-xs">
+                        → Routes to Dukungan dan Layanan
+                      </span>
+                    )}
+                    {selectedItem.subCategory?.category?.department?.name === 'Information Technology' && (
+                      <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs">
+                        → Routes to Information Technology
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 

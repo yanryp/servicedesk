@@ -16,33 +16,15 @@ router.get('/catalog', protect, asyncHandler(async (req: AuthenticatedRequest, r
     // Build filter based on user context
     let whereClause: any = { isActive: true, categoryLevel: 1 };
     
-    // If user is KASDA user, show government services prominently
-    if (user?.isKasdaUser) {
-      whereClause = {
-        isActive: true,
-        categoryLevel: 1,
-        OR: [
-          { serviceType: 'government_service' },
-          { serviceType: 'business_service' }
-        ]
-      };
-    }
-    // If user is from IT department, show technical services first
-    else if (user?.role === 'technician' && user?.departmentId) {
+    // Show all service types to all users - routing based on selection, not user type
+    // Technicians can still see department-specific ordering for efficiency
+    if (user?.role === 'technician' && user?.departmentId) {
       const department = await prisma.department.findUnique({
         where: { id: user.departmentId }
       });
       
-      if (department?.name === 'IT') {
-        whereClause = {
-          isActive: true,
-          categoryLevel: 1,
-          OR: [
-            { serviceType: 'technical_service' },
-            { serviceType: 'business_service' }
-          ]
-        };
-      }
+      // Optional: Order by department specialty for technician efficiency
+      // But don't restrict access - all categories should be visible
     }
 
     const serviceCatalog = await prisma.serviceCatalog.findMany({
@@ -97,8 +79,7 @@ router.get('/catalog/:catalogId/items', protect, asyncHandler(async (req: Authen
       where: {
         serviceCatalogId: parseInt(catalogId),
         isActive: true,
-        // Filter KASDA items for non-KASDA users if needed
-        ...(user?.isKasdaUser ? {} : { isKasdaRelated: false })
+        // All users can access all service items - routing based on selection
       },
       include: {
         templates: {
@@ -142,8 +123,7 @@ router.get('/templates/:templateId', protect, asyncHandler(async (req: Authentic
         customFieldDefinitions: {
           where: { 
             isVisible: true,
-            // Show KASDA-specific fields only to KASDA users or business reviewers
-            ...(user?.isKasdaUser || user?.isBusinessReviewer ? {} : { isKasdaSpecific: false })
+            // Show all fields to all users - routing happens based on template selection
           },
           orderBy: { sortOrder: 'asc' }
         },
@@ -163,13 +143,8 @@ router.get('/templates/:templateId', protect, asyncHandler(async (req: Authentic
       return res.status(404).json({ success: false, message: 'Template not found' });
     }
 
-    // Check if user can access KASDA templates
-    if (template.isKasdaTemplate && !user?.isKasdaUser && !user?.isBusinessReviewer) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Access denied. KASDA templates are restricted to authorized users.' 
-      });
-    }
+    // All users can access all templates - routing happens based on template selection
+    // Templates are no longer restricted by user type, routing is content-based
 
     res.json({
       success: true,
@@ -186,18 +161,12 @@ router.get('/templates/:templateId', protect, asyncHandler(async (req: Authentic
   }
 }));
 
-// Get government entities (for KASDA users)
+// Get government entities (available to all users for KASDA category selection)
 router.get('/government-entities', protect, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { user } = req;
 
-    // Only allow KASDA users and business reviewers to access government entities
-    if (!user?.isKasdaUser && !user?.isBusinessReviewer) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Access denied. Only authorized government users can access this information.' 
-      });
-    }
+    // All authenticated users can access government entities for category-based routing
 
     const entities = await prisma.governmentEntity.findMany({
       where: { isActive: true },
@@ -214,16 +183,14 @@ router.get('/government-entities', protect, asyncHandler(async (req: Authenticat
   }
 }));
 
-// Get KASDA user profile
+// Get KASDA user profile (available when user selects KASDA category)
 router.get('/kasda-profile', protect, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { user } = req;
 
-    if (!user?.isKasdaUser) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Access denied. Only KASDA users can access profile information.' 
-      });
+    // Check if user has a KASDA profile (for users who work with KASDA systems)
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Authentication required' });
     }
 
     const profile = await prisma.kasdaUserProfile.findUnique({
@@ -241,12 +208,8 @@ router.get('/kasda-profile', protect, asyncHandler(async (req: AuthenticatedRequ
       }
     });
 
-    if (!profile) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'KASDA profile not found' 
-      });
-    }
+    // Return null if no KASDA profile exists, not an error
+    // This allows all users to check for KASDA profile when selecting KASDA categories
 
     res.json({
       success: true,
@@ -334,10 +297,7 @@ router.get('/search', protect, asyncHandler(async (req: AuthenticatedRequest, re
       whereClause.departmentId = parseInt(department as string);
     }
 
-    // Apply KASDA filtering for non-KASDA users
-    if (!user?.isKasdaUser && !user?.isBusinessReviewer) {
-      whereClause.serviceType = { not: 'government_service' };
-    }
+    // All users can search all service types - routing based on selection, not user type
 
     const results = await prisma.serviceCatalog.findMany({
       where: whereClause,

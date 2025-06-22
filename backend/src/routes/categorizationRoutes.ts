@@ -21,57 +21,78 @@ const prisma = new PrismaClient();
 router.use(securityHeaders);
 
 // Get categorization suggestions based on service type
-router.get('/suggestions/:serviceItemId', 
+router.get('/suggestions/:itemId', 
   protect, 
   categorizationRateLimit,
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { serviceItemId } = req.params;
+      const { itemId } = req.params;
       
-      const serviceItem = await prisma.serviceItem.findUnique({
-        where: { id: parseInt(serviceItemId) },
+      const item = await prisma.item.findUnique({
+        where: { id: parseInt(itemId) },
         include: {
-          serviceCatalog: true
+          subCategory: {
+            include: {
+              category: {
+                include: {
+                  department: true
+                }
+              }
+            }
+          }
         }
       });
 
-      if (!serviceItem) {
+      if (!item) {
         return res.status(404).json({
           success: false,
-          message: 'Service item not found'
+          message: 'Item not found'
         });
       }
 
-      // Generate intelligent suggestions based on service type and request type
+      // Generate intelligent suggestions based on category and item type
       let suggestedIssueCategory = 'request'; // Default
       let suggestedRootCause = 'undetermined'; // Default
 
-      // Business logic for suggestions
-      if (serviceItem.requestType === 'service_request') {
+      // KASDA-related items are typically requests
+      const isKasdaRelated = item.subCategory?.category?.name === 'KASDA' || 
+                            item.subCategory?.category?.name === 'KASDA Support' ||
+                            item.subCategory?.category?.name === 'BSGDirect Support';
+
+      if (isKasdaRelated) {
         suggestedIssueCategory = 'request';
-      } else if (serviceItem.requestType === 'incident') {
-        suggestedIssueCategory = 'problem';
-        suggestedRootCause = 'system_error'; // Incidents often system-related
+        if (item.name.toLowerCase().includes('user') || item.name.toLowerCase().includes('account')) {
+          suggestedRootCause = 'human_error';
+        }
       }
 
-      // KASDA services are typically requests
-      if (serviceItem.isKasdaRelated) {
-        suggestedIssueCategory = 'request';
+      // Technical categories often involve problems
+      const technicalCategories = ['Error Surrounding', 'Error User Aplikasi', 'Hardware & Infrastructure', 'Network Issues'];
+      if (technicalCategories.includes(item.subCategory?.category?.name || '')) {
+        suggestedIssueCategory = 'problem';
+        suggestedRootCause = 'system_error';
       }
 
       // Service-specific suggestions
-      if (serviceItem.name.toLowerCase().includes('password')) {
+      if (item.name.toLowerCase().includes('password') || item.name.toLowerCase().includes('reset')) {
         suggestedRootCause = 'human_error';
+      }
+
+      if (item.name.toLowerCase().includes('error') || item.name.toLowerCase().includes('gangguan')) {
+        suggestedIssueCategory = 'problem';
+        suggestedRootCause = 'system_error';
       }
 
       res.json({
         success: true,
         data: {
-          serviceItem: {
-            id: serviceItem.id,
-            name: serviceItem.name,
-            requestType: serviceItem.requestType,
-            isKasdaRelated: serviceItem.isKasdaRelated
+          item: {
+            id: item.id,
+            name: item.name,
+            categoryName: item.subCategory?.category?.name,
+            subcategoryName: item.subCategory?.name,
+            departmentName: item.subCategory?.category?.department?.name,
+            isKasdaRelated
           },
           suggestions: {
             issueCategory: suggestedIssueCategory,

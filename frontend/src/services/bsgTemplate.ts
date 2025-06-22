@@ -337,6 +337,56 @@ export class BSGTemplateService {
       filters
     };
   }
+
+  /**
+   * Create BSG ticket with template and custom fields
+   */
+  static async createBSGTicket(ticketData: {
+    title: string;
+    description: string;
+    priority: string;
+    templateId: number;
+    templateNumber: number;
+    category: string;
+    customFields: Record<string, any>;
+    attachments?: FileList;
+  }): Promise<{ success: boolean; data: any; message: string }> {
+    const formData = new FormData();
+    
+    // Add ticket data
+    formData.append('templateId', ticketData.templateId.toString());
+    formData.append('templateNumber', ticketData.templateNumber.toString());
+    formData.append('title', ticketData.title);
+    formData.append('description', ticketData.description);
+    formData.append('priority', ticketData.priority);
+    formData.append('customFields', JSON.stringify(ticketData.customFields));
+    
+    // Add attachments if any
+    if (ticketData.attachments) {
+      Array.from(ticketData.attachments).forEach((file) => {
+        formData.append('attachments', file);
+      });
+    }
+
+    // Use direct fetch instead of api client for FormData
+    const token = localStorage.getItem('authToken');
+    const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+    
+    const response = await fetch(`${baseUrl}/v2/tickets/bsg-tickets`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorResult = await response.json();
+      throw new Error(errorResult.message || 'Failed to create BSG ticket');
+    }
+
+    return response.json();
+  }
 }
 
 // Export both class and default export for flexibility

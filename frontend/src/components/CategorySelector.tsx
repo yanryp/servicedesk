@@ -189,7 +189,8 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
             <option value="">
               {loading.items ? 'Loading items...' : 
                !selectedSubCategoryId ? 'Select a subcategory first' : 
-               'Select an item'}
+               items.length === 0 ? 'No items available' :
+               `Select an item (${items.length} available)`}
             </option>
             {items.map((item) => (
               <option key={item.id} value={item.id}>

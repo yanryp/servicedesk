@@ -165,7 +165,7 @@ async function ensureFieldType(fieldTypeName, originalType) {
         name: fieldTypeName,
         displayName: displayName,
         htmlInputType: htmlInputType,
-        validationRules: JSON.stringify(VALIDATION_RULES[fieldTypeName] || {})
+        validationPattern: JSON.stringify(VALIDATION_RULES[fieldTypeName] || {})
       }
     });
     

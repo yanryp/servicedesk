@@ -58,6 +58,7 @@ export interface AuthUser {
   role: UserRole;
   departmentId?: number;
   department?: Department;
+  isKasdaUser?: boolean;
 }
 
 export interface LoginRequest {
@@ -72,6 +73,10 @@ export interface RegisterRequest {
   firstName: string;
   lastName: string;
   role: UserRole;
+  departmentId?: number;
+  primarySkill?: string;
+  experienceLevel?: string;
+  secondarySkills?: string;
 }
 
 export interface AuthResponse {
@@ -149,6 +154,13 @@ export interface TicketAttachment {
   uploadedBy?: User;
 }
 
+export interface ServiceItem {
+  id: number;
+  name: string;
+  description?: string;
+  requestType?: string;
+}
+
 export interface Ticket {
   id: number;
   title: string;
@@ -164,6 +176,11 @@ export interface Ticket {
   itemId?: number;
   templateId?: number;
   managerComments?: string;
+  
+  // BSG and Enhanced ticket fields
+  isKasdaTicket?: boolean;
+  serviceItemId?: number;
+  serviceCatalogId?: number;
   
   // Categorization fields
   userRootCause?: RootCauseType;
@@ -182,6 +199,7 @@ export interface Ticket {
   assignedTo?: User;
   item?: Item;
   template?: TicketTemplate;
+  serviceItem?: ServiceItem;
   attachments?: TicketAttachment[];
   customFieldValues?: TicketCustomFieldValue[];
 }

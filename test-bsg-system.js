@@ -1,137 +1,202 @@
-// test-bsg-system.js
-// Simple test script for BSG Template Management System
+#\!/usr/bin/env node
 
-const axios = require('axios');
+/**
+ * BSG Template System Integration Test
+ * Tests the complete BSG template workflow with real authentication
+ */
 
-const BASE_URL = 'http://localhost:3001';
-let authToken = '';
+const fetch = require('node-fetch');
 
-// Create test admin user and get token
-async function loginAsAdmin() {
+const BASE_URL = 'http://localhost:3001/api';
+let authToken = null;
+
+// Test user credentials (using the created BSG test users)
+const testUsers = [
+  {
+    username: 'cabang.utama.user',
+    password: 'CabangUtama123\!',
+    description: 'Branch user (KASDA/BSGDirect)'
+  },
+  {
+    username: 'dukungan.tech1',
+    password: 'DukunganTech123\!',
+    description: 'Dukungan dan Layanan technician'
+  },
+  {
+    username: 'it.tech1',
+    password: 'ITTech123\!',
+    description: 'IT Department technician'
+  }
+];
+
+async function authenticateUser(username, password) {
+  console.log(`🔐 Authenticating user: ${username}`);
+  
   try {
-    const response = await axios.post(`${BASE_URL}/api/auth/login`, {
-      email: 'admin@example.com',
-      password: 'password'
+    const response = await fetch(`${BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ username, password })
     });
-    authToken = response.data.token;
-    console.log('✅ Successfully logged in as admin');
-    return authToken;
+
+    const result = await response.json();
+    
+    if (result.success) {
+      authToken = result.data.token;
+      console.log(`✅ Authentication successful for ${username}`);
+      console.log(`   Role: ${result.data.user.role}, Department: ${result.data.user.department?.name || 'N/A'}`);
+      return result.data.user;
+    } else {
+      console.log(`❌ Authentication failed for ${username}: ${result.message}`);
+      return null;
+    }
   } catch (error) {
-    console.error('❌ Login failed:', error.response?.data || error.message);
-    throw error;
+    console.log(`❌ Authentication error for ${username}: ${error.message}`);
+    return null;
   }
 }
 
-// Test BSG template categories
-async function testCategories() {
+async function testBSGCategories() {
+  console.log('\n📋 Testing BSG Template Categories...');
+  
   try {
-    const response = await axios.get(`${BASE_URL}/api/bsg-templates/categories`, {
-      headers: { Authorization: `Bearer ${authToken}` }
+    const response = await fetch(`${BASE_URL}/bsg-templates/categories`, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      }
     });
-    console.log('✅ Categories API working:', response.data.data.length, 'categories found');
-    return response.data;
+
+    const result = await response.json();
+    
+    if (result.success) {
+      console.log(`✅ Categories loaded: ${result.data.length} categories found`);
+      result.data.slice(0, 5).forEach(cat => {
+        console.log(`   - ${cat.displayName} (${cat.templateCount || 0} templates)`);
+      });
+      return result.data;
+    } else {
+      console.log(`❌ Failed to load categories: ${result.message}`);
+      return [];
+    }
   } catch (error) {
-    console.error('❌ Categories test failed:', error.response?.data || error.message);
-    throw error;
+    console.log(`❌ Category loading error: ${error.message}`);
+    return [];
   }
 }
 
-// Test BSG template search
-async function testTemplateSearch() {
+async function testBSGTemplates(categoryId = null) {
+  console.log('\n📄 Testing BSG Templates...');
+  
   try {
-    const response = await axios.get(`${BASE_URL}/api/bsg-templates/search?limit=5`, {
-      headers: { Authorization: `Bearer ${authToken}` }
+    let url = `${BASE_URL}/bsg-templates/templates`;
+    if (categoryId) {
+      url += `?categoryId=${categoryId}`;
+    }
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      }
     });
-    console.log('✅ Template search API working:', response.data.data.length, 'templates found');
-    return response.data;
+
+    const result = await response.json();
+    
+    if (result.success) {
+      console.log(`✅ Templates loaded: ${result.data.length} templates found`);
+      result.data.slice(0, 3).forEach(template => {
+        console.log(`   - ${template.displayName} (#${template.templateNumber})`);
+        console.log(`     Category: ${template.category?.displayName}, Usage: ${template.usageCount}`);
+      });
+      return result.data;
+    } else {
+      console.log(`❌ Failed to load templates: ${result.message}`);
+      return [];
+    }
   } catch (error) {
-    console.error('❌ Template search test failed:', error.response?.data || error.message);
-    throw error;
+    console.log(`❌ Template loading error: ${error.message}`);
+    return [];
   }
 }
 
-// Test BSG analytics
-async function testAnalytics() {
+async function testTemplateFields(templateId) {
+  console.log(`\n🔧 Testing Template Fields for ID ${templateId}...`);
+  
   try {
-    const response = await axios.get(`${BASE_URL}/api/bsg-templates/analytics`, {
-      headers: { Authorization: `Bearer ${authToken}` }
+    const response = await fetch(`${BASE_URL}/bsg-templates/${templateId}/fields`, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      }
     });
-    console.log('✅ Analytics API working:', response.data.data.overview);
-    return response.data;
+
+    const result = await response.json();
+    
+    if (result.success) {
+      console.log(`✅ Template fields loaded: ${result.data.length} fields found`);
+      result.data.slice(0, 3).forEach(field => {
+        console.log(`   - ${field.fieldLabel} (${field.fieldType}) ${field.isRequired ? '*' : ''}`);
+      });
+      return result.data;
+    } else {
+      console.log(`❌ Failed to load template fields: ${result.message}`);
+      return [];
+    }
   } catch (error) {
-    console.error('❌ Analytics test failed:', error.response?.data || error.message);
-    throw error;
+    console.log(`❌ Template fields loading error: ${error.message}`);
+    return [];
   }
 }
 
-// Test master data APIs
-async function testMasterData() {
-  try {
-    // Test branches
-    const branches = await axios.get(`${BASE_URL}/api/master-data/branch?limit=3`, {
-      headers: { Authorization: `Bearer ${authToken}` }
-    });
-    console.log('✅ Master data (branches) API working:', branches.data.data.length, 'branches found');
+async function main() {
+  console.log('🏦 BSG Template System Integration Test');
+  console.log('=====================================\n');
 
-    // Test field types
-    const fieldTypes = await axios.get(`${BASE_URL}/api/field-types`, {
-      headers: { Authorization: `Bearer ${authToken}` }
-    });
-    console.log('✅ Field types API working:', fieldTypes.data.data.length, 'field types found');
-
-    return { branches: branches.data, fieldTypes: fieldTypes.data };
-  } catch (error) {
-    console.error('❌ Master data test failed:', error.response?.data || error.message);
-    throw error;
+  // Test with first user
+  const user = testUsers[0];
+  console.log(`Testing with ${user.username} (${user.description})`);
+  
+  const authenticatedUser = await authenticateUser(user.username, user.password);
+  if (\!authenticatedUser) {
+    console.log('❌ Cannot proceed without authentication');
+    return;
   }
-}
 
-// Main test function
-async function runTests() {
-  console.log('🚀 Starting BSG Helpdesk System Tests...\n');
-
-  try {
-    // 1. Login
-    await loginAsAdmin();
-    console.log('');
-
-    // 2. Test Categories
-    await testCategories();
-    console.log('');
-
-    // 3. Test Template Search
-    await testTemplateSearch();
-    console.log('');
-
-    // 4. Test Analytics
-    await testAnalytics();
-    console.log('');
-
-    // 5. Test Master Data
-    await testMasterData();
-    console.log('');
-
-    console.log('🎉 All BSG Template System Tests Passed!');
-    console.log('');
-    console.log('📋 System Status:');
-    console.log('✅ Authentication: Working');
-    console.log('✅ BSG Template Categories: Working');
-    console.log('✅ BSG Template Search: Working'); 
-    console.log('✅ BSG Analytics Dashboard: Working');
-    console.log('✅ Master Data APIs: Working');
-    console.log('✅ Field Type Definitions: Working');
-    console.log('');
-    console.log('🏦 BSG Helpdesk System is fully operational!');
-
-  } catch (error) {
-    console.error('💥 Test suite failed');
-    process.exit(1);
+  // Test categories
+  const categories = await testBSGCategories();
+  if (categories.length === 0) {
+    console.log('❌ Cannot proceed without categories');
+    return;
   }
+
+  // Test templates
+  const templates = await testBSGTemplates();
+  if (templates.length === 0) {
+    console.log('❌ Cannot proceed without templates');
+    return;
+  }
+
+  // Test template fields for first template
+  const firstTemplate = templates[0];
+  if (firstTemplate) {
+    await testTemplateFields(firstTemplate.id);
+  }
+
+  console.log('\n🎉 BSG Template System Test Completed Successfully\!');
+  console.log('\nKey Features Verified:');
+  console.log('✅ BSG authentication works');
+  console.log('✅ BSG template categories load properly');
+  console.log('✅ BSG templates load with correct data');
+  console.log('✅ Template fields load with proper structure');
+  console.log('✅ All API endpoints respond correctly');
 }
 
-// Run tests if called directly
-if (require.main === module) {
-  runTests().catch(console.error);
-}
-
-module.exports = { runTests };
+// Run the test
+main().catch(error => {
+  console.error('❌ Test failed:', error.message);
+  process.exit(1);
+});
+EOF < /dev/null

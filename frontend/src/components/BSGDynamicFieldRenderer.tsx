@@ -138,6 +138,19 @@ const BSGDynamicFieldRenderer: React.FC<BSGDynamicFieldRendererProps> = ({
     }
   }, [fields]);
 
+  // Set default values for date fields
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    const dateTimeNow = new Date().toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM format
+    
+    fields.forEach(field => {
+      if ((field.fieldType === 'date' || field.fieldType === 'datetime') && !values[field.fieldName]) {
+        const defaultValue = field.fieldType === 'date' ? today : dateTimeNow;
+        onChange(field.fieldName, defaultValue);
+      }
+    });
+  }, [fields, values, onChange]);
+
   // Render individual field based on type
   const renderField = (field: BSGTemplateField) => {
     const fieldValue = values[field.fieldName] || '';

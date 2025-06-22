@@ -1,5 +1,5 @@
 // src/pages/LoginPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { EyeIcon, EyeSlashIcon, TicketIcon } from '@heroicons/react/24/outline';
@@ -18,11 +18,12 @@ const LoginPage: React.FC = () => {
     formState: { errors },
   } = useForm<LoginRequest>();
 
-  // Redirect if already authenticated
-  if (isAuthenticated) {
-    navigate('/');
-    return null;
-  }
+  // Redirect if already authenticated - moved to useEffect to avoid calling navigate during render
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
 
   const onSubmit = async (data: LoginRequest) => {
     setIsSubmitting(true);

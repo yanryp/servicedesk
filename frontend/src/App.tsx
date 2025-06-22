@@ -22,6 +22,7 @@ import ReportingPage from './pages/ReportingPage';
 import ManagerDashboard from './pages/ManagerDashboard';
 import CategorizationAnalyticsPage from './pages/CategorizationAnalyticsPage';
 import UncategorizedTicketsPage from './pages/UncategorizedTicketsPage';
+import BSGCreateTicketPage from './pages/BSGCreateTicketPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -96,13 +97,25 @@ function App() {
                     <ClipboardDocumentListIcon className="w-4 h-4" />
                     <span>My Tickets</span>
                   </Link>
-                  <Link 
-                    to="/create-ticket"
-                    className="flex items-center space-x-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
-                  >
-                    <PlusCircleIcon className="w-4 h-4" />
-                    <span>Create Ticket</span>
-                  </Link>
+                  {/* Show ticket creation links only for requesters and technicians */}
+                  {(user?.role === 'requester' || user?.role === 'technician' || user?.role === 'admin') && (
+                    <>
+                      <Link 
+                        to="/create-ticket"
+                        className="flex items-center space-x-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                      >
+                        <PlusCircleIcon className="w-4 h-4" />
+                        <span>Create Ticket</span>
+                      </Link>
+                      <Link 
+                        to="/bsg-create"
+                        className="flex items-center space-x-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                      >
+                        <PlusCircleIcon className="w-4 h-4" />
+                        <span>BSG Support</span>
+                      </Link>
+                    </>
+                  )}
                   {(user?.role === 'technician' || user?.role === 'admin' || user?.role === 'manager') && (
                     <Link 
                       to="/categorization/queue"
@@ -110,6 +123,15 @@ function App() {
                     >
                       <TicketIcon className="w-4 h-4" />
                       <span>Categorization Queue</span>
+                    </Link>
+                  )}
+                  {user?.role === 'admin' && (
+                    <Link 
+                      to="/admin/register"
+                      className="flex items-center space-x-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                    >
+                      <UserIcon className="w-4 h-4" />
+                      <span>User Management</span>
                     </Link>
                   )}
                   {(user?.role === 'admin' || user?.role === 'manager') && (
@@ -173,15 +195,9 @@ function App() {
                 <div className="flex space-x-3">
                   <Link
                     to="/login"
-                    className="text-slate-600 hover:text-blue-600 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    to="/register"
                     className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl"
                   >
-                    Register
+                    Login to BSG Helpdesk
                   </Link>
                 </div>
               )}
@@ -195,9 +211,10 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/admin/register" element={<ProtectedRoute roles={['admin']}><RegisterPage /></ProtectedRoute>} />
           <Route path="/tickets" element={isAuthenticated ? <TicketsPage /> : <Navigate to="/login" />} />
           <Route path="/create-ticket" element={isAuthenticated ? <CreateTicketPage /> : <Navigate to="/login" />} />
+          <Route path="/bsg-create" element={isAuthenticated ? <BSGCreateTicketPage /> : <Navigate to="/login" />} />
           <Route path="/tickets/:ticketId" element={isAuthenticated ? <TicketDetailPage /> : <Navigate to="/login" />} />
           <Route path="/tickets/:ticketId/edit" element={isAuthenticated ? <EditTicketPage /> : <Navigate to="/login" />} />
           <Route path="/manager" element={<ProtectedRoute roles={['admin', 'manager']}><ManagerDashboard /></ProtectedRoute>} />

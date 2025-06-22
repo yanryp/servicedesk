@@ -137,7 +137,7 @@ export const canCategorize = (req: AuthenticatedRequest, res: Response, next: Ne
         user.role === 'manager' ||
         user.role === 'technician' ||
         ticket.createdByUserId === user.id ||
-        (user.isBusinessReviewer && ticket.isKasdaTicket) ||
+        (user.isBusinessReviewer && user.departmentId === ticket.serviceCatalog?.departmentId) ||
         (user.departmentId === ticket.serviceCatalog?.departmentId)
       );
 
