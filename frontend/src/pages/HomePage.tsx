@@ -7,8 +7,6 @@ import {
   PlusCircleIcon, 
   ClipboardDocumentListIcon,
   CheckCircleIcon,
-  ClockIcon,
-  UserGroupIcon,
   BuildingOffice2Icon,
   ArrowRightIcon,
   ChartBarIcon
@@ -151,7 +149,7 @@ const HomePage: React.FC = () => {
         )}
       </div>
 
-      {/* BSG Template Discovery Section */}
+      {/* Quick Access Section for Authenticated Users */}
       {isAuthenticated && (
         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border border-blue-200/50">
           <div className="text-center mb-8">
@@ -161,182 +159,101 @@ const HomePage: React.FC = () => {
               </div>
             </div>
             <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              BSG Banking Templates
+              BSG Banking Support System
             </h2>
             <p className="text-slate-600 mt-2">
-              Quick access to banking-specific support templates for faster processing
+              Streamlined banking templates with 70.6% efficiency optimization
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Popular Templates */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Quick Actions */}
             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-white/50">
               <h3 className="font-semibold text-slate-800 mb-4 flex items-center">
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                Most Popular
+                Quick Actions
               </h3>
               <div className="space-y-3">
                 <Link
-                  to="/bsg-create?category=OLIBS&template=1"
-                  className="block p-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all duration-200 group"
+                  to="/bsg-create"
+                  className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 group shadow-lg"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <BuildingOffice2Icon className="w-5 h-5" />
                     <div>
-                      <div className="font-medium text-blue-800 text-sm">OLIBS</div>
-                      <div className="text-xs text-blue-600">Menu & Limit Changes</div>
+                      <div className="font-medium">BSG Banking Support</div>
+                      <div className="text-xs opacity-90">24+ specialized templates</div>
                     </div>
-                    <ArrowRightIcon className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform" />
                   </div>
+                  <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
+                
                 <Link
-                  to="/bsg-create?category=BSGTouch&template=7"
-                  className="block p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-all duration-200 group"
+                  to="/create-ticket"
+                  className="flex items-center justify-between p-4 bg-green-50 hover:bg-green-100 text-green-700 rounded-lg transition-all duration-200 group border border-green-200"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <PlusCircleIcon className="w-5 h-5" />
                     <div>
-                      <div className="font-medium text-purple-800 text-sm">BSGTouch</div>
-                      <div className="text-xs text-purple-600">System Issues</div>
+                      <div className="font-medium">General Support Ticket</div>
+                      <div className="text-xs opacity-75">Standard ticket creation</div>
                     </div>
-                    <ArrowRightIcon className="w-4 h-4 text-purple-600 group-hover:translate-x-1 transition-transform" />
                   </div>
+                  <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
+                
                 <Link
-                  to="/bsg-create?category=ATM&template=23"
-                  className="block p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-all duration-200 group"
+                  to="/tickets"
+                  className="flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg transition-all duration-200 group border border-slate-200"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <ClipboardDocumentListIcon className="w-5 h-5" />
                     <div>
-                      <div className="font-medium text-green-800 text-sm">ATM</div>
-                      <div className="text-xs text-green-600">Hardware Support</div>
+                      <div className="font-medium">My Tickets</div>
+                      <div className="text-xs opacity-75">View and track tickets</div>
                     </div>
-                    <ArrowRightIcon className="w-4 h-4 text-green-600 group-hover:translate-x-1 transition-transform" />
                   </div>
+                  <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>
             </div>
 
-            {/* Categories Overview */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-white/50">
-              <h3 className="font-semibold text-slate-800 mb-4 flex items-center">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                All Categories
-              </h3>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="p-2 bg-slate-50 rounded text-center">
-                  <div className="font-medium text-slate-700">OLIBS</div>
-                  <div className="text-xs text-slate-500">5 templates</div>
-                </div>
-                <div className="p-2 bg-slate-50 rounded text-center">
-                  <div className="font-medium text-slate-700">BSGTouch</div>
-                  <div className="text-xs text-slate-500">4 templates</div>
-                </div>
-                <div className="p-2 bg-slate-50 rounded text-center">
-                  <div className="font-medium text-slate-700">BSG QRIS</div>
-                  <div className="text-xs text-slate-500">3 templates</div>
-                </div>
-                <div className="p-2 bg-slate-50 rounded text-center">
-                  <div className="font-medium text-slate-700">SMS Banking</div>
-                  <div className="text-xs text-slate-500">4 templates</div>
-                </div>
-                <div className="p-2 bg-slate-50 rounded text-center">
-                  <div className="font-medium text-slate-700">KLAIM</div>
-                  <div className="text-xs text-slate-500">2 templates</div>
-                </div>
-                <div className="p-2 bg-slate-50 rounded text-center">
-                  <div className="font-medium text-slate-700">More...</div>
-                  <div className="text-xs text-slate-500">6 others</div>
-                </div>
-              </div>
-              <Link
-                to="/bsg-create"
-                className="mt-4 block text-center py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-              >
-                Browse All Templates
-              </Link>
-            </div>
-
-            {/* Quick Stats */}
+            {/* System Status */}
             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-white/50">
               <h3 className="font-semibold text-slate-800 mb-4 flex items-center">
                 <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
-                BSG Support Stats
+                System Performance
               </h3>
               <div className="space-y-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">24+</div>
-                  <div className="text-xs text-slate-600">Available Templates</div>
+                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center space-x-3">
+                    <CheckCircleIcon className="w-5 h-5 text-green-600" />
+                    <span className="text-sm font-medium text-green-800">All Systems Operational</span>
+                  </div>
+                  <div className="text-xs text-green-600">99.9% uptime</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">70.6%</div>
-                  <div className="text-xs text-slate-600">Field Optimization</div>
+                
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <div className="text-lg font-bold text-blue-600">24+</div>
+                    <div className="text-xs text-blue-600">Templates</div>
+                  </div>
+                  <div className="p-3 bg-green-50 rounded-lg">
+                    <div className="text-lg font-bold text-green-600">70.6%</div>
+                    <div className="text-xs text-green-600">Efficiency</div>
+                  </div>
+                  <div className="p-3 bg-purple-50 rounded-lg">
+                    <div className="text-lg font-bold text-purple-600">&lt;1s</div>
+                    <div className="text-xs text-purple-600">Load Time</div>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">&lt;1s</div>
-                  <div className="text-xs text-slate-600">Template Loading</div>
-                </div>
-              </div>
-              <div className="mt-4 p-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg text-white text-center">
-                <div className="text-sm font-medium">Ready for Production</div>
-                <div className="text-xs opacity-90">All systems operational</div>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Features Section */}
-      <div className="grid md:grid-cols-3 gap-8">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-slate-200/50 text-center space-y-4">
-          <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto">
-            <TicketIcon className="w-8 h-8 text-blue-600" />
-          </div>
-          <h3 className="text-xl font-semibold text-slate-800">Smart Ticketing</h3>
-          <p className="text-slate-600">
-            Create, track, and manage support tickets with intelligent categorization and routing.
-          </p>
-        </div>
 
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-slate-200/50 text-center space-y-4">
-          <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto">
-            <CheckCircleIcon className="w-8 h-8 text-green-600" />
-          </div>
-          <h3 className="text-xl font-semibold text-slate-800">Approval Workflow</h3>
-          <p className="text-slate-600">
-            Streamlined approval processes with manager oversight and escalation management.
-          </p>
-        </div>
-
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-slate-200/50 text-center space-y-4">
-          <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto">
-            <ClockIcon className="w-8 h-8 text-purple-600" />
-          </div>
-          <h3 className="text-xl font-semibold text-slate-800">SLA Management</h3>
-          <p className="text-slate-600">
-            Built-in SLA tracking with automated escalations and performance metrics.
-          </p>
-        </div>
-      </div>
-
-      {/* Stats Section */}
-      {isAuthenticated && (
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white text-center">
-          <h2 className="text-2xl font-bold mb-6">Your Support Portal</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <div className="text-3xl font-bold">0</div>
-              <div className="text-blue-100">Open Tickets</div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-3xl font-bold">0</div>
-              <div className="text-blue-100">Pending Approval</div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-3xl font-bold">0</div>
-              <div className="text-blue-100">Resolved This Month</div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

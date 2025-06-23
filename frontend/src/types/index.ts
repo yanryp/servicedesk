@@ -26,6 +26,8 @@ export interface Department {
   id: number;
   name: string;
   description?: string;
+  departmentType?: string;
+  isServiceOwner?: boolean;
   createdAt: string;
   updatedAt: string;
   users?: User[];

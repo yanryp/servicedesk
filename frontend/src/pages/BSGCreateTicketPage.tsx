@@ -232,9 +232,9 @@ const BSGCreateTicketPage: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Template Selection */}
-        <div className="space-y-6">
+      <div className="space-y-8">
+        {/* Enhanced Template Selection */}
+        <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl p-8 border border-slate-200/50">
           <BSGTemplateSelector
             onTemplateSelect={handleTemplateSelect}
             selectedTemplate={selectedTemplate}
@@ -242,7 +242,8 @@ const BSGCreateTicketPage: React.FC = () => {
           />
         </div>
 
-        {/* Ticket Form */}
+        {/* Ticket Form - Only show when template is selected */}
+        {selectedTemplate && (
         <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl p-8 border border-slate-200/50">
           <h2 className="text-xl font-semibold text-slate-800 mb-6 flex items-center">
             <DocumentPlusIcon className="h-5 w-5 mr-2" />
@@ -395,7 +396,16 @@ const BSGCreateTicketPage: React.FC = () => {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-medium text-slate-600">Department/Branch:</span>
-                  <span className="text-slate-800">{user?.department?.name || 'Not specified'}</span>
+                  <span className="text-slate-800">
+                    {user?.department?.name || 'Not specified'}
+                    {user?.department?.departmentType && (
+                      <span className="ml-1 text-xs text-slate-500">
+                        ({user.department.departmentType === 'business' ? 'Business Unit' :
+                          user.department.departmentType === 'government' ? 'Government' :
+                          'Internal Dept.'})
+                      </span>
+                    )}
+                  </span>
                 </div>
                 <div className="flex flex-col">
                   <span className="font-medium text-slate-600">Position:</span>
@@ -496,6 +506,7 @@ const BSGCreateTicketPage: React.FC = () => {
             </div>
           </form>
         </div>
+        )}
       </div>
     </div>
   );
