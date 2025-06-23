@@ -1,36 +1,23 @@
-// BSG Dynamic Field Renderer with Optimized Common Fields
-import React, { useState, useEffect, useMemo } from 'react';
+// BSG Dynamic Field Renderer with Individual Memoized Fields
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
-  CalendarIcon, 
-  MapPinIcon, 
-  UserIcon, 
-  CurrencyDollarIcon,
-  DocumentTextIcon,
-  ClockIcon 
+  DocumentTextIcon 
 } from '@heroicons/react/24/outline';
+import { api } from '../services/api';
+import BSGField from './BSGField';
+import IsolatedBSGField from './IsolatedBSGField';
+import GlobalStorageField from './GlobalStorageField';
 
-// Field category icons mapping
+// Field category icons mapping for display names
 const FIELD_CATEGORY_ICONS: Record<string, any> = {
-  'location': MapPinIcon,
-  'user_identity': UserIcon,
-  'timing': ClockIcon,
-  'transaction': CurrencyDollarIcon,
+  'location': DocumentTextIcon,
+  'user_identity': DocumentTextIcon,
+  'timing': DocumentTextIcon,
+  'transaction': DocumentTextIcon,
   'reference': DocumentTextIcon,
-  'customer': UserIcon,
-  'transfer': MapPinIcon,
+  'customer': DocumentTextIcon,
+  'transfer': DocumentTextIcon,
   'permissions': DocumentTextIcon
-};
-
-// Field category colors
-const FIELD_CATEGORY_COLORS: Record<string, string> = {
-  'location': 'border-blue-300 focus:border-blue-500',
-  'user_identity': 'border-green-300 focus:border-green-500',
-  'timing': 'border-purple-300 focus:border-purple-500',
-  'transaction': 'border-yellow-300 focus:border-yellow-500',
-  'reference': 'border-gray-300 focus:border-gray-500',
-  'customer': 'border-indigo-300 focus:border-indigo-500',
-  'transfer': 'border-orange-300 focus:border-orange-500',
-  'permissions': 'border-red-300 focus:border-red-500'
 };
 
 interface BSGTemplateField {
@@ -50,11 +37,14 @@ interface BSGTemplateField {
 }
 
 interface BSGFieldOption {
-  id: number;
+  id?: number;
   value: string;
   label: string;
   isDefault?: boolean;
-  sortOrder: number;
+  sortOrder?: number;
+  // Additional properties that might come from master data API
+  displayName?: string;
+  name?: string;
 }
 
 interface BSGDynamicFieldRendererProps {
@@ -104,25 +94,46 @@ const BSGDynamicFieldRenderer: React.FC<BSGDynamicFieldRendererProps> = ({
     const loadMasterData = async () => {
       try {
         setLoading(true);
+        
+        console.log('🔍 BSGDynamicFieldRenderer: Checking fields for dropdowns');
+        console.log('🔍 Total fields:', fields.length);
+        
+        fields.forEach(field => {
+          console.log(`🔍 Field: ${field.fieldLabel} (type: ${field.fieldType})`);
+        });
+        
         const dropdownFields = fields.filter(field => 
           field.fieldType.startsWith('dropdown_')
         );
+        
+        console.log(`🔽 Found ${dropdownFields.length} dropdown fields`);
+        dropdownFields.forEach(field => {
+          console.log(`🔽 Dropdown field: ${field.fieldLabel} (type: ${field.fieldType})`);
+        });
 
         const masterDataPromises = dropdownFields.map(async field => {
           const dataType = field.fieldType.replace('dropdown_', '');
-          const response = await fetch(`/api/bsg-templates/master-data/${dataType}`);
-          if (response.ok) {
-            const data = await response.json();
-            return { fieldName: field.fieldName, options: data };
+          try {
+            console.log(`🔽 Loading master data for field: ${field.fieldLabel} (type: ${field.fieldType})`);
+            const response = await api.get(`/bsg-templates/master-data/${dataType}`);
+            // Extract data from API response format: { success: true, data: [...], meta: {...} }
+            const options = Array.isArray(response?.data) ? response.data : [];
+            console.log(`✅ Loaded ${options.length} options for ${field.fieldLabel}`, options.slice(0, 2));
+            return { fieldName: field.fieldName, options: options };
+          } catch (error) {
+            console.error(`❌ Failed to load master data for ${field.fieldLabel}:`, error);
+            return { fieldName: field.fieldName, options: [] };
           }
-          return { fieldName: field.fieldName, options: [] };
         });
 
         const results = await Promise.all(masterDataPromises);
         const masterDataMap: Record<string, BSGFieldOption[]> = {};
         
         results.forEach(result => {
-          masterDataMap[result.fieldName] = result.options;
+          // Ensure options is always an array
+          const options = Array.isArray(result.options) ? result.options : [];
+          masterDataMap[result.fieldName] = options;
+          console.log(`📝 Stored ${options.length} options for field: ${result.fieldName}`);
         });
 
         setMasterData(masterDataMap);
@@ -151,152 +162,22 @@ const BSGDynamicFieldRenderer: React.FC<BSGDynamicFieldRendererProps> = ({
     });
   }, [fields, values, onChange]);
 
-  // Render individual field based on type
-  const renderField = (field: BSGTemplateField) => {
-    const fieldValue = values[field.fieldName] || '';
-    const fieldError = errors[field.fieldName];
-    const categoryColor = FIELD_CATEGORY_COLORS[field.category || 'reference'];
-    const CategoryIcon = FIELD_CATEGORY_ICONS[field.category || 'reference'];
+  // Memoized field change handler to prevent re-renders
+  const handleFieldChange = useCallback((fieldName: string, value: any) => {
+    onChange(fieldName, value);
+  }, [onChange]);
 
-    const baseClasses = `
-      block w-full px-4 py-3 border rounded-xl shadow-sm transition-all duration-200
-      focus:outline-none focus:ring-2 focus:ring-opacity-50
-      disabled:bg-gray-100 disabled:cursor-not-allowed
-      ${categoryColor}
-      ${fieldError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
-    `;
+  // No longer needed - using individual BSGField components
 
-    const handleFieldChange = (value: any) => {
-      onChange(field.fieldName, value);
-    };
-
-    switch (field.fieldType) {
-      case 'text':
-      case 'text_short':
-        return (
-          <input
-            type="text"
-            value={fieldValue}
-            onChange={(e) => handleFieldChange(e.target.value)}
-            disabled={disabled}
-            maxLength={field.maxLength}
-            placeholder={field.placeholderText}
-            className={baseClasses}
-          />
-        );
-
-      case 'number':
-        return (
-          <input
-            type="number"
-            value={fieldValue}
-            onChange={(e) => handleFieldChange(parseInt(e.target.value) || '')}
-            disabled={disabled}
-            placeholder={field.placeholderText}
-            className={baseClasses}
-          />
-        );
-
-      case 'currency':
-        return (
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 sm:text-sm">Rp</span>
-            </div>
-            <input
-              type="number"
-              value={fieldValue}
-              onChange={(e) => handleFieldChange(parseFloat(e.target.value) || '')}
-              disabled={disabled}
-              placeholder={field.placeholderText}
-              className={`${baseClasses} pl-12`}
-              step="0.01"
-            />
-          </div>
-        );
-
-      case 'date':
-        return (
-          <div className="relative">
-            <input
-              type="date"
-              value={fieldValue}
-              onChange={(e) => handleFieldChange(e.target.value)}
-              disabled={disabled}
-              className={baseClasses}
-            />
-            <CalendarIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-          </div>
-        );
-
-      case 'datetime':
-        return (
-          <input
-            type="datetime-local"
-            value={fieldValue}
-            onChange={(e) => handleFieldChange(e.target.value)}
-            disabled={disabled}
-            className={baseClasses}
-          />
-        );
-
-      case 'dropdown_branch':
-      case 'dropdown_olibs_menu':
-        const options = masterData[field.fieldName] || field.options || [];
-        return (
-          <select
-            value={fieldValue}
-            onChange={(e) => handleFieldChange(e.target.value)}
-            disabled={disabled || loading}
-            className={baseClasses}
-          >
-            <option value="">
-              {loading ? 'Loading...' : (field.placeholderText || 'Pilih opsi')}
-            </option>
-            {options.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        );
-
-      case 'textarea':
-        return (
-          <textarea
-            rows={4}
-            value={fieldValue}
-            onChange={(e) => handleFieldChange(e.target.value)}
-            disabled={disabled}
-            placeholder={field.placeholderText}
-            maxLength={field.maxLength}
-            className={baseClasses}
-          />
-        );
-
-      default:
-        return (
-          <input
-            type="text"
-            value={fieldValue}
-            onChange={(e) => handleFieldChange(e.target.value)}
-            disabled={disabled}
-            placeholder={field.placeholderText}
-            className={baseClasses}
-          />
-        );
-    }
-  };
-
-  // Render fields grouped by category
+  // Render fields grouped by category (non-memoized to avoid focus issues)
   const renderFieldsByCategory = () => {
     if (!showCategories) {
       // Render all fields in a single list
-      const allFields = fields.sort((a, b) => a.sortOrder - b.sortOrder);
+      const allFields = [...fields].sort((a, b) => a.sortOrder - b.sortOrder);
       return (
         <div className="space-y-6">
           {allFields.map(field => (
-            <div key={field.id}>
+            <div key={field.fieldName}>
               {renderFieldWithLabel(field)}
             </div>
           ))}
@@ -323,7 +204,7 @@ const BSGDynamicFieldRenderer: React.FC<BSGDynamicFieldRendererProps> = ({
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {categoryFields.map(field => (
-                  <div key={field.id} className="col-span-1">
+                  <div key={field.fieldName} className="col-span-1">
                     {renderFieldWithLabel(field)}
                   </div>
                 ))}
@@ -335,33 +216,20 @@ const BSGDynamicFieldRenderer: React.FC<BSGDynamicFieldRendererProps> = ({
     );
   };
 
-  // Render field with label and help text
+  // Render field with global storage (completely React-independent)
   const renderFieldWithLabel = (field: BSGTemplateField) => {
     const fieldError = errors[field.fieldName];
+    const fieldMasterData = masterData[field.fieldName] || [];
     
     return (
-      <div className="space-y-2">
-        <label htmlFor={field.fieldName} className="block text-sm font-medium text-gray-700">
-          {field.fieldLabel}
-          {field.isRequired && <span className="text-red-500 ml-1">*</span>}
-        </label>
-        
-        {renderField(field)}
-        
-        {field.helpText && (
-          <p className="text-sm text-gray-500">{field.helpText}</p>
-        )}
-        
-        {fieldError && (
-          <p className="text-sm text-red-600">{fieldError}</p>
-        )}
-        
-        {field.maxLength && field.fieldType.includes('text') && (
-          <p className="text-xs text-gray-400">
-            {(values[field.fieldName] || '').length}/{field.maxLength} karakter
-          </p>
-        )}
-      </div>
+      <GlobalStorageField
+        key={field.fieldName} // Use stable fieldName as key
+        field={field}
+        error={fieldError}
+        disabled={disabled}
+        masterData={fieldMasterData}
+        loading={loading && field.fieldType.startsWith('dropdown_')}
+      />
     );
   };
 
