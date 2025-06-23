@@ -15,7 +15,18 @@ const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => P
 // @desc    Get all top-level categories
 // @access  Public (or protect as needed, e.g., protect, authorize(['admin', 'manager', 'technician', 'requester']))
 router.get('/', asyncHandler(async (req: Request, res: Response) => {
-  const result = await query('SELECT * FROM categories ORDER BY name ASC');
+  const result = await query(`
+    SELECT 
+      c.id,
+      c.name,
+      c.department_id,
+      d.name as department_name,
+      d.description as department_description,
+      d.department_type
+    FROM categories c
+    LEFT JOIN departments d ON c.department_id = d.id
+    ORDER BY c.name ASC
+  `);
   res.json(result.rows);
 }));
 

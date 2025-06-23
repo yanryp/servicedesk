@@ -80,10 +80,18 @@ const CreateTicketPage: React.FC = () => {
   const loadSuggestions = async (itemId: number) => {
     try {
       const data = await categorizationService.getSuggestions(itemId);
-      setSuggestions(data);
-      // Auto-apply suggestions
-      setRootCause(data.suggestions.rootCause);
-      setIssueCategory(data.suggestions.issueCategory);
+      if (data && data.suggestions) {
+        setSuggestions(data);
+        // Auto-apply suggestions if they exist
+        if (data.suggestions.rootCause) {
+          setRootCause(data.suggestions.rootCause);
+        }
+        if (data.suggestions.issueCategory) {
+          setIssueCategory(data.suggestions.issueCategory);
+        }
+      } else {
+        setSuggestions(null);
+      }
     } catch (error) {
       console.error('Failed to load categorization suggestions:', error);
       // Don't show error to user - categorization suggestions are optional
@@ -169,7 +177,13 @@ const CreateTicketPage: React.FC = () => {
       navigate(`/tickets/${createdTicket.id}`);
     } catch (error: any) {
       console.error('Error creating ticket:', error);
-      // Error is already handled by the API interceptor
+      if (error.response?.data?.message) {
+        toast.error(`Failed to create ticket: ${error.response.data.message}`);
+      } else if (error.message) {
+        toast.error(`Failed to create ticket: ${error.message}`);
+      } else {
+        toast.error('Failed to create ticket. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -219,37 +233,6 @@ const CreateTicketPage: React.FC = () => {
             />
           </div>
 
-          {/* Template Selection - Hidden but still functional for auto-population */}
-          {selectedItem && (
-            <div className="mb-8">
-              {/* Templates are auto-loaded based on category selection */}
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                <h3 className="font-semibold text-blue-800 mb-2">Selected Category Path</h3>
-                <div className="text-sm text-blue-700">
-                  <div className="flex items-center space-x-2">
-                    <span className="px-2 py-1 bg-blue-100 rounded">{selectedItem.subCategory?.category?.name}</span>
-                    <span>→</span>
-                    <span className="px-2 py-1 bg-blue-100 rounded">{selectedItem.subCategory?.name}</span>
-                    <span>→</span>
-                    <span className="px-2 py-1 bg-blue-200 rounded font-medium">{selectedItem.name}</span>
-                  </div>
-                  <div className="mt-2 text-xs">
-                    <strong>Department:</strong> {selectedItem.subCategory?.category?.department?.name}
-                    {selectedItem.subCategory?.category?.name === 'KASDA' && (
-                      <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 rounded text-xs">
-                        → Routes to Dukungan dan Layanan
-                      </span>
-                    )}
-                    {selectedItem.subCategory?.category?.department?.name === 'Information Technology' && (
-                      <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs">
-                        → Routes to Information Technology
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Basic Ticket Information */}
           {selectedItem && (
@@ -327,7 +310,28 @@ const CreateTicketPage: React.FC = () => {
                       id="attachments"
                       multiple
                       accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt,.zip"
-                      onChange={(e) => setAttachments(e.target.files)}
+                      onChange={(e) => {
+                        const files = e.target.files;
+                        if (files) {
+                          // Validate file count
+                          if (files.length > 5) {
+                            toast.error('Maximum 5 files allowed');
+                            e.target.value = '';
+                            return;
+                          }
+                          
+                          // Validate file sizes (10MB each)
+                          const maxSize = 10 * 1024 * 1024; // 10MB
+                          for (let i = 0; i < files.length; i++) {
+                            if (files[i].size > maxSize) {
+                              toast.error(`File "${files[i].name}" is too large. Maximum size is 10MB.`);
+                              e.target.value = '';
+                              return;
+                            }
+                          }
+                        }
+                        setAttachments(files);
+                      }}
                       disabled={isSubmitting}
                       className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
                     />

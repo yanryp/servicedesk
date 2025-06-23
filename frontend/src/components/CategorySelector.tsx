@@ -204,13 +204,47 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
 
       {/* Selected Path Display */}
       {selectedItem && (
-        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-          <p className="text-sm text-blue-800">
-            <span className="font-medium">Selected:</span> {' '}
-            {categories.find(c => c.id === selectedCategoryId)?.name} → {' '}
-            {subCategories.find(sc => sc.id === selectedSubCategoryId)?.name} → {' '}
-            {selectedItem.name}
-          </p>
+        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-blue-800">Selected Category Path</p>
+            
+            <div className="flex items-center space-x-2 text-sm">
+              <span className="px-3 py-1 bg-blue-100 rounded-lg font-medium text-blue-800">
+                {categories.find(c => c.id === selectedCategoryId)?.name}
+              </span>
+              <span className="text-blue-600">→</span>
+              <span className="px-3 py-1 bg-blue-100 rounded-lg text-blue-700">
+                {subCategories.find(sc => sc.id === selectedSubCategoryId)?.name}
+              </span>
+              <span className="text-blue-600">→</span>
+              <span className="px-3 py-1 bg-blue-200 rounded-lg font-medium text-blue-800">
+                {selectedItem.name}
+              </span>
+            </div>
+            
+            <div className="pt-2 border-t border-blue-200">
+              {(() => {
+                const selectedCategory = categories.find(c => c.id === selectedCategoryId);
+                const departmentName = selectedCategory?.department_name || 'Unknown Department';
+                const departmentType = selectedCategory?.department_type || 'internal';
+                
+                return (
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-blue-700">
+                      <span className="font-medium">Department:</span> {departmentName}
+                    </p>
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                      departmentType === 'business' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      → Routes to {departmentName}
+                    </span>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
         </div>
       )}
     </div>

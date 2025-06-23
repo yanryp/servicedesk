@@ -387,18 +387,23 @@ router.get('/', protect, asyncHandler(async (req: AuthenticatedRequest, res) => 
     const totalTickets = parseInt(countResult.rows[0].count, 10);
     const totalPages = Math.ceil(totalTickets / limit);
 
-    // Tickets query
+    // Tickets query with enhanced user and department information
     const ticketsQueryBase = `
         SELECT 
           t.*, 
           u.username AS created_by_username,
+          u.email AS created_by_email,
+          u.role AS created_by_role,
+          creator_dept.name AS created_by_department,
           assigned_user.username AS assigned_to_username,
+          assigned_user.email AS assigned_to_email,
           COALESCE(att_counts.attachment_count, 0) AS attachment_count,
           i.name AS item_name,
           scat.name AS sub_category_name,
           cat.name AS category_name
         FROM tickets t
         JOIN users u ON t.created_by_user_id = u.id
+        LEFT JOIN departments creator_dept ON u.department_id = creator_dept.id
         LEFT JOIN users assigned_user ON t.assigned_to_user_id = assigned_user.id
         LEFT JOIN (
           SELECT ticket_id, COUNT(*) AS attachment_count 
@@ -409,7 +414,7 @@ router.get('/', protect, asyncHandler(async (req: AuthenticatedRequest, res) => 
         LEFT JOIN sub_categories scat ON i.sub_category_id = scat.id
         LEFT JOIN categories cat ON scat.category_id = cat.id
     `;
-    const groupByAndLimit = ` GROUP BY t.id, u.username, assigned_user.username, i.name, scat.name, cat.name, att_counts.attachment_count ORDER BY t.updated_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+    const groupByAndLimit = ` GROUP BY t.id, u.username, u.email, u.role, creator_dept.name, assigned_user.username, assigned_user.email, i.name, scat.name, cat.name, att_counts.attachment_count ORDER BY t.updated_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
     
     const ticketsQueryText = ticketsQueryBase + whereClause + groupByAndLimit;
     const ticketsQueryParams = [...queryParams, limit, offset];

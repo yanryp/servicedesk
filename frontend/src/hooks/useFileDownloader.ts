@@ -5,7 +5,8 @@ import { useAuth } from '../context/AuthContext';
 
 interface Attachment {
   id: number;
-  filename: string;
+  filename?: string;
+  file_name?: string; // API uses snake_case
 }
 
 export const useFileDownloader = () => {
@@ -30,10 +31,30 @@ export const useFileDownloader = () => {
         responseType: 'blob',
       });
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      // Check if server provided a filename in Content-Disposition header
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = 'download.txt';
+      
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/['"]/g, '');
+        }
+      }
+      
+      // Fall back to attachment data if no header filename
+      if (filename === 'download.txt') {
+        filename = attachment.filename || attachment.file_name || 'download.txt';
+      }
+
+      // Create blob with correct content type
+      const contentType = response.headers['content-type'] || 'application/octet-stream';
+      const blob = new Blob([response.data], { type: contentType });
+      
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', attachment.filename);
+      link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
 

@@ -92,6 +92,10 @@ export interface Category {
   id: number;
   name: string;
   departmentId?: number;
+  department_id?: number; // For API compatibility
+  department_name?: string; // From API response
+  department_description?: string; // From API response
+  department_type?: string; // From API response
   department?: Department;
   subCategories?: SubCategory[];
 }
