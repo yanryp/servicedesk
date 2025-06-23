@@ -19,7 +19,10 @@ import {
 
 interface Attachment {
   id: number;
-  filename: string;
+  filename?: string;
+  file_name?: string; // API uses snake_case
+  file_size?: number;
+  file_type?: string;
 }
 
 interface Ticket {
@@ -36,6 +39,16 @@ interface Ticket {
   resolved_at: string | null;
   attachments: Attachment[] | null;
   sla_due_date: string | null;
+  // Enhanced user information for technician view
+  created_by_username?: string;
+  created_by_email?: string;
+  created_by_role?: string;
+  created_by_department?: string;
+  assigned_to_username?: string;
+  assigned_to_email?: string;
+  category_name?: string;
+  item_name?: string;
+  attachment_count?: number;
 }
 
 const TicketsPage: React.FC = () => {
@@ -243,93 +256,183 @@ const TicketsPage: React.FC = () => {
           )}
         </div>
       ) : (
-        <div className="space-y-4">
-          {tickets.map((ticket) => {
-            const isOverdue = ticket.sla_due_date && 
-              new Date(ticket.sla_due_date) < new Date() && 
-              ticket.status !== 'closed';
-            
-            return (
-              <div key={ticket.id} className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl p-6 border border-slate-200/50 hover:shadow-2xl transition-all duration-200">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <Link 
-                        to={`/tickets/${ticket.id}`}
-                        className="text-xl font-semibold text-slate-800 hover:text-blue-600 transition-colors"
-                      >
-                        {ticket.title}
-                      </Link>
-                      <span className="text-sm text-slate-500">#{ticket.id}</span>
-                    </div>
-                    
-                    <p className="text-slate-600 mb-4 line-clamp-2">
-                      {ticket.description}
-                    </p>
-                  </div>
-                  
-                  <div className="flex flex-col items-end space-y-2 ml-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(ticket.status)}`}>
-                      {ticket.status.replace('-', ' ').toUpperCase()}
-                    </span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getPriorityColor(ticket.priority)}`}>
-                      {ticket.priority.toUpperCase()}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-slate-600">
-                  <div className="flex items-center space-x-2">
-                    <CalendarIcon className="w-4 h-4" />
-                    <span>Created: {new Date(ticket.created_at).toLocaleDateString()}</span>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <ClockIcon className="w-4 h-4" />
-                    <span>Updated: {new Date(ticket.updated_at).toLocaleDateString()}</span>
-                  </div>
-                  
-                  {ticket.sla_due_date && (
-                    <div className={`flex items-center space-x-2 ${isOverdue ? 'text-red-600 font-semibold' : ''}`}>
-                      <ExclamationTriangleIcon className={`w-4 h-4 ${isOverdue ? 'text-red-500' : ''}`} />
-                      <span>
-                        SLA Due: {new Date(ticket.sla_due_date).toLocaleDateString()}
-                        {isOverdue && ' (Overdue)'}
-                      </span>
-                    </div>
+        <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl border border-slate-200/50 overflow-hidden">
+          {/* Table Header */}
+          <div className="px-6 py-4 bg-slate-50/80 border-b border-slate-200">
+            <h3 className="text-lg font-semibold text-slate-800">
+              {user?.role === 'technician' ? 'Department Tickets' : 'My Tickets'}
+            </h3>
+          </div>
+          
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-200 table-auto">
+              <thead className="bg-slate-50/50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    Ticket
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    Priority
+                  </th>
+                  {user?.role === 'technician' && (
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Requester
+                    </th>
                   )}
-                </div>
-
-                {ticket.category && (
-                  <div className="mt-3 text-sm text-slate-600">
-                    <span className="font-medium">Category:</span> {ticket.category}
-                  </div>
-                )}
-
-                {ticket.attachments && ticket.attachments.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-slate-200">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <DocumentArrowDownIcon className="w-4 h-4 text-slate-500" />
-                      <span className="text-sm font-medium text-slate-700">Attachments</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {ticket.attachments.map(att => (
-                        <button
-                          key={att.id}
-                          onClick={() => downloadFile(att)}
-                          disabled={downloadingId === att.id}
-                          className="inline-flex items-center space-x-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm disabled:opacity-50"
-                        >
-                          <DocumentArrowDownIcon className="w-3 h-3" />
-                          <span>{downloadingId === att.id ? 'Downloading...' : att.filename}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    Created
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    SLA Due
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-slate-200">
+                {tickets.map((ticket) => {
+                  const isOverdue = ticket.sla_due_date && 
+                    new Date(ticket.sla_due_date) < new Date() && 
+                    ticket.status !== 'closed';
+                  
+                  return (
+                    <tr key={ticket.id} className="hover:bg-slate-50/50 transition-colors">
+                      {/* Ticket Title & Description */}
+                      <td className="px-6 py-4">
+                        <div className="max-w-sm">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <Link 
+                              to={`/tickets/${ticket.id}`}
+                              className="text-sm font-semibold text-slate-900 hover:text-blue-600 transition-colors truncate"
+                              title={ticket.title}
+                            >
+                              {ticket.title}
+                            </Link>
+                            <span className="text-xs text-slate-500 flex-shrink-0">#{ticket.id}</span>
+                          </div>
+                          <p className="text-xs text-slate-600 line-clamp-2" title={ticket.description}>
+                            {ticket.description}
+                          </p>
+                          {((ticket.attachments && ticket.attachments.length > 0) || (ticket.attachment_count && ticket.attachment_count > 0)) && (
+                            <div className="mt-1 flex items-center space-x-1">
+                              <DocumentArrowDownIcon className="w-3 h-3 text-slate-400" />
+                              <span className="text-xs text-slate-500">
+                                {ticket.attachment_count || ticket.attachments?.length || 0} file(s)
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      
+                      {/* Status */}
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(ticket.status)}`}>
+                          {ticket.status.replace('-', ' ').toUpperCase()}
+                        </span>
+                      </td>
+                      
+                      {/* Priority */}
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(ticket.priority)}`}>
+                          {ticket.priority.toUpperCase()}
+                        </span>
+                      </td>
+                      
+                      {/* Requester (Technician View Only) */}
+                      {user?.role === 'technician' && (
+                        <td className="px-6 py-4">
+                          <div className="text-sm">
+                            <div className="font-medium text-slate-900">
+                              {ticket.created_by_username || `User #${ticket.created_by_user_id}`}
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              {ticket.created_by_department || 'No department'}
+                            </div>
+                            {ticket.created_by_email && (
+                              <div className="text-xs text-slate-400">
+                                {ticket.created_by_email}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      )}
+                      
+                      {/* Category */}
+                      <td className="px-6 py-4">
+                        <div className="text-sm">
+                          <div className="font-medium text-slate-900">
+                            {ticket.category_name || ticket.category || 'Uncategorized'}
+                          </div>
+                          {ticket.item_name && (
+                            <div className="text-xs text-slate-500">
+                              {ticket.item_name}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      
+                      {/* Created Date */}
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-slate-900">
+                          {new Date(ticket.created_at).toLocaleDateString()}
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          {new Date(ticket.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </td>
+                      
+                      {/* SLA Due */}
+                      <td className="px-6 py-4">
+                        {ticket.sla_due_date ? (
+                          <div className={`text-sm ${isOverdue ? 'text-red-600 font-semibold' : 'text-slate-900'}`}>
+                            <div className="flex items-center space-x-1">
+                              {isOverdue && <ExclamationTriangleIcon className="w-4 h-4 text-red-500" />}
+                              <span>{new Date(ticket.sla_due_date).toLocaleDateString()}</span>
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              {isOverdue ? 'Overdue' : new Date(ticket.sla_due_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-slate-400">Not set</span>
+                        )}
+                      </td>
+                      
+                      {/* Actions */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center space-x-2">
+                          <Link
+                            to={`/tickets/${ticket.id}`}
+                            className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
+                          >
+                            View
+                          </Link>
+                          {ticket.attachments && ticket.attachments.length > 0 && (
+                            <button
+                              onClick={() => downloadFile(ticket.attachments![0])}
+                              disabled={downloadingId === ticket.attachments![0].id}
+                              className="text-slate-600 hover:text-slate-800 text-sm transition-colors disabled:opacity-50"
+                              title="Download first attachment"
+                            >
+                              <DocumentArrowDownIcon className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

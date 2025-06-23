@@ -19,6 +19,7 @@ import ManagerDashboard from './pages/ManagerDashboard';
 import CategorizationAnalyticsPage from './pages/CategorizationAnalyticsPage';
 import UncategorizedTicketsPage from './pages/UncategorizedTicketsPage';
 import BSGCreateTicketPage from './pages/BSGCreateTicketPage';
+import ServiceCatalogPage from './pages/ServiceCatalogPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
 
@@ -164,6 +165,7 @@ function App() {
               <Route path="/admin/register" element={<ProtectedRoute roles={['admin']}><RegisterPage /></ProtectedRoute>} />
               <Route path="/tickets" element={<TicketsPage />} />
               <Route path="/create-ticket" element={<CreateTicketPage />} />
+              <Route path="/service-catalog" element={<ServiceCatalogPage />} />
               <Route path="/bsg-create" element={<BSGCreateTicketPage />} />
               <Route path="/tickets/:ticketId" element={<TicketDetailPage />} />
               <Route path="/tickets/:ticketId/edit" element={<EditTicketPage />} />

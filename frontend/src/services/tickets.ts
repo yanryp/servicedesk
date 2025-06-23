@@ -55,6 +55,15 @@ export const ticketsService = {
       formData.append('customFieldValues', JSON.stringify(ticketData.customFieldValues));
     }
 
+    // Add categorization fields
+    if (ticketData.userRootCause) {
+      formData.append('userRootCause', ticketData.userRootCause);
+    }
+    
+    if (ticketData.userIssueCategory) {
+      formData.append('userIssueCategory', ticketData.userIssueCategory);
+    }
+
     // Add attachments if provided
     if (attachments && attachments.length > 0) {
       Array.from(attachments).forEach((file) => {

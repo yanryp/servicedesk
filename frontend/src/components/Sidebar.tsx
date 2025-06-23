@@ -12,7 +12,8 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   TagIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  RectangleStackIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 
@@ -51,6 +52,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           href: '/tickets',
           icon: ClipboardDocumentListIcon,
           roles: ['requester', 'technician', 'manager', 'admin']
+        },
+        {
+          name: 'Service Catalog',
+          href: '/service-catalog',
+          icon: RectangleStackIcon,
+          roles: ['requester', 'technician', 'admin']
         },
         {
           name: 'Create Ticket',
