@@ -10,12 +10,15 @@ export type TicketStatus =
   | 'resolved'
   | 'closed'
   | 'awaiting_approval'
+  | 'pending_approval'
   | 'approved'
   | 'rejected'
   | 'pending-approval'
   | 'awaiting-changes'
   | 'assigned'
-  | 'cancelled';
+  | 'cancelled'
+  | 'pending'
+  | 'duplicate';
 
 export type UserRole = 'admin' | 'manager' | 'technician' | 'requester';
 
@@ -32,10 +35,31 @@ export interface Department {
   updatedAt: string;
   users?: User[];
   categories?: Category[];
+  units?: Unit[];
   _count?: {
     users: number;
     categories: number;
   };
+}
+
+// Unit interface
+export interface Unit {
+  id: number;
+  code: string;
+  name: string;
+  displayName?: string;
+  unitType: string; // branch, capem, department
+  parentId?: number;
+  departmentId?: number;
+  isActive: boolean;
+  sortOrder: number;
+  metadata?: Record<string, any>;
+  createdAt: string;
+  updatedAt: string;
+  department?: Department;
+  parent?: Unit;
+  children?: Unit[];
+  users?: User[];
 }
 
 // User interfaces
@@ -46,11 +70,13 @@ export interface User {
   role: UserRole;
   departmentId?: number;
   managerId?: number;
+  unitId?: number;
   createdAt: string;
   updatedAt: string;
   department?: Department;
   manager?: User;
   subordinates?: User[];
+  unit?: Unit;
 }
 
 export interface AuthUser {
@@ -59,8 +85,11 @@ export interface AuthUser {
   email: string;
   role: UserRole;
   departmentId?: number;
+  unitId?: number;
   department?: Department;
+  unit?: Unit;
   isKasdaUser?: boolean;
+  primarySkill?: string;
 }
 
 export interface LoginRequest {
