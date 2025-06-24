@@ -69,8 +69,8 @@ export const apiAuthMiddleware = async (req: AuthenticatedRequest, res: Response
         console.error('Failed to log API usage:', error);
       });
       
-      // Call original end method
-      originalEnd.call(this, chunk, encoding);
+      // Call original end method and return the result
+      return originalEnd.call(this, chunk, encoding);
     };
 
     next();

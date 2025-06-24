@@ -1,7 +1,6 @@
 // backend/src/routes/categoryRoutes.ts
 import express, { Request, Response, NextFunction, Router } from 'express';
 import { query } from '../db';
-import { protect, authorize } from '../middleware/authMiddleware'; // Assuming you might want to protect some routes
 
 const router: Router = express.Router();
 

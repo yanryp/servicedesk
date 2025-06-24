@@ -16,6 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const db_1 = __importDefault(require("../db"));
+const prisma_1 = __importDefault(require("../db/prisma"));
 const authMiddleware_1 = require("../middleware/authMiddleware");
 const emailService_1 = require("../services/emailService");
 const asyncHandler_1 = __importDefault(require("../utils/asyncHandler"));
@@ -356,18 +357,23 @@ router.get('/', authMiddleware_1.protect, (0, asyncHandler_1.default)((req, res)
     const countResult = yield db_1.default.query(countQueryText, queryParams);
     const totalTickets = parseInt(countResult.rows[0].count, 10);
     const totalPages = Math.ceil(totalTickets / limit);
-    // Tickets query
+    // Tickets query with enhanced user and department information
     const ticketsQueryBase = `
         SELECT 
           t.*, 
           u.username AS created_by_username,
+          u.email AS created_by_email,
+          u.role AS created_by_role,
+          creator_dept.name AS created_by_department,
           assigned_user.username AS assigned_to_username,
+          assigned_user.email AS assigned_to_email,
           COALESCE(att_counts.attachment_count, 0) AS attachment_count,
           i.name AS item_name,
           scat.name AS sub_category_name,
           cat.name AS category_name
         FROM tickets t
         JOIN users u ON t.created_by_user_id = u.id
+        LEFT JOIN departments creator_dept ON u.department_id = creator_dept.id
         LEFT JOIN users assigned_user ON t.assigned_to_user_id = assigned_user.id
         LEFT JOIN (
           SELECT ticket_id, COUNT(*) AS attachment_count 
@@ -378,7 +384,7 @@ router.get('/', authMiddleware_1.protect, (0, asyncHandler_1.default)((req, res)
         LEFT JOIN sub_categories scat ON i.sub_category_id = scat.id
         LEFT JOIN categories cat ON scat.category_id = cat.id
     `;
-    const groupByAndLimit = ` GROUP BY t.id, u.username, assigned_user.username, i.name, scat.name, cat.name, att_counts.attachment_count ORDER BY t.updated_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+    const groupByAndLimit = ` GROUP BY t.id, u.username, u.email, u.role, creator_dept.name, assigned_user.username, assigned_user.email, i.name, scat.name, cat.name, att_counts.attachment_count ORDER BY t.updated_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
     const ticketsQueryText = ticketsQueryBase + whereClause + groupByAndLimit;
     const ticketsQueryParams = [...queryParams, limit, offset];
     const ticketsResult = yield db_1.default.query(ticketsQueryText, ticketsQueryParams);
@@ -389,90 +395,189 @@ router.get('/', authMiddleware_1.protect, (0, asyncHandler_1.default)((req, res)
         totalTickets: totalTickets,
     });
 })));
+// @route   GET /api/tickets/pending-approvals
+// @desc    Get tickets pending approval for manager 
+// @access  Private (Manager only)
+router.get('/pending-approvals', authMiddleware_1.protect, (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const managerId = req.user.id;
+    // Check if user is a manager
+    if (req.user.role !== 'manager') {
+        return res.status(403).json({ message: 'Access denied. Manager role required.' });
+    }
+    const client = yield db_1.default.connect();
+    try {
+        // Get tickets where the creator's manager is the current user and status is pending approval
+        const query = `
+      SELECT 
+        t.*,
+        c.name as category_name,
+        sc.name as subcategory_name,
+        i.name as item_name,
+        u.username as creator_username,
+        u.email as creator_email,
+        d.name as creator_department
+      FROM tickets t
+      LEFT JOIN items i ON t.item_id = i.id
+      LEFT JOIN sub_categories sc ON i.sub_category_id = sc.id  
+      LEFT JOIN categories c ON sc.category_id = c.id
+      JOIN users u ON t.created_by_user_id = u.id
+      LEFT JOIN departments d ON u.department_id = d.id
+      WHERE u.manager_id = $1 
+        AND t.status = 'pending-approval'
+      ORDER BY t.created_at DESC
+    `;
+        const result = yield client.query(query, [managerId]);
+        const rawTickets = result.rows;
+        // Transform flat fields to nested objects to match frontend expectations
+        const tickets = rawTickets.map(ticket => (Object.assign(Object.assign({}, ticket), { createdBy: {
+                username: ticket.creator_username,
+                email: ticket.creator_email
+            }, item: {
+                name: ticket.item_name
+            }, 
+            // Clean up flat fields to avoid confusion
+            creator_username: undefined, creator_email: undefined, creator_department: undefined, item_name: undefined, category_name: undefined, subcategory_name: undefined })));
+        res.status(200).json(tickets);
+    }
+    catch (error) {
+        console.error('Error fetching pending approvals:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching pending approvals'
+        });
+    }
+    finally {
+        client.release();
+    }
+})));
 // @route   GET /api/tickets/:ticketId
 // @desc    Get a single ticket by ID
 // @access  Private
 router.get('/:ticketId', authMiddleware_1.protect, (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { ticketId } = req.params;
     const user = req.user;
-    const queryText = `
-      SELECT
-          t.*, -- Select all columns from tickets table
-          cat.name AS category_name,
-          scat.name AS sub_category_name,
-          i.name AS item_name,
-          tmpl.name AS template_name,
-          COALESCE(
-              (
-                  SELECT json_agg(json_build_object(
-                      'id', ta.id,
-                      'filename', ta.file_name,
-                      'filepath', ta.file_path,
-                      'mimetype', ta.file_type,
-                      'filesize', ta.file_size
-                  ) ORDER BY ta.id)
-                  FROM ticket_attachments ta
-                  WHERE ta.ticket_id = t.id
-              ),
-              '[]'::json
-          ) AS attachments,
-          COALESCE(
-              (
-                  SELECT json_agg(json_build_object(
-                      'field_definition_id', cfd.id,
-                      'field_name', cfd.field_name,
-                      'field_label', cfd.field_label,
-                      'field_type', cfd.field_type,
-                      'value', tcfv.value
-                  ) ORDER BY cfd.id) -- Order custom fields consistently
-                  FROM ticket_custom_field_values tcfv
-                  JOIN custom_field_definitions cfd ON tcfv.field_definition_id = cfd.id
-                  WHERE tcfv.ticket_id = t.id
-              ),
-              '[]'::json
-          ) AS custom_fields
-      FROM
-          tickets t
-      LEFT JOIN
-          items i ON t.item_id = i.id
-      LEFT JOIN
-          sub_categories scat ON i.sub_category_id = scat.id
-      LEFT JOIN
-          categories cat ON scat.category_id = cat.id
-      LEFT JOIN
-          ticket_templates tmpl ON t.template_id = tmpl.id
-      WHERE
-          t.id = $1;
-    `;
-    const ticketResult = yield db_1.default.query(queryText, [ticketId]);
-    if (ticketResult.rows.length === 0) {
+    // Use Prisma to fetch ticket with all related data
+    const ticket = yield prisma_1.default.ticket.findUnique({
+        where: { id: parseInt(ticketId) },
+        include: {
+            createdBy: {
+                select: {
+                    id: true,
+                    username: true,
+                    email: true,
+                    departmentId: true,
+                    managerId: true
+                },
+                include: {
+                    department: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
+                    manager: {
+                        select: {
+                            id: true,
+                            username: true,
+                            email: true,
+                            departmentId: true
+                        }
+                    }
+                }
+            },
+            assignedTo: {
+                select: {
+                    id: true,
+                    username: true,
+                    email: true,
+                    departmentId: true
+                },
+                include: {
+                    department: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    }
+                }
+            },
+            item: {
+                include: {
+                    subCategory: {
+                        include: {
+                            category: true
+                        }
+                    }
+                }
+            },
+            template: true,
+            attachments: true,
+            customFieldValues: {
+                include: {
+                    fieldDefinition: true
+                }
+            },
+            bsgFieldValues: {
+                include: {
+                    field: {
+                        include: {
+                            fieldType: true
+                        }
+                    }
+                }
+            }
+        }
+    });
+    if (!ticket) {
         return res.status(404).json({ message: 'Ticket not found.' });
     }
-    const ticket = ticketResult.rows[0];
     // Authorization check with department-based access
-    const isOwner = user.id === ticket.created_by_user_id;
+    const isOwner = user.id === ticket.createdByUserId;
     const isAdmin = user.role === 'admin';
-    const isTechnicianInSameDept = user.role === 'technician' && user.departmentId && ticket.category_id && user.departmentId === ticket.department_id;
-    // Get category department info for technician access check
+    // Check if user is the direct manager of the ticket creator
+    const isDirectManager = user.role === 'manager' &&
+        ticket.createdBy.managerId === user.id &&
+        ticket.createdBy.departmentId === user.departmentId;
+    // Check if technician can access based on department
     let canAccessAsTechnician = false;
     if (user.role === 'technician' && user.departmentId) {
-        const deptCheckQuery = `
-        SELECT cat.department_id 
-        FROM tickets t
-        LEFT JOIN items i ON t.item_id = i.id
-        LEFT JOIN sub_categories scat ON i.sub_category_id = scat.id
-        LEFT JOIN categories cat ON scat.category_id = cat.id
-        WHERE t.id = $1
-      `;
-        const deptResult = yield db_1.default.query(deptCheckQuery, [ticketId]);
-        if (deptResult.rows.length > 0 && deptResult.rows[0].department_id === user.departmentId) {
-            canAccessAsTechnician = true;
-        }
+        // Allow technicians to access tickets from their department
+        canAccessAsTechnician = ticket.createdBy.departmentId === user.departmentId;
     }
-    if (!isOwner && !isAdmin && !canAccessAsTechnician) {
+    if (!isOwner && !isAdmin && !isDirectManager && !canAccessAsTechnician) {
         return res.status(403).json({ message: 'You are not authorized to view this ticket.' });
     }
-    res.status(200).json(ticket);
+    // Transform Prisma data to match frontend expectations
+    const transformedTicket = Object.assign(Object.assign({}, ticket), { 
+        // Transform BSG field values to match frontend expectations
+        bsg_fields: ticket.bsgFieldValues.map(fieldValue => ({
+            field_definition_id: fieldValue.field.id,
+            field_name: fieldValue.field.fieldName,
+            field_label: fieldValue.field.fieldLabel,
+            field_type: fieldValue.field.fieldType.name,
+            value: fieldValue.fieldValue,
+            field_description: fieldValue.field.fieldDescription,
+            placeholder_text: fieldValue.field.placeholderText,
+            help_text: fieldValue.field.helpText
+        })), 
+        // Transform custom field values to match frontend expectations
+        custom_fields: ticket.customFieldValues.map(fieldValue => ({
+            field_definition_id: fieldValue.fieldDefinition.id,
+            field_name: fieldValue.fieldDefinition.fieldName,
+            field_label: fieldValue.fieldDefinition.fieldLabel,
+            field_type: fieldValue.fieldDefinition.fieldType,
+            value: fieldValue.value
+        })), 
+        // Add authorization context for frontend
+        userPermissions: {
+            canApprove: isDirectManager && ticket.status === 'pending_approval',
+            canModify: isOwner || isAdmin || canAccessAsTechnician,
+            isOwner: isOwner,
+            isDirectManager: isDirectManager,
+            userRole: user.role,
+            userDepartment: user.departmentId
+        } });
+    res.status(200).json(transformedTicket);
 })));
 // @route   PUT /api/tickets/:ticketId
 // @desc    Update a ticket
@@ -491,19 +596,30 @@ router.put('/:ticketId', authMiddleware_1.protect, [
 ], (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const getSingleTicketQueryText = `
       SELECT
-          t.*, -- Select all columns from tickets table
+          t.*, -- Select all columns from tickets table including categorization fields
           cat.name AS category_name,
           scat.name AS sub_category_name,
           i.name AS item_name,
           tmpl.name AS template_name,
+          -- Transform categorization fields to camelCase for frontend compatibility
+          t.user_root_cause as "userRootCause",
+          t.user_issue_category as "userIssueCategory", 
+          t.user_categorized_at as "userCategorizedAt",
+          t.tech_root_cause as "techRootCause",
+          t.tech_issue_category as "techIssueCategory",
+          t.tech_categorized_at as "techCategorizedAt",
+          t.confirmed_root_cause as "confirmedRootCause",
+          t.confirmed_issue_category as "confirmedIssueCategory",
+          t.is_classification_locked as "isClassificationLocked",
+          t.tech_override_reason as "techOverrideReason",
           COALESCE(
               (
                   SELECT json_agg(json_build_object(
                       'id', ta.id,
-                      'filename', ta.file_name,
-                      'filepath', ta.file_path,
-                      'mimetype', ta.file_type,
-                      'filesize', ta.file_size
+                      'fileName', ta.file_name,
+                      'filePath', ta.file_path,
+                      'fileType', ta.file_type,
+                      'fileSize', ta.file_size
                   ) ORDER BY ta.id)
                   FROM ticket_attachments ta
                   WHERE ta.ticket_id = t.id
@@ -524,7 +640,26 @@ router.put('/:ticketId', authMiddleware_1.protect, [
                   WHERE tcfv.ticket_id = t.id
               ),
               '[]'::json
-          ) AS custom_fields
+          ) AS custom_fields,
+          COALESCE(
+              (
+                  SELECT json_agg(json_build_object(
+                      'field_definition_id', btf.id,
+                      'field_name', btf."fieldName",
+                      'field_label', btf."fieldLabel", 
+                      'field_type', bft.name,
+                      'value', btfv."fieldValue",
+                      'field_description', btf."fieldDescription",
+                      'placeholder_text', btf."placeholderText",
+                      'help_text', btf."helpText"
+                  ) ORDER BY btf."sortOrder", btf.id)
+                  FROM "BSGTicketFieldValue" btfv
+                  JOIN "BSGTemplateField" btf ON btfv."fieldId" = btf.id
+                  JOIN "BSGFieldType" bft ON btf."fieldTypeId" = bft.id
+                  WHERE btfv."ticketId" = t.id
+              ),
+              '[]'::json
+          ) AS bsg_fields
       FROM
           tickets t
       LEFT JOIN
@@ -965,7 +1100,9 @@ router.get('/attachments/:attachmentId', authMiddleware_1.protect, (0, asyncHand
     if (!isOwner && !isAdminOrTech) {
         return res.status(403).json({ message: 'You are not authorized to download this file.' });
     }
-    // 3. Serve the file for download
+    // 3. Serve the file for download with proper headers
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Type', 'application/octet-stream');
     res.download(filepath, filename, (err) => {
         if (err) {
             console.error('Error downloading file:', err);
@@ -1000,70 +1137,247 @@ router.put('/:ticketId/approval', authMiddleware_1.protect, (0, authMiddleware_1
         return res.status(400).json({ errors: errors.array() });
     }
     const { ticketId } = req.params;
-    const { action, comments } = req.body; // Changed rejectionReason to comments
+    const { action, comments } = req.body;
+    const manager = req.user;
+    try {
+        // Use Prisma transaction for approval workflow
+        const result = yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+            // Fetch ticket with creator information
+            const ticket = yield tx.ticket.findUnique({
+                where: { id: parseInt(ticketId) },
+                include: {
+                    createdBy: {
+                        select: {
+                            id: true,
+                            username: true,
+                            email: true,
+                            departmentId: true,
+                            managerId: true
+                        },
+                        include: {
+                            department: {
+                                select: {
+                                    id: true,
+                                    name: true
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            if (!ticket) {
+                throw new Error('Ticket not found.');
+            }
+            if (ticket.status !== 'pending_approval') {
+                throw new Error(`Ticket is not pending approval, its status is "${ticket.status}".`);
+            }
+            // Enhanced authorization: Check if manager is direct manager AND in same department
+            const isDirectManager = ticket.createdBy.managerId === manager.id;
+            const isSameDepartment = ticket.createdBy.departmentId === manager.departmentId;
+            if (!isDirectManager) {
+                throw new Error('You are not the direct manager of this ticket creator.');
+            }
+            if (!isSameDepartment) {
+                throw new Error('You can only approve tickets from users in your department.');
+            }
+            let updatedTicket;
+            let notificationSubject = '';
+            let notificationText = '';
+            let notificationHtml = '';
+            if (action === 'approve') {
+                const slaDueDate = getSlaDueDate(ticket.priority);
+                updatedTicket = yield tx.ticket.update({
+                    where: { id: parseInt(ticketId) },
+                    data: {
+                        status: 'approved',
+                        managerComments: null,
+                        slaDueDate: slaDueDate,
+                        updatedAt: new Date()
+                    }
+                });
+                notificationSubject = `Ticket Approved: #${ticket.id}`;
+                notificationText = `Your ticket "${ticket.title}" (#${ticket.id}) has been approved by your manager. It will now proceed to the next stage.`;
+                notificationHtml = `<p>Your ticket "<b>${ticket.title}</b>" (#${ticket.id}) has been approved by your manager. It will now proceed to the next stage.</p>`;
+            }
+            else if (action === 'request_changes') {
+                updatedTicket = yield tx.ticket.update({
+                    where: { id: parseInt(ticketId) },
+                    data: {
+                        status: 'awaiting_changes',
+                        managerComments: comments,
+                        updatedAt: new Date()
+                    }
+                });
+                notificationSubject = `Action Required: Changes Requested for Ticket #${ticket.id}`;
+                notificationText = `Changes have been requested for your ticket "${ticket.title}" (#${ticket.id}).\nManager comments: ${comments}\nPlease review and update your ticket.`;
+                notificationHtml = `<p>Changes have been requested for your ticket "<b>${ticket.title}</b>" (#${ticket.id}).</p><p><b>Manager comments:</b> ${comments}</p><p>Please review and update your ticket accordingly.</p>`;
+            }
+            else { // action === 'reject'
+                updatedTicket = yield tx.ticket.update({
+                    where: { id: parseInt(ticketId) },
+                    data: {
+                        status: 'rejected',
+                        managerComments: comments,
+                        updatedAt: new Date()
+                    }
+                });
+                notificationSubject = `Ticket Rejected: #${ticket.id}`;
+                notificationText = `Your ticket "${ticket.title}" (#${ticket.id}) has been rejected by your manager.\nReason: ${comments}`;
+                notificationHtml = `<p>Your ticket "<b>${ticket.title}</b>" (#${ticket.id}) has been rejected by your manager.</p><p><b>Reason:</b> ${comments}</p>`;
+            }
+            return {
+                ticket: updatedTicket,
+                creator: ticket.createdBy,
+                notificationSubject,
+                notificationText,
+                notificationHtml
+            };
+        }));
+        // Send notification email after successful transaction
+        if (result.creator.email) {
+            try {
+                yield (0, emailService_1.sendEmail)({
+                    to: result.creator.email,
+                    subject: result.notificationSubject,
+                    text: result.notificationText,
+                    html: result.notificationHtml,
+                });
+            }
+            catch (emailError) {
+                console.error('Error sending approval notification:', emailError);
+                // Don't fail the approval process if email fails
+            }
+        }
+        res.status(200).json(result.ticket);
+    }
+    catch (error) {
+        console.error('Error during ticket approval/rejection:', error);
+        // Handle specific authorization errors
+        if (error.message.includes('not the direct manager') ||
+            error.message.includes('same department') ||
+            error.message.includes('not pending approval')) {
+            return res.status(403).json({ message: error.message });
+        }
+        if (error.message.includes('not found')) {
+            return res.status(404).json({ message: error.message });
+        }
+        res.status(500).json({ message: 'Server error during ticket approval process.' });
+    }
+})));
+// @route   POST /api/tickets/:ticketId/approve
+// @desc    Approve a ticket (Manager only)  
+// @access  Private (Manager only)
+router.post('/:ticketId/approve', authMiddleware_1.protect, (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const ticketId = parseInt(req.params.ticketId);
+    const { comments } = req.body;
     const managerId = req.user.id;
+    // Check if user is a manager
+    if (req.user.role !== 'manager') {
+        return res.status(403).json({ message: 'Access denied. Manager role required.' });
+    }
     const client = yield db_1.default.connect();
     try {
-        yield client.query('BEGIN');
-        const ticketResult = yield client.query('SELECT * FROM tickets WHERE id = $1', [ticketId]);
+        // Get the ticket and verify manager authority
+        const ticketResult = yield client.query(`
+      SELECT t.*, u.manager_id, u.username as creator_username 
+      FROM tickets t 
+      JOIN users u ON t.created_by_user_id = u.id 
+      WHERE t.id = $1
+    `, [ticketId]);
         const ticket = ticketResult.rows[0];
         if (!ticket) {
-            yield client.query('ROLLBACK');
             return res.status(404).json({ message: 'Ticket not found.' });
         }
+        if (ticket.manager_id !== managerId) {
+            return res.status(403).json({ message: 'You are not authorized to approve this ticket.' });
+        }
         if (ticket.status !== 'pending-approval') {
-            yield client.query('ROLLBACK');
-            return res.status(400).json({ message: `Ticket is not pending approval, its status is "${ticket.status}".` });
+            return res.status(400).json({ message: 'Ticket is not pending approval.' });
         }
-        const creatorResult = yield client.query('SELECT manager_id, email, username FROM users WHERE id = $1', [ticket.created_by_user_id]);
-        const creator = creatorResult.rows[0];
-        if (creator.manager_id !== managerId) {
-            yield client.query('ROLLBACK');
-            return res.status(403).json({ message: 'You are not authorized to approve or reject this ticket.' });
+        // Approve the ticket
+        const slaDueDate = getSlaDueDate(ticket.priority);
+        const updateResult = yield client.query(`UPDATE tickets SET status = 'approved', manager_comments = $1, sla_due_date = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING *`, [comments || null, slaDueDate, ticketId]);
+        const updatedTicket = updateResult.rows[0];
+        // Send notification to requester
+        try {
+            const creatorResult = yield client.query('SELECT email FROM users WHERE id = $1', [ticket.created_by_user_id]);
+            const creator = creatorResult.rows[0];
+            if (creator && creator.email) {
+                const subject = `Ticket Approved: #${ticket.id} - ${ticket.title}`;
+                const text = `Your ticket "${ticket.title}" (#${ticket.id}) has been approved by your manager. It will now proceed to the next stage.`;
+                const html = `<p>Your ticket "<b>${ticket.title}</b>" (#${ticket.id}) has been approved by your manager. It will now proceed to the next stage.</p>`;
+                yield (0, emailService_1.sendEmail)({ to: creator.email, subject, text, html });
+            }
         }
-        let updatedTicket;
-        let notificationSubject = '';
-        let notificationText = '';
-        let notificationHtml = '';
-        if (action === 'approve') {
-            const slaDueDate = getSlaDueDate(ticket.priority); // Keep SLA due date calculation for approved tickets
-            const updateResult = yield client.query(`UPDATE tickets SET status = 'approved', manager_comments = NULL, sla_due_date = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`, [slaDueDate, ticketId]);
-            updatedTicket = updateResult.rows[0];
-            notificationSubject = `Ticket Approved: #${ticket.id}`;
-            notificationText = `Your ticket "${ticket.title}" (#${ticket.id}) has been approved by your manager. It will now proceed to the next stage.`;
-            notificationHtml = `<p>Your ticket "<b>${ticket.title}</b>" (#${ticket.id}) has been approved by your manager. It will now proceed to the next stage.</p>`;
+        catch (emailError) {
+            console.error('Error sending approval notification:', emailError);
         }
-        else if (action === 'request_changes') {
-            // Comments are validated to be present by express-validator
-            const updateResult = yield client.query(`UPDATE tickets SET status = 'awaiting-changes', manager_comments = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`, [comments, ticketId]);
-            updatedTicket = updateResult.rows[0];
-            notificationSubject = `Action Required: Changes Requested for Ticket #${ticket.id}`;
-            notificationText = `Changes have been requested for your ticket "${ticket.title}" (#${ticket.id}).\nManager comments: ${comments}\nPlease review and update your ticket.`;
-            notificationHtml = `<p>Changes have been requested for your ticket "<b>${ticket.title}</b>" (#${ticket.id}).</p><p><b>Manager comments:</b> ${comments}</p><p>Please review and update your ticket accordingly.</p>`;
-        }
-        else { // action === 'reject'
-            // Comments are validated to be present by express-validator
-            const updateResult = yield client.query(`UPDATE tickets SET status = 'rejected', manager_comments = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`, [comments, ticketId]);
-            updatedTicket = updateResult.rows[0];
-            notificationSubject = `Ticket Rejected: #${ticket.id}`;
-            notificationText = `Your ticket "${ticket.title}" (#${ticket.id}) has been rejected by your manager.\nReason: ${comments}`;
-            notificationHtml = `<p>Your ticket "<b>${ticket.title}</b>" (#${ticket.id}) has been rejected by your manager.</p><p><b>Reason:</b> ${comments}</p>`;
-        }
-        if (creator.email) {
-            yield (0, emailService_1.sendEmail)({
-                to: creator.email,
-                subject: notificationSubject,
-                text: notificationText,
-                html: notificationHtml,
-            });
-        }
-        yield client.query('COMMIT');
         res.status(200).json(updatedTicket);
     }
     catch (error) {
-        yield client.query('ROLLBACK');
-        console.error('Error during ticket approval/rejection:', error);
-        res.status(500).json({ message: 'Server error during ticket approval process.' });
+        console.error('Error approving ticket:', error);
+        res.status(500).json({ message: 'Server error during ticket approval.' });
+    }
+    finally {
+        client.release();
+    }
+})));
+// @route   POST /api/tickets/:ticketId/reject  
+// @desc    Reject a ticket (Manager only)
+// @access  Private (Manager only)
+router.post('/:ticketId/reject', authMiddleware_1.protect, (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const ticketId = parseInt(req.params.ticketId);
+    const { comments } = req.body;
+    const managerId = req.user.id;
+    // Check if user is a manager
+    if (req.user.role !== 'manager') {
+        return res.status(403).json({ message: 'Access denied. Manager role required.' });
+    }
+    // Comments are required for rejection
+    if (!comments || comments.trim() === '') {
+        return res.status(400).json({ message: 'Comments are required when rejecting a ticket.' });
+    }
+    const client = yield db_1.default.connect();
+    try {
+        // Get the ticket and verify manager authority
+        const ticketResult = yield client.query(`
+      SELECT t.*, u.manager_id, u.username as creator_username 
+      FROM tickets t 
+      JOIN users u ON t.created_by_user_id = u.id 
+      WHERE t.id = $1
+    `, [ticketId]);
+        const ticket = ticketResult.rows[0];
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found.' });
+        }
+        if (ticket.manager_id !== managerId) {
+            return res.status(403).json({ message: 'You are not authorized to reject this ticket.' });
+        }
+        if (ticket.status !== 'pending-approval') {
+            return res.status(400).json({ message: 'Ticket is not pending approval.' });
+        }
+        // Reject the ticket
+        const updateResult = yield client.query(`UPDATE tickets SET status = 'rejected', manager_comments = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`, [comments, ticketId]);
+        const updatedTicket = updateResult.rows[0];
+        // Send notification to requester
+        try {
+            const creatorResult = yield client.query('SELECT email FROM users WHERE id = $1', [ticket.created_by_user_id]);
+            const creator = creatorResult.rows[0];
+            if (creator && creator.email) {
+                const subject = `Ticket Rejected: #${ticket.id} - ${ticket.title}`;
+                const text = `Your ticket "${ticket.title}" (#${ticket.id}) has been rejected by your manager.\nReason: ${comments}`;
+                const html = `<p>Your ticket "<b>${ticket.title}</b>" (#${ticket.id}) has been rejected by your manager.</p><p><b>Reason:</b> ${comments}</p>`;
+                yield (0, emailService_1.sendEmail)({ to: creator.email, subject, text, html });
+            }
+        }
+        catch (emailError) {
+            console.error('Error sending rejection notification:', emailError);
+        }
+        res.status(200).json(updatedTicket);
+    }
+    catch (error) {
+        console.error('Error rejecting ticket:', error);
+        res.status(500).json({ message: 'Server error during ticket rejection.' });
     }
     finally {
         client.release();

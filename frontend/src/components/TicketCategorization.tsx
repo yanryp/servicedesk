@@ -142,15 +142,31 @@ const TicketCategorization: React.FC<TicketCategorizationProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
             <span className="font-medium text-gray-700">Root Cause: </span>
-            <span className={`${ticket.confirmedRootCause ? 'text-green-600' : 'text-gray-500'}`}>
-              {ticket.confirmedRootCause || 'Not classified'}
-            </span>
+            {ticket.confirmedRootCause ? (
+              <span className="text-green-600">
+                {ticket.confirmedRootCause.replace('_', ' ')} (Confirmed)
+              </span>
+            ) : ticket.techRootCause ? (
+              <span className="text-blue-600">
+                {ticket.techRootCause.replace('_', ' ')} (Tech Review)
+              </span>
+            ) : (
+              <span className="text-gray-500">Not classified</span>
+            )}
           </div>
           <div>
             <span className="font-medium text-gray-700">Issue Category: </span>
-            <span className={`${ticket.confirmedIssueCategory ? 'text-green-600' : 'text-gray-500'}`}>
-              {ticket.confirmedIssueCategory || 'Not classified'}
-            </span>
+            {ticket.confirmedIssueCategory ? (
+              <span className="text-green-600">
+                {ticket.confirmedIssueCategory} (Confirmed)
+              </span>
+            ) : ticket.techIssueCategory ? (
+              <span className="text-blue-600">
+                {ticket.techIssueCategory} (Tech Review)
+              </span>
+            ) : (
+              <span className="text-gray-500">Not classified</span>
+            )}
           </div>
         </div>
         

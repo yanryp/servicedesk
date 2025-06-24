@@ -35,6 +35,9 @@ const templateManagementRoutes_1 = __importDefault(require("./routes/templateMan
 const bsgTemplateRoutes_1 = __importDefault(require("./routes/bsgTemplateRoutes")); // Import BSG template routes
 const templateFieldsRoutes_1 = __importDefault(require("./routes/templateFieldsRoutes")); // Import template fields routes
 const ticketCommentsRoutes_1 = __importDefault(require("./routes/ticketCommentsRoutes")); // Import ticket comments routes
+const autoAssignmentRoutes_1 = __importDefault(require("./routes/autoAssignmentRoutes")); // Import auto-assignment routes
+const apiTokenRoutes_1 = __importDefault(require("./routes/apiTokenRoutes")); // Import API token routes
+const externalApiRoutes_1 = __importDefault(require("./routes/externalApiRoutes")); // Import external API routes
 const escalationService_1 = require("./services/escalationService"); // Import escalation service
 const app = (0, express_1.default)();
 // Security middleware
@@ -60,7 +63,11 @@ app.use((0, helmet_1.default)({
     }
 }));
 app.use((0, cors_1.default)({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: [
+        'http://localhost:3000',
+        'http://localhost:3002',
+        ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [])
+    ],
     credentials: true,
     optionsSuccessStatus: 200
 })); // Enable CORS for all routes
@@ -90,6 +97,12 @@ app.use('/api/bsg-templates', bsgTemplateRoutes_1.default); // BSG template impo
 app.use('/api/service-templates', templateFieldsRoutes_1.default); // Template custom fields routes
 // Ticket Comments and Conversation System
 app.use('/api', ticketCommentsRoutes_1.default); // Ticket comments and conversation routes
+// Auto-assignment system
+app.use('/api/auto-assignment', autoAssignmentRoutes_1.default); // Auto-assignment management routes
+// API Token management
+app.use('/api/tokens', apiTokenRoutes_1.default); // API token management routes
+// External API (with API token authentication)
+app.use('/api/external-api', externalApiRoutes_1.default); // External API routes with token auth
 // Legacy routes (for backward compatibility)
 app.use('/api/tickets', ticketRoutes_1.default); // Mount legacy ticket router
 app.use('/api/categories', categoryRoutes_1.default); // Use category routes

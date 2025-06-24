@@ -454,28 +454,36 @@ router.get('/uncategorized',
       const take = parseInt(limit as string);
 
       let whereClause: any = {
-        OR: [
-          { confirmedRootCause: null },
-          { confirmedIssueCategory: null }
+        AND: [
+          // Must be uncategorized
+          {
+            OR: [
+              { confirmedRootCause: null },
+              { confirmedIssueCategory: null }
+            ]
+          }
         ],
         status: { not: 'closed' }, // Don't show closed tickets
         isClassificationLocked: false
       };
 
-      // Role-based filtering
-      if (user?.role !== 'admin' && user) {
-        whereClause.OR = [
-          ...(whereClause.OR || []),
-          { serviceCatalog: { departmentId: user.departmentId } },
-          { createdByUserId: user.id }
-        ];
+      // Role-based filtering - add access control
+      if (user?.role !== 'admin' && user?.departmentId) {
+        whereClause.AND.push({
+          OR: [
+            { serviceCatalog: { departmentId: user.departmentId } },
+            { createdByUserId: user.id }
+          ]
+        });
       }
 
-      // Apply filters
+      // Apply additional filters
       if (department) {
-        whereClause.serviceCatalog = {
-          departmentId: parseInt(department as string)
-        };
+        whereClause.AND.push({
+          serviceCatalog: {
+            departmentId: parseInt(department as string)
+          }
+        });
       }
 
       if (priority) {
@@ -525,10 +533,22 @@ router.get('/uncategorized',
           summary: {
             uncategorized: totalTickets,
             requiresRootCause: await prisma.ticket.count({
-              where: { ...whereClause, confirmedRootCause: null }
+              where: {
+                ...whereClause,
+                AND: [
+                  ...whereClause.AND,
+                  { confirmedRootCause: null }
+                ]
+              }
             }),
             requiresIssueCategory: await prisma.ticket.count({
-              where: { ...whereClause, confirmedIssueCategory: null }
+              where: {
+                ...whereClause,
+                AND: [
+                  ...whereClause.AND,
+                  { confirmedIssueCategory: null }
+                ]
+              }
             })
           }
         }

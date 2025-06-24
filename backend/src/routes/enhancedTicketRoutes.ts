@@ -1058,103 +1058,43 @@ router.get('/pending-approvals', protect, asyncHandler(async (req: Authenticated
       });
     }
 
-    // Get tickets where status is pending_approval and user is the manager
+    console.log('Fetching pending approvals for user:', user.id, user.username, user.departmentId);
+
+    // Simplified query with department validation
     const pendingTickets = await prisma.ticket.findMany({
       where: {
         status: 'pending_approval',
-        OR: [
-          // Traditional manager approval (creator's manager is current user)
-          {
-            createdBy: {
-              managerId: user.id
-            }
-          },
-          // Business approval tickets assigned to this manager as business reviewer
-          {
-            businessApproval: {
-              businessReviewerId: user.id,
-              approvalStatus: 'pending'
-            }
-          }
-        ]
+        createdBy: {
+          managerId: user.id,
+          departmentId: user.departmentId
+        }
       },
       include: {
         createdBy: {
-          select: {
-            id: true,
-            username: true,
-            email: true,
-            role: true,
+          include: {
             department: {
               select: {
+                id: true,
                 name: true
               }
             }
           }
         },
         assignedTo: {
-          select: {
-            id: true,
-            username: true,
-            email: true,
-            role: true
-          }
-        },
-        // Legacy template info
-        template: {
-          select: {
-            id: true,
-            name: true,
-            description: true
-          }
-        },
-        item: {
-          select: {
-            name: true
-          }
-        },
-        // Enhanced service catalog info
-        serviceItem: {
-          select: {
-            name: true,
-            requestType: true
-          }
-        },
-        serviceCatalog: {
           include: {
-            department: true
-          }
-        },
-        governmentEntity: true,
-        businessApproval: {
-          include: {
-            businessReviewer: {
+            department: {
               select: {
                 id: true,
-                username: true,
-                email: true,
-                role: true
+                name: true
               }
             }
           }
-        },
-        attachments: true,
-        customFieldValues: {
-          include: {
-            fieldDefinition: true
-          }
-        },
-        serviceFieldValues: {
-          include: {
-            fieldDefinition: true
-          }
-        },
-        // BSG field values
-        bsgFieldValues: true
+        }
       },
-      orderBy: { createdAt: 'asc' }
+      orderBy: { createdAt: 'desc' }
     });
 
+    console.log('Found pending tickets:', pendingTickets.length);
     res.json(pendingTickets);
 
   } catch (error) {

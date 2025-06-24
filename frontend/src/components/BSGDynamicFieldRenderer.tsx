@@ -6,7 +6,6 @@ import {
 import { api } from '../services/api';
 import BSGField from './BSGField';
 import IsolatedBSGField from './IsolatedBSGField';
-import GlobalStorageField from './GlobalStorageField';
 
 // Field category icons mapping for display names
 const FIELD_CATEGORY_ICONS: Record<string, any> = {
@@ -55,6 +54,7 @@ interface BSGDynamicFieldRendererProps {
   errors?: Record<string, string>;
   disabled?: boolean;
   showCategories?: boolean;
+  onMasterDataLoaded?: (masterData: Record<string, BSGFieldOption[]>) => void;
 }
 
 const BSGDynamicFieldRenderer: React.FC<BSGDynamicFieldRendererProps> = ({
@@ -64,7 +64,8 @@ const BSGDynamicFieldRenderer: React.FC<BSGDynamicFieldRendererProps> = ({
   onChange,
   errors = {},
   disabled = false,
-  showCategories = true
+  showCategories = true,
+  onMasterDataLoaded
 }) => {
   const [masterData, setMasterData] = useState<Record<string, BSGFieldOption[]>>({});
   const [loading, setLoading] = useState(true);
@@ -103,7 +104,9 @@ const BSGDynamicFieldRenderer: React.FC<BSGDynamicFieldRendererProps> = ({
         });
         
         const dropdownFields = fields.filter(field => 
-          field.fieldType.startsWith('dropdown_')
+          field.fieldType.startsWith('dropdown_') || 
+          field.fieldType === 'searchable_dropdown' ||
+          field.fieldType === 'autocomplete'
         );
         
         console.log(`🔽 Found ${dropdownFields.length} dropdown fields`);
@@ -112,9 +115,28 @@ const BSGDynamicFieldRenderer: React.FC<BSGDynamicFieldRendererProps> = ({
         });
 
         const masterDataPromises = dropdownFields.map(async field => {
-          const dataType = field.fieldType.replace('dropdown_', '');
+          // Determine the data type for API call
+          let dataType = field.fieldType.replace('dropdown_', '');
+          
+          // Special mapping for Unit fields (converted from Cabang/Capem)
+          if (field.fieldType === 'searchable_dropdown' || field.fieldType === 'autocomplete') {
+            const fieldName = field.fieldName.toLowerCase();
+            const fieldLabel = field.fieldLabel.toLowerCase();
+            
+            // If this is a Unit field (converted from Cabang/Capem), use 'unit' data type
+            if (fieldLabel === 'unit' || fieldName.includes('unit') ||
+                fieldName.includes('cabang') || fieldName.includes('capem') ||
+                fieldLabel.includes('cabang') || fieldLabel.includes('capem')) {
+              dataType = 'unit';
+              console.log(`🏢 Detected Unit field: ${field.fieldLabel}, using 'unit' data type`);
+            } else {
+              // For other searchable dropdown fields, try to infer from field name
+              dataType = fieldName.replace(/[^a-z]/g, '') || 'generic';
+            }
+          }
+          
           try {
-            console.log(`🔽 Loading master data for field: ${field.fieldLabel} (type: ${field.fieldType})`);
+            console.log(`🔽 Loading master data for field: ${field.fieldLabel} (type: ${field.fieldType}) -> API dataType: ${dataType}`);
             const response = await api.get(`/bsg-templates/master-data/${dataType}`);
             // Extract data from API response format: { success: true, data: [...], meta: {...} }
             const options = Array.isArray(response?.data) ? response.data : [];
@@ -137,6 +159,11 @@ const BSGDynamicFieldRenderer: React.FC<BSGDynamicFieldRendererProps> = ({
         });
 
         setMasterData(masterDataMap);
+        
+        // Notify parent that master data is loaded
+        if (onMasterDataLoaded) {
+          onMasterDataLoaded(masterDataMap);
+        }
       } catch (error) {
         console.error('Error loading master data:', error);
       } finally {
@@ -206,19 +233,24 @@ const BSGDynamicFieldRenderer: React.FC<BSGDynamicFieldRendererProps> = ({
     );
   };
 
-  // Render field with global storage (completely React-independent)
+  // Render field with React state (proper integration with parent form)
   const renderFieldWithLabel = (field: BSGTemplateField) => {
     const fieldError = errors[field.fieldName];
     const fieldMasterData = masterData[field.fieldName] || [];
+    const fieldValue = values[field.fieldName] || '';
+    
+    // Field value lookup completed
     
     return (
-      <GlobalStorageField
+      <BSGField
         key={field.fieldName} // Use stable fieldName as key
         field={field}
+        value={fieldValue}
+        onChange={handleFieldChange}
         error={fieldError}
         disabled={disabled}
         masterData={fieldMasterData}
-        loading={loading && field.fieldType.startsWith('dropdown_')}
+        loading={loading && (field.fieldType.startsWith('dropdown_') || field.fieldType === 'searchable_dropdown' || field.fieldType === 'autocomplete')}
       />
     );
   };
@@ -240,7 +272,7 @@ const BSGDynamicFieldRenderer: React.FC<BSGDynamicFieldRendererProps> = ({
     return categoryNames[category] || category;
   };
 
-  if (loading && fields.some(f => f.fieldType.startsWith('dropdown_'))) {
+  if (loading && fields.some(f => f.fieldType.startsWith('dropdown_') || f.fieldType === 'searchable_dropdown' || f.fieldType === 'autocomplete')) {
     return (
       <div className="flex items-center justify-center py-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -280,6 +312,9 @@ export default React.memo(BSGDynamicFieldRenderer, (prevProps, nextProps) => {
   if (prevProps.templateId !== nextProps.templateId) return false;
   if (prevProps.disabled !== nextProps.disabled) return false;
   if (prevProps.showCategories !== nextProps.showCategories) return false;
+  
+  // IMPORTANT: Re-render when values change (for auto-fill to work)
+  if (JSON.stringify(prevProps.values) !== JSON.stringify(nextProps.values)) return false;
   
   // Compare fields by their IDs and types (ignore other props that cause re-renders)
   const fieldsChanged = prevProps.fields.some((field, index) => {

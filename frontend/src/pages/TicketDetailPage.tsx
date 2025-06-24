@@ -19,13 +19,10 @@ import {
   XCircleIcon,
   ExclamationTriangleIcon,
   ArrowLeftIcon,
-  ChatBubbleLeftIcon
+  ChatBubbleLeftIcon,
+  DocumentTextIcon
 } from '@heroicons/react/24/outline';
 
-interface Attachment {
-  id: number;
-  filename: string;
-}
 
 
 const TicketDetailPage: React.FC = () => {
@@ -148,10 +145,11 @@ const TicketDetailPage: React.FC = () => {
     );
   }
 
-  const isManagerOfCreator = user?.role === 'manager';
-  const showApprovalButtons = isManagerOfCreator && ticket.status === 'pending-approval';
-  const isOwner = user?.id === ticket.createdByUserId;
-  const canModify = user?.role === 'admin' || user?.role === 'technician' || isOwner;
+  // Use backend-provided permissions for proper authorization
+  const showApprovalButtons = (ticket as any).userPermissions?.canApprove || false;
+  const isOwner = (ticket as any).userPermissions?.isOwner || false;
+  const canModify = (ticket as any).userPermissions?.canModify || false;
+  const isDirectManager = (ticket as any).userPermissions?.isDirectManager || false;
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -259,15 +257,231 @@ const TicketDetailPage: React.FC = () => {
           <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">{ticket.description}</p>
         </div>
         
-        {ticket.item?.subCategory?.category && (
-          <div className="mt-6 pt-6 border-t border-slate-200">
-            <div className="inline-flex items-center space-x-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg">
-              <span className="font-medium">Category:</span>
-              <span>{ticket.item.subCategory.category.name}</span>
-            </div>
+        <div className="mt-6 pt-6 border-t border-slate-200">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {ticket.item?.subCategory?.category && (
+              <div className="inline-flex items-center space-x-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg">
+                <span className="font-medium">Category:</span>
+                <span>{ticket.item.subCategory.category.name}</span>
+              </div>
+            )}
+            
+            {ticket.createdBy?.department && (
+              <div className="inline-flex items-center space-x-2 px-3 py-2 bg-green-50 text-green-700 rounded-lg">
+                <span className="font-medium">Department:</span>
+                <span>{ticket.createdBy.department.name}</span>
+              </div>
+            )}
+            
+            {ticket.createdBy?.manager && (
+              <div className="inline-flex items-center space-x-2 px-3 py-2 bg-purple-50 text-purple-700 rounded-lg">
+                <span className="font-medium">Manager:</span>
+                <span>{ticket.createdBy.manager.username}</span>
+              </div>
+            )}
+            
+            {isDirectManager && (
+              <div className="inline-flex items-center space-x-2 px-3 py-2 bg-amber-50 text-amber-700 rounded-lg">
+                <span className="font-medium">Status:</span>
+                <span>Awaiting your approval</span>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
+
+
+      {/* Dynamic Fields / Custom Fields */}
+      {(((ticket as any).custom_fields && (ticket as any).custom_fields.length > 0) || 
+        ((ticket as any).bsg_fields && (ticket as any).bsg_fields.length > 0)) && (
+        <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl p-8 border border-slate-200/50">
+          <div className="flex items-center space-x-2 mb-6">
+            <DocumentTextIcon className="w-5 h-5 text-slate-600" />
+            <h2 className="text-xl font-semibold text-slate-800">Template Fields</h2>
+            <span className="text-sm text-slate-500">
+              ({((ticket as any).custom_fields?.length || 0) + ((ticket as any).bsg_fields?.length || 0)} field{(((ticket as any).custom_fields?.length || 0) + ((ticket as any).bsg_fields?.length || 0)) !== 1 ? 's' : ''})
+            </span>
+          </div>
+          <div className="space-y-6">
+            {/* Render custom fields (legacy) */}
+            {(ticket as any).custom_fields?.map((field: any, index: number) => {
+              const isFileField = field.field_type === 'file' || field.field_type === 'attachment';
+              const isCurrencyField = field.field_type === 'currency';
+              const isDateField = field.field_type === 'date' || field.field_type === 'datetime';
+              const isDropdownField = field.field_type?.startsWith('dropdown_') || field.field_type === 'searchable_dropdown';
+              
+              return (
+                <div key={`custom_${field.field_definition_id || index}`} className="border border-slate-200 rounded-lg p-4 bg-white">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                        {field.field_label || field.field_name}
+                        {field.field_type && (
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                            {field.field_type.replace('_', ' ')}
+                          </span>
+                        )}
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    {/* Display field value based on field type */}
+                    {isFileField ? (
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                        {field.value ? (
+                          <div className="flex items-center space-x-2">
+                            <DocumentArrowDownIcon className="w-4 h-4 text-blue-600" />
+                            <span className="text-slate-800 font-medium">{field.value}</span>
+                            <span className="text-xs text-slate-500">(File attached)</span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 italic">No file attached</span>
+                        )}
+                      </div>
+                    ) : isCurrencyField ? (
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                        <span className="text-slate-800 font-medium">
+                          {field.value ? `Rp ${parseInt(field.value).toLocaleString('id-ID')}` : 
+                           <span className="text-slate-400 italic">No amount provided</span>}
+                        </span>
+                      </div>
+                    ) : isDateField ? (
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                        <div className="flex items-center space-x-2">
+                          <CalendarIcon className="w-4 h-4 text-slate-500" />
+                          <span className="text-slate-800">
+                            {field.value ? new Date(field.value).toLocaleDateString('id-ID', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                              ...(field.field_type === 'datetime' && {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })
+                            }) : <span className="text-slate-400 italic">No date provided</span>}
+                          </span>
+                        </div>
+                      </div>
+                    ) : isDropdownField ? (
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <span className="text-slate-800 font-medium">
+                            {field.value || <span className="text-slate-400 italic">No selection made</span>}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                        <span className="text-slate-800">
+                          {field.value || <span className="text-slate-400 italic">No value provided</span>}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {/* Additional field information */}
+                    {field.field_description && (
+                      <p className="text-xs text-slate-600 italic">
+                        {field.field_description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            
+            {/* Render BSG fields */}
+            {(ticket as any).bsg_fields?.map((field: any, index: number) => {
+              const isFileField = field.field_type === 'file' || field.field_type === 'attachment';
+              const isCurrencyField = field.field_type === 'currency';
+              const isDateField = field.field_type === 'date' || field.field_type === 'datetime';
+              const isDropdownField = field.field_type?.startsWith('dropdown_') || field.field_type === 'searchable_dropdown';
+              
+              return (
+                <div key={`bsg_${field.field_definition_id || index}`} className="border border-slate-200 rounded-lg p-4 bg-white">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                        {field.field_label || field.field_name}
+                        {field.field_type && (
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                            BSG: {field.field_type.replace('_', ' ')}
+                          </span>
+                        )}
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    {/* Display field value based on field type */}
+                    {isFileField ? (
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                        {field.value ? (
+                          <div className="flex items-center space-x-2">
+                            <DocumentArrowDownIcon className="w-4 h-4 text-blue-600" />
+                            <span className="text-slate-800 font-medium">{field.value}</span>
+                            <span className="text-xs text-slate-500">(File attached)</span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 italic">No file attached</span>
+                        )}
+                      </div>
+                    ) : isCurrencyField ? (
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                        <span className="text-slate-800 font-medium">
+                          {field.value ? `Rp ${parseInt(field.value).toLocaleString('id-ID')}` : 
+                           <span className="text-slate-400 italic">No amount provided</span>}
+                        </span>
+                      </div>
+                    ) : isDateField ? (
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                        <div className="flex items-center space-x-2">
+                          <CalendarIcon className="w-4 h-4 text-slate-500" />
+                          <span className="text-slate-800">
+                            {field.value ? new Date(field.value).toLocaleDateString('id-ID', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                              ...(field.field_type === 'datetime' && {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })
+                            }) : <span className="text-slate-400 italic">No date provided</span>}
+                          </span>
+                        </div>
+                      </div>
+                    ) : isDropdownField ? (
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span className="text-slate-800 font-medium">
+                            {field.value || <span className="text-slate-400 italic">No selection made</span>}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                        <span className="text-slate-800">
+                          {field.value || <span className="text-slate-400 italic">No value provided</span>}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {/* Additional field information */}
+                    {(field.field_description || field.help_text) && (
+                      <p className="text-xs text-slate-600 italic">
+                        {field.field_description || field.help_text}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Attachments */}
       {ticket.attachments && ticket.attachments.length > 0 && (
         <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl p-8 border border-slate-200/50">
@@ -321,9 +535,21 @@ const TicketDetailPage: React.FC = () => {
       {/* Manager Approval Section */}
       {showApprovalButtons && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8">
-          <div className="flex items-center space-x-2 mb-6">
-            <UserIcon className="w-5 h-5 text-amber-600" />
-            <h2 className="text-xl font-semibold text-amber-800">Manager Approval Required</h2>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-2">
+              <UserIcon className="w-5 h-5 text-amber-600" />
+              <h2 className="text-xl font-semibold text-amber-800">Manager Approval Required</h2>
+            </div>
+            <div className="text-sm text-amber-700">
+              <span className="font-medium">Department:</span> {ticket.createdBy?.department?.name}
+            </div>
+          </div>
+          <div className="bg-amber-100 border border-amber-300 rounded-lg p-4 mb-6">
+            <p className="text-sm text-amber-800">
+              <span className="font-medium">Workflow:</span> As the direct manager of {ticket.createdBy?.username} 
+              in the {ticket.createdBy?.department?.name} department, your approval is required before this ticket 
+              can proceed to the technical team for resolution.
+            </p>
           </div>
           
           {!isRejecting ? (

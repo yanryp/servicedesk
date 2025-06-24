@@ -20,6 +20,7 @@ import CategorizationAnalyticsPage from './pages/CategorizationAnalyticsPage';
 import UncategorizedTicketsPage from './pages/UncategorizedTicketsPage';
 import BSGCreateTicketPage from './pages/BSGCreateTicketPage';
 import ServiceCatalogPage from './pages/ServiceCatalogPage';
+import ServiceCatalogV2Page from './pages/ServiceCatalogV2Page';
 import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
 
@@ -166,6 +167,7 @@ function App() {
               <Route path="/tickets" element={<TicketsPage />} />
               <Route path="/create-ticket" element={<CreateTicketPage />} />
               <Route path="/service-catalog" element={<ServiceCatalogPage />} />
+              <Route path="/service-catalog-v2" element={<ServiceCatalogV2Page />} />
               <Route path="/bsg-create" element={<BSGCreateTicketPage />} />
               <Route path="/tickets/:ticketId" element={<TicketDetailPage />} />
               <Route path="/tickets/:ticketId/edit" element={<EditTicketPage />} />

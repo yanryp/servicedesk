@@ -4,19 +4,19 @@ const { test, expect } = require('@playwright/test');
 // Test data - using existing database users
 const testUsers = {
   requester: {
-    email: 'cabang.utama.user@bsg.co.id',
-    password: 'password123',
-    name: 'cabang.utama.user'  // Use username as shown in UI
+    email: 'bsgdirect.user@company.com',
+    password: 'user123',
+    name: 'bsgdirect.user'
   },
   manager: {
-    email: 'cabang.utama.manager@bsg.co.id', 
-    password: 'password123',
-    name: 'cabang.utama.manager'  // Use username as shown in UI
+    email: 'branch.manager@company.com',
+    password: 'user123',
+    name: 'branch.manager'
   },
   technician: {
-    email: 'it.technician@bsg.co.id',
-    password: 'password123',
-    name: 'it.technician'  // Use username as shown in UI
+    email: 'it.technician@company.com',
+    password: 'tech123',
+    name: 'it.technician'
   }
 };
 
@@ -78,7 +78,7 @@ test.describe('Complete BSG Banking Workflow', () => {
     console.log('📋 Ticket Status: Pending Approval');
     
     // Logout
-    const logoutButton = page.locator('text=Logout');
+    const logoutButton = page.locator('text=Logout').first();
     if (await logoutButton.isVisible()) {
       await logoutButton.click();
     }
@@ -168,7 +168,7 @@ test.describe('Complete BSG Banking Workflow', () => {
     console.log('📋 Ticket Status: Approved - Ready for Assignment');
     
     // Logout
-    const logoutButton = page.locator('text=Logout');
+    const logoutButton = page.locator('text=Logout').first();
     if (await logoutButton.isVisible()) {
       await logoutButton.click();
     }
@@ -285,7 +285,7 @@ test.describe('Complete BSG Banking Workflow', () => {
     console.log('📋 Final Status: Resolved');
     
     // Logout
-    const logoutButton = page.locator('text=Logout');
+    const logoutButton = page.locator('text=Logout').first();
     if (await logoutButton.isVisible()) {
       await logoutButton.click();
     }
