@@ -1,5 +1,5 @@
 // src/pages/ServiceCatalogPage.tsx
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   MagnifyingGlassIcon, 
   LifebuoyIcon,
@@ -340,9 +340,11 @@ const ServiceCatalogPage: React.FC = () => {
     }
   }, []);
 
-  // Transform ServiceField to BSGTemplateField for the renderer
-  const transformServiceFieldsToBSGFields = useCallback((serviceFields: any[]): any[] => {
-    return serviceFields.map(field => ({
+  // Transform ServiceField to BSGTemplateField for the renderer - memoized to prevent re-renders
+  const transformedFields = useMemo(() => {
+    if (!selectedTemplate?.fields) return [];
+    
+    return selectedTemplate.fields.map(field => ({
       id: field.id,
       fieldName: field.name,
       fieldLabel: field.label,
@@ -358,7 +360,7 @@ const ServiceCatalogPage: React.FC = () => {
       options: field.options || [],
       category: field.isDropdownField ? 'location' : 'reference' // Use appropriate category
     }));
-  }, []);
+  }, [selectedTemplate?.fields]);
 
   // Create ticket from service catalog
   const handleCreateTicket = async () => {
@@ -764,14 +766,14 @@ const ServiceCatalogPage: React.FC = () => {
                   </div>
 
                   {/* Dynamic Fields */}
-                  {selectedTemplate.fields && selectedTemplate.fields.length > 0 ? (
+                  {transformedFields.length > 0 ? (
                     <BSGDynamicFieldRenderer
-                      key="dynamic-fields-renderer"
+                      key={`template-${selectedTemplate.templateId || 0}`}
                       templateId={selectedTemplate.templateId || 0}
-                      fields={transformServiceFieldsToBSGFields(selectedTemplate.fields)}
-                      values={fieldValues}
-                      onChange={handleFieldChange}
-                      errors={fieldErrors}
+                      fields={transformedFields}
+                      values={{}} // Not used by GlobalStorageField
+                      onChange={() => {}} // Not used by GlobalStorageField  
+                      errors={{}} // Not used by GlobalStorageField
                       showCategories={true}
                     />
                   ) : (
