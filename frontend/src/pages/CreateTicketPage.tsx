@@ -1,4 +1,8 @@
 // src/pages/CreateTicketPage.tsx
+// DEPRECATED: This page is deprecated as part of Stage 2 migration to unified ITIL system
+// Use ServiceCatalogV2Page.tsx or BSGCreateTicketPage.tsx instead
+// This page uses broken useTemplateFields.ts hook that calls non-existent /api/service-templates/ endpoints
+// TODO: Remove in Stage 6 cleanup
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';

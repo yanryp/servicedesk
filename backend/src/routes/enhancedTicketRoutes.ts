@@ -109,7 +109,370 @@ const determineTargetDepartment = async (serviceItemId: number) => {
   return serviceItem?.serviceCatalog?.department;
 };
 
-// Create new ticket with ITIL service catalog support
+// Unified ticket creation interface
+export interface UnifiedTicketCreation {
+  // Core Fields (all systems)
+  title: string;
+  description: string;
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  
+  // ITIL Service Catalog Fields (enhanced + service catalog)
+  serviceItemId?: number;
+  serviceTemplateId?: number;
+  serviceCatalogId?: number;
+  
+  // Legacy Support Fields
+  itemId?: number;
+  templateId?: number;
+  
+  // BSG Template Support
+  bsgTemplateId?: number;
+  
+  // Business Process Fields
+  businessImpact?: 'low' | 'medium' | 'high' | 'critical';
+  requestType?: 'incident' | 'service_request' | 'change' | 'problem';
+  isKasdaTicket?: boolean;
+  requiresBusinessApproval?: boolean;
+  governmentEntityId?: number;
+  
+  // Categorization Fields
+  userRootCause?: string;
+  userIssueCategory?: string;
+  
+  // Custom Field Values (unified)
+  customFieldValues?: Record<string, any>;
+  
+  // File attachments
+  attachments?: Express.Multer.File[];
+}
+
+// Unified ticket creation service
+export class UnifiedTicketService {
+  
+  static async detectTemplateInfo(data: UnifiedTicketCreation): Promise<{
+    type: 'service_template' | 'bsg_template' | 'legacy_template' | 'none';
+    templateId?: number;
+    template?: any;
+  }> {
+    if (data.serviceTemplateId) {
+      const template = await prisma.serviceTemplate.findUnique({
+        where: { id: data.serviceTemplateId },
+        include: { customFieldDefinitions: true }
+      });
+      return { type: 'service_template', templateId: data.serviceTemplateId, template };
+    }
+    
+    if (data.bsgTemplateId || data.templateId) {
+      const templateId = data.bsgTemplateId || data.templateId!;
+      const template = await prisma.serviceTemplate.findUnique({
+        where: { id: templateId },
+        include: { customFieldDefinitions: true }
+      });
+      return { type: 'bsg_template', templateId, template };
+    }
+    
+    if (data.itemId) {
+      // Legacy item support - map to service items if possible
+      const serviceItem = await prisma.serviceItem.findUnique({
+        where: { id: data.itemId },
+        include: { templates: true }
+      });
+      if (serviceItem?.templates[0]) {
+        return { type: 'legacy_template', templateId: serviceItem.templates[0].id, template: serviceItem.templates[0] };
+      }
+    }
+    
+    return { type: 'none' };
+  }
+  
+  static async calculateUnifiedSLA(data: UnifiedTicketCreation, templateInfo: any): Promise<Date> {
+    const businessImpact = data.businessImpact || 'medium';
+    const isKasdaTicket = data.isKasdaTicket || false;
+    
+    let hours = 24; // default 24 hours
+    
+    if (isKasdaTicket) {
+      // Business services have different SLA based on impact
+      switch (businessImpact) {
+        case 'critical':
+          hours = 4;
+          break;
+        case 'high':
+          hours = 8;
+          break;
+        case 'medium':
+          hours = 24;
+          break;
+        case 'low':
+          hours = 72;
+          break;
+      }
+    } else {
+      // Technical services have faster SLAs
+      switch (businessImpact) {
+        case 'critical':
+          hours = 2;
+          break;
+        case 'high':
+          hours = 4;
+          break;
+        case 'medium':
+          hours = 8;
+          break;
+        case 'low':
+          hours = 24;
+          break;
+      }
+    }
+    
+    const dueDate = new Date();
+    dueDate.setHours(dueDate.getHours() + hours);
+    return dueDate;
+  }
+  
+  static async determineApprovalRequirement(data: UnifiedTicketCreation, templateInfo: any): Promise<boolean> {
+    // Explicit approval requirement
+    if (data.requiresBusinessApproval !== undefined) {
+      return data.requiresBusinessApproval;
+    }
+    
+    // KASDA tickets always require approval
+    if (data.isKasdaTicket) {
+      return true;
+    }
+    
+    // High/Critical impact tickets require approval
+    if (data.businessImpact === 'critical' || data.businessImpact === 'high') {
+      return true;
+    }
+    
+    // Template-based approval rules
+    if (templateInfo.template?.requiresApproval) {
+      return true;
+    }
+    
+    return false;
+  }
+  
+  static async createUnifiedTicket(data: UnifiedTicketCreation, user: any): Promise<any> {
+    const templateInfo = await this.detectTemplateInfo(data);
+    const slaDueDate = await this.calculateUnifiedSLA(data, templateInfo);
+    const requiresApproval = await this.determineApprovalRequirement(data, templateInfo);
+    
+    // Determine service item and catalog
+    let serviceItemId = data.serviceItemId;
+    let serviceCatalogId = data.serviceCatalogId;
+    
+    if (!serviceItemId && data.itemId) {
+      // Map legacy item to service item
+      const serviceItem = await prisma.serviceItem.findUnique({
+        where: { id: data.itemId },
+        include: { serviceCatalog: true }
+      });
+      if (serviceItem) {
+        serviceItemId = serviceItem.id;
+        serviceCatalogId = serviceItem.serviceCatalogId;
+      }
+    }
+    
+    if (serviceItemId && !serviceCatalogId) {
+      const serviceItem = await prisma.serviceItem.findUnique({
+        where: { id: serviceItemId },
+        include: { serviceCatalog: true }
+      });
+      serviceCatalogId = serviceItem?.serviceCatalogId;
+    }
+    
+    // Create ticket with unified data model
+    const ticketData: any = {
+      title: data.title,
+      description: data.description,
+      createdByUserId: user.id,
+      requestType: data.requestType || 'incident',
+      businessImpact: data.businessImpact || 'medium',
+      isKasdaTicket: data.isKasdaTicket || false,
+      requiresBusinessApproval: requiresApproval,
+      status: requiresApproval ? 'pending_approval' : 'open',
+      slaDueDate,
+      // Categorization fields
+      userRootCause: data.userRootCause,
+      userIssueCategory: data.userIssueCategory,
+      userCategorizedAt: (data.userRootCause || data.userIssueCategory) ? new Date() : null,
+      userCategorizedIP: null, // Will be set by middleware
+      // Set confirmed values if user provided categorization
+      confirmedRootCause: data.userRootCause,
+      confirmedIssueCategory: data.userIssueCategory
+    };
+
+    // Add optional foreign keys only if they exist
+    if (serviceItemId) ticketData.serviceItemId = serviceItemId;
+    if (templateInfo.templateId) ticketData.serviceTemplateId = templateInfo.templateId;
+    if (serviceCatalogId) ticketData.serviceCatalogId = serviceCatalogId;
+    if (data.governmentEntityId) ticketData.governmentEntityId = data.governmentEntityId;
+    
+    const ticket = await prisma.ticket.create({
+      data: ticketData,
+      include: {
+        serviceCatalog: {
+          include: {
+            department: true
+          }
+        },
+        serviceItem: true,
+        governmentEntity: true,
+        createdBy: {
+          include: {
+            department: true,
+            manager: true
+          }
+        }
+      }
+    });
+    
+    // Handle custom field values
+    if (data.customFieldValues && Object.keys(data.customFieldValues).length > 0) {
+      await this.saveCustomFieldValues(ticket.id, data.customFieldValues, templateInfo);
+    }
+    
+    // Handle file attachments
+    if (data.attachments && data.attachments.length > 0) {
+      await this.saveAttachments(ticket.id, data.attachments);
+    }
+    
+    // Create business approval if required
+    if (requiresApproval) {
+      await this.createBusinessApproval(ticket);
+    }
+    
+    return ticket;
+  }
+  
+  static async saveCustomFieldValues(ticketId: number, customFieldValues: Record<string, any>, templateInfo: any): Promise<void> {
+    if (templateInfo.type === 'bsg_template') {
+      // Save BSG template field values - Note: This would need actual BSG field mapping
+      console.log('BSG field values saving not fully implemented yet - requires field ID mapping');
+      // For now, skip BSG field saving until proper field ID mapping is implemented
+    } else if (templateInfo.type === 'service_template') {
+      // Save service template field values
+      const serviceFieldValues = [];
+      for (const [fieldName, value] of Object.entries(customFieldValues)) {
+        const fieldDef = templateInfo.template?.customFieldDefinitions?.find((f: any) => f.fieldName === fieldName);
+        if (fieldDef) {
+          serviceFieldValues.push({
+            ticketId,
+            fieldDefinitionId: fieldDef.id,
+            value: typeof value === 'object' ? JSON.stringify(value) : String(value)
+          });
+        }
+      }
+      
+      if (serviceFieldValues.length > 0) {
+        await prisma.ticketServiceFieldValue.createMany({
+          data: serviceFieldValues
+        });
+      }
+    }
+  }
+  
+  static async saveAttachments(ticketId: number, attachments: Express.Multer.File[]): Promise<void> {
+    const attachmentData = attachments.map(file => ({
+      ticketId,
+      fileName: file.originalname,
+      filePath: file.path,
+      fileSize: file.size,
+      fileType: file.mimetype
+    }));
+    
+    await prisma.ticketAttachment.createMany({
+      data: attachmentData
+    });
+  }
+  
+  static async createBusinessApproval(ticket: any): Promise<void> {
+    // Find the manager for approval
+    const manager = ticket.createdBy?.manager;
+    if (manager) {
+      await prisma.businessApproval.create({
+        data: {
+          ticketId: ticket.id,
+          businessReviewerId: manager.id,
+          approvalStatus: 'pending',
+          businessComments: `Ticket #${ticket.id}: ${ticket.title}`
+        }
+      });
+    }
+  }
+}
+
+// Unified ticket creation endpoint (Stage 1 Migration)
+router.post('/unified-create', protect, upload.array('attachments', 5), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { user } = req;
+    const unifiedData: UnifiedTicketCreation = {
+      ...req.body,
+      attachments: req.files as Express.Multer.File[]
+    };
+
+    console.log('Creating unified ticket with data:', { 
+      title: unifiedData.title, 
+      type: unifiedData.serviceItemId ? 'service_catalog' : unifiedData.templateId ? 'bsg_template' : 'legacy'
+    });
+
+    const ticket = await UnifiedTicketService.createUnifiedTicket(unifiedData, user);
+
+    res.status(201).json({
+      success: true,
+      message: 'Ticket created successfully',
+      data: ticket
+    });
+
+  } catch (error) {
+    console.error('Error creating unified ticket:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create ticket',
+      error: process.env.NODE_ENV === 'development' ? error : undefined
+    });
+  }
+}));
+
+// Legacy compatibility endpoint (maps to unified creation)
+router.post('/legacy-create', protect, upload.array('attachments', 5), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { user } = req;
+    
+    // Map legacy request format to unified format
+    const unifiedData: UnifiedTicketCreation = {
+      title: req.body.title,
+      description: req.body.description,
+      priority: req.body.priority,
+      itemId: req.body.itemId,
+      templateId: req.body.templateId,
+      customFieldValues: req.body.customFieldValues,
+      attachments: req.files as Express.Multer.File[]
+    };
+
+    console.log('Creating legacy-format ticket via unified service');
+
+    const ticket = await UnifiedTicketService.createUnifiedTicket(unifiedData, user);
+
+    res.status(201).json({
+      success: true,
+      message: 'Ticket created successfully',
+      data: ticket
+    });
+
+  } catch (error) {
+    console.error('Error creating legacy ticket:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create ticket',
+      error: process.env.NODE_ENV === 'development' ? error : undefined
+    });
+  }
+}));
+
+// Create new ticket with ITIL service catalog support (using unified service)
 router.post('/create', protect, upload.array('attachments', 5), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { user } = req;
@@ -662,6 +1025,67 @@ router.post('/business-approval/:ticketId', protect, asyncHandler(async (req: Au
   }
 }));
 
+// Get tickets pending approval for managers (enhanced version with template info)
+router.get('/pending-approvals', protect, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const { user } = req;
+
+  if (user?.role !== 'manager' && user?.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. Manager role required.'
+    });
+  }
+
+  try {
+
+    console.log('Fetching pending approvals for user:', user.id, user.username, user.departmentId);
+
+    // Simplified query with department validation
+    const pendingTickets = await prisma.ticket.findMany({
+      where: {
+        status: 'pending_approval',
+        createdBy: {
+          managerId: user.id,
+          departmentId: user.departmentId
+        }
+      },
+      include: {
+        createdBy: {
+          include: {
+            department: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        },
+        assignedTo: {
+          include: {
+            department: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    console.log('Found pending tickets:', pendingTickets.length);
+    res.json(pendingTickets);
+
+  } catch (error) {
+    console.error('Error fetching pending approvals:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch pending approvals'
+    });
+  }
+}));
+
 // Get ticket details with full context
 router.get('/:ticketId', protect, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -1046,62 +1470,254 @@ router.post('/bsg-tickets', protect, upload.array('attachments', 5), asyncHandle
   }
 }));
 
-// Get tickets pending approval for managers (enhanced version with template info)
-router.get('/pending-approvals', protect, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+// Simple manager approval endpoints (Stage 3 Migration)
+router.post('/:ticketId/approve', protect, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { user } = req;
+    const { ticketId } = req.params;
+    const { comments } = req.body;
 
-    if (user?.role !== 'manager' && user?.role !== 'admin') {
-      return res.status(403).json({
+    // Get ticket with creator and manager info
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: parseInt(ticketId) },
+      include: {
+        createdBy: {
+          include: {
+            department: true,
+            manager: true
+          }
+        }
+      }
+    });
+
+    if (!ticket) {
+      return res.status(404).json({
         success: false,
-        message: 'Access denied. Manager role required.'
+        message: 'Ticket not found'
       });
     }
 
-    console.log('Fetching pending approvals for user:', user.id, user.username, user.departmentId);
+    // Check authorization - manager can approve tickets from their department subordinates
+    const canApprove = user?.role === 'admin' || 
+      (user?.role === 'manager' && 
+       user?.id === ticket.createdBy?.managerId &&
+       user?.departmentId === ticket.createdBy?.departmentId);
 
-    // Simplified query with department validation
-    const pendingTickets = await prisma.ticket.findMany({
-      where: {
-        status: 'pending_approval',
-        createdBy: {
-          managerId: user.id,
-          departmentId: user.departmentId
-        }
+    if (!canApprove) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. You can only approve tickets from your department subordinates.'
+      });
+    }
+
+    // Update ticket status to approved
+    const updatedTicket = await prisma.ticket.update({
+      where: { id: parseInt(ticketId) },
+      data: {
+        status: 'approved',
+        managerComments: comments || null,
+        updatedAt: new Date()
       },
       include: {
         createdBy: {
           include: {
-            department: {
-              select: {
-                id: true,
-                name: true
-              }
-            }
+            department: true,
+            manager: true
           }
         },
-        assignedTo: {
+        serviceCatalog: {
           include: {
-            department: {
+            department: true
+          }
+        },
+        serviceItem: true
+      }
+    });
+
+    console.log(`Manager ${user?.username} approved ticket #${ticketId}`);
+
+    res.json({
+      success: true,
+      message: 'Ticket approved successfully',
+      data: updatedTicket
+    });
+
+  } catch (error) {
+    console.error('Error approving ticket:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to approve ticket',
+      error: process.env.NODE_ENV === 'development' ? error : undefined
+    });
+  }
+}));
+
+router.post('/:ticketId/reject', protect, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { user } = req;
+    const { ticketId } = req.params;
+    const { comments } = req.body;
+
+    // Comments are required for rejection
+    if (!comments || !comments.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Comments are required when rejecting a ticket'
+      });
+    }
+
+    // Get ticket with creator and manager info
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: parseInt(ticketId) },
+      include: {
+        createdBy: {
+          include: {
+            department: true,
+            manager: true
+          }
+        }
+      }
+    });
+
+    if (!ticket) {
+      return res.status(404).json({
+        success: false,
+        message: 'Ticket not found'
+      });
+    }
+
+    // Check authorization - manager can reject tickets from their department subordinates
+    const canReject = user?.role === 'admin' || 
+      (user?.role === 'manager' && 
+       user?.id === ticket.createdBy?.managerId &&
+       user?.departmentId === ticket.createdBy?.departmentId);
+
+    if (!canReject) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. You can only reject tickets from your department subordinates.'
+      });
+    }
+
+    // Update ticket status to rejected
+    const updatedTicket = await prisma.ticket.update({
+      where: { id: parseInt(ticketId) },
+      data: {
+        status: 'rejected',
+        managerComments: comments,
+        updatedAt: new Date()
+      },
+      include: {
+        createdBy: {
+          include: {
+            department: true,
+            manager: true
+          }
+        },
+        serviceCatalog: {
+          include: {
+            department: true
+          }
+        },
+        serviceItem: true
+      }
+    });
+
+    console.log(`Manager ${user?.username} rejected ticket #${ticketId}: ${comments}`);
+
+    res.json({
+      success: true,
+      message: 'Ticket rejected successfully',
+      data: updatedTicket
+    });
+
+  } catch (error) {
+    console.error('Error rejecting ticket:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reject ticket',
+      error: process.env.NODE_ENV === 'development' ? error : undefined
+    });
+  }
+}));
+
+// Download attachment by ID (unified endpoint)
+router.get('/attachments/:attachmentId/download', protect, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { attachmentId } = req.params;
+    const { user } = req;
+
+    // Find the attachment and its associated ticket
+    const attachment = await prisma.ticketAttachment.findUnique({
+      where: { id: parseInt(attachmentId) },
+      include: {
+        ticket: {
+          include: {
+            serviceCatalog: {
+              include: {
+                department: true
+              }
+            },
+            createdBy: {
               select: {
                 id: true,
-                name: true
+                username: true,
+                email: true,
+                role: true
               }
             }
           }
         }
-      },
-      orderBy: { createdAt: 'desc' }
+      }
     });
 
-    console.log('Found pending tickets:', pendingTickets.length);
-    res.json(pendingTickets);
+    if (!attachment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Attachment not found'
+      });
+    }
+
+    // Check access permissions
+    const canAccess = user?.role === 'admin' ||
+      attachment.ticket.createdByUserId === user?.id ||
+      (user?.departmentId === attachment.ticket.serviceCatalog?.departmentId) ||
+      (user?.isBusinessReviewer && attachment.ticket.isKasdaTicket) ||
+      attachment.ticket.assignedToUserId === user?.id;
+
+    if (!canAccess) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. You do not have permission to download this attachment.'
+      });
+    }
+
+    // Check if file exists
+    const filePath = path.resolve(attachment.filePath);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({
+        success: false,
+        message: 'File not found on server'
+      });
+    }
+
+    console.log(`User ${user?.username} downloading attachment: ${attachment.fileName}`);
+
+    // Set appropriate headers
+    res.setHeader('Content-Disposition', `attachment; filename="${attachment.fileName}"`);
+    res.setHeader('Content-Type', attachment.fileType || 'application/octet-stream');
+    res.setHeader('Content-Length', attachment.fileSize);
+
+    // Stream the file
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
 
   } catch (error) {
-    console.error('Error fetching pending approvals:', error);
+    console.error('Error downloading attachment:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch pending approvals'
+      message: 'Failed to download attachment',
+      error: process.env.NODE_ENV === 'development' ? error : undefined
     });
   }
 }));

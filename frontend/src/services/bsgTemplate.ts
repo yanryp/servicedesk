@@ -339,7 +339,7 @@ export class BSGTemplateService {
   }
 
   /**
-   * Create BSG ticket with template and custom fields
+   * Create BSG ticket with template and custom fields (Stage 2 Migration - Using Unified Service)
    */
   static async createBSGTicket(ticketData: {
     title: string;
@@ -353,13 +353,27 @@ export class BSGTemplateService {
   }): Promise<{ success: boolean; data: any; message: string }> {
     const formData = new FormData();
     
-    // Add ticket data
-    formData.append('templateId', ticketData.templateId.toString());
-    formData.append('templateNumber', ticketData.templateNumber.toString());
+    // Map BSG ticket data to unified format
     formData.append('title', ticketData.title);
     formData.append('description', ticketData.description);
     formData.append('priority', ticketData.priority);
-    formData.append('customFields', JSON.stringify(ticketData.customFields));
+    
+    // BSG-specific fields for unified service
+    formData.append('bsgTemplateId', ticketData.templateId.toString());
+    formData.append('templateNumber', ticketData.templateNumber.toString());
+    formData.append('isKasdaTicket', 'true'); // BSG templates are KASDA-related
+    
+    // Map business impact from priority
+    const businessImpactMap: Record<string, string> = {
+      'urgent': 'critical',
+      'high': 'high', 
+      'medium': 'medium',
+      'low': 'low'
+    };
+    formData.append('businessImpact', businessImpactMap[ticketData.priority] || 'medium');
+    
+    // Add custom fields
+    formData.append('customFieldValues', JSON.stringify(ticketData.customFields));
     
     // Add attachments if any
     if (ticketData.attachments) {
@@ -368,11 +382,13 @@ export class BSGTemplateService {
       });
     }
 
-    // Use direct fetch instead of api client for FormData
+    // Use unified ticket creation endpoint
     const token = localStorage.getItem('authToken');
     const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
     
-    const response = await fetch(`${baseUrl}/v2/tickets/bsg-tickets`, {
+    console.log('BSGTemplateService: Using unified endpoint for BSG ticket creation');
+    
+    const response = await fetch(`${baseUrl}/v2/tickets/unified-create`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -382,7 +398,7 @@ export class BSGTemplateService {
 
     if (!response.ok) {
       const errorResult = await response.json();
-      throw new Error(errorResult.message || 'Failed to create BSG ticket');
+      throw new Error(errorResult.message || 'Failed to create BSG ticket via unified service');
     }
 
     return response.json();

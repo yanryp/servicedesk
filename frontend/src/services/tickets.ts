@@ -9,7 +9,7 @@ import {
 } from '../types';
 
 export const ticketsService = {
-  // Get tickets with filters and pagination
+  // Get tickets with filters and pagination - Stage 4 Migration: Using Enhanced Endpoints
   getTickets: async (filters?: TicketFilters): Promise<TicketsResponse> => {
     const params = new URLSearchParams();
     
@@ -22,14 +22,45 @@ export const ticketsService = {
     }
     
     const queryString = params.toString();
-    const url = queryString ? `/tickets?${queryString}` : '/tickets';
+    const url = queryString ? `/v2/tickets?${queryString}` : '/v2/tickets';
     
-    return api.get<TicketsResponse>(url);
+    console.log('ticketsService: Using enhanced endpoint for ticket listing');
+    
+    // Enhanced endpoint returns different structure: { success: true, data: { tickets, pagination } }
+    const response = await api.get<any>(url);
+    
+    // Transform response to match expected TicketsResponse format
+    if (response.success && response.data) {
+      return {
+        tickets: response.data.tickets,
+        totalPages: response.data.pagination?.totalPages || 1,
+        currentPage: response.data.pagination?.currentPage || 1,
+        totalTickets: response.data.pagination?.totalTickets || response.data.tickets.length
+      };
+    }
+    
+    // Fallback for unexpected response format
+    return {
+      tickets: Array.isArray(response) ? response : [],
+      totalPages: 1,
+      currentPage: 1,
+      totalTickets: Array.isArray(response) ? response.length : 0
+    };
   },
 
-  // Get single ticket by ID
+  // Get single ticket by ID - Stage 4 Migration: Using Enhanced Endpoints
   getTicket: async (ticketId: number): Promise<Ticket> => {
-    return api.get<Ticket>(`/tickets/${ticketId}`);
+    console.log('ticketsService: Using enhanced endpoint for ticket detail');
+    
+    // Enhanced endpoint returns { success: true, data: ticket }
+    const response = await api.get<any>(`/v2/tickets/${ticketId}`);
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    
+    // Fallback for unexpected response format
+    return response;
   },
 
   // Create new ticket with attachments
@@ -37,13 +68,18 @@ export const ticketsService = {
     // Always use FormData since backend uses multer middleware
     const formData = new FormData();
     
-    // Add ticket data
+    // Add ticket data (mapped to unified format)
     formData.append('title', ticketData.title);
     formData.append('description', ticketData.description);
-    formData.append('itemId', ticketData.itemId.toString());
     
+    // Map legacy itemId to serviceItemId for unified service
+    if (ticketData.itemId) {
+      formData.append('serviceItemId', ticketData.itemId.toString());
+    }
+    
+    // Map legacy templateId to serviceTemplateId for unified service
     if (ticketData.templateId) {
-      formData.append('templateId', ticketData.templateId.toString());
+      formData.append('serviceTemplateId', ticketData.templateId.toString());
     }
     
     if (ticketData.priority) {
@@ -71,7 +107,10 @@ export const ticketsService = {
       });
     }
 
-    return api.upload<Ticket>('/tickets', formData);
+    console.log('ticketsService: Using unified endpoint for ticket creation');
+    
+    // Use unified ticket creation endpoint (Stage 2 Migration)
+    return api.upload<Ticket>('/v2/tickets/unified-create', formData);
   },
 
   // Update ticket
@@ -94,14 +133,16 @@ export const ticketsService = {
     return api.patch<Ticket>(`/tickets/${ticketId}/status`, { status });
   },
 
-  // Approve ticket (Manager only)
+  // Approve ticket (Manager only) - Stage 3 Migration: Using Enhanced Endpoints
   approveTicket: async (ticketId: number, comments?: string): Promise<Ticket> => {
-    return api.post<Ticket>(`/tickets/${ticketId}/approve`, { comments });
+    console.log('ticketsService: Using enhanced approval endpoint');
+    return api.post<Ticket>(`/v2/tickets/${ticketId}/approve`, { comments });
   },
 
-  // Reject ticket (Manager only)
+  // Reject ticket (Manager only) - Stage 3 Migration: Using Enhanced Endpoints  
   rejectTicket: async (ticketId: number, comments: string): Promise<Ticket> => {
-    return api.post<Ticket>(`/tickets/${ticketId}/reject`, { comments });
+    console.log('ticketsService: Using enhanced rejection endpoint');
+    return api.post<Ticket>(`/v2/tickets/${ticketId}/reject`, { comments });
   },
 
   // Get pending approvals (Manager only) - using enhanced endpoint
@@ -109,9 +150,10 @@ export const ticketsService = {
     return api.get<Ticket[]>('/v2/tickets/pending-approvals');
   },
 
-  // Download attachment
+  // Download attachment - Stage 4 Migration: Using Enhanced Endpoints
   downloadAttachment: async (attachmentId: number): Promise<Blob> => {
-    return api.get(`/tickets/attachments/${attachmentId}/download`, {
+    console.log('ticketsService: Using enhanced endpoint for attachment download');
+    return api.get(`/v2/tickets/attachments/${attachmentId}/download`, {
       responseType: 'blob',
     });
   },

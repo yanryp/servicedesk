@@ -1,9 +1,10 @@
 // src/pages/TicketDetailPage.tsx
+// Stage 4 Migration: Updated to use unified enhanced endpoints via ticketsService
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useFileDownloader } from '../hooks/useFileDownloader';
+import { ticketsService } from '../services';
 import TicketCategorization from '../components/TicketCategorization';
 import TicketComments from '../components/TicketComments';
 import { Ticket as FullTicket } from '../types';
@@ -44,20 +45,22 @@ const TicketDetailPage: React.FC = () => {
         return;
       }
       try {
-        const response = await axios.get(`http://localhost:3001/api/tickets/${ticketId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setTicket(response.data);
+        console.log('TicketDetailPage: Fetching ticket with enhanced service');
+        
+        // Use unified ticketsService instead of direct axios calls
+        const ticketData = await ticketsService.getTicket(parseInt(ticketId!));
+        setTicket(ticketData);
       } catch (err: any) {
-        setError(err.response?.data?.message || 'Failed to fetch ticket details.');
+        console.error('TicketDetailPage: Failed to fetch ticket:', err);
+        setError(err.response?.data?.message || err.message || 'Failed to fetch ticket details.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTicket();
+    if (ticketId) {
+      fetchTicket();
+    }
   }, [ticketId, token]);
 
   const handleDelete = async () => {
@@ -71,14 +74,15 @@ const TicketDetailPage: React.FC = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:3001/api/tickets/${ticketId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      console.log('TicketDetailPage: Deleting ticket with enhanced service');
+      
+      // Use unified ticketsService instead of direct axios calls
+      await ticketsService.deleteTicket(parseInt(ticketId!));
       alert('Ticket deleted successfully.');
       navigate('/tickets');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to delete ticket.');
-      console.error('Delete error:', err);
+      console.error('TicketDetailPage: Failed to delete ticket:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to delete ticket.');
     }
   };
 
@@ -88,15 +92,22 @@ const TicketDetailPage: React.FC = () => {
       return;
     }
     try {
-      const response = await axios.put(`http://localhost:3001/api/tickets/${ticketId}/approval`, 
-        { action, rejectionReason },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setTicket(response.data);
+      console.log(`TicketDetailPage: ${action}ing ticket with enhanced service`);
+      
+      // Use unified ticketsService for approval actions
+      let updatedTicket;
+      if (action === 'approve') {
+        updatedTicket = await ticketsService.approveTicket(parseInt(ticketId!), rejectionReason || undefined);
+      } else {
+        updatedTicket = await ticketsService.rejectTicket(parseInt(ticketId!), rejectionReason);
+      }
+      
+      setTicket(updatedTicket);
       setIsRejecting(false);
       setRejectionReason('');
     } catch (err: any) {
-      setError(err.response?.data?.message || `Failed to ${action} ticket.`);
+      console.error(`TicketDetailPage: Failed to ${action} ticket:`, err);
+      setError(err.response?.data?.message || err.message || `Failed to ${action} ticket.`);
     }
   };
 

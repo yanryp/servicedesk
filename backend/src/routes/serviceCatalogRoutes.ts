@@ -7,6 +7,9 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
+// Import unified ticket creation service
+import { UnifiedTicketService, UnifiedTicketCreation } from './enhancedTicketRoutes';
+
 const router = express.Router();
 const prisma = new PrismaClient();
 
@@ -502,7 +505,7 @@ const conditionalUpload = (req: any, res: any, next: any) => {
 router.post('/create-ticket', protect, conditionalUpload, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { serviceId, title, description, priority = 'medium', rootCause, issueCategory } = req.body;
-    const userId = req.user!.id;
+    const user = req.user!;
     const uploadedFiles = (req.files as Express.Multer.File[]) || [];
 
     // Parse fieldValues if it's a JSON string (from FormData)
@@ -525,71 +528,39 @@ router.post('/create-ticket', protect, conditionalUpload, asyncHandler(async (re
       });
     }
 
-    // Create the ticket (pending approval workflow)
-    const ticket = await prisma.ticket.create({
-      data: {
-        title,
-        description,
-        priority: priority as any,
-        status: 'pending_approval',
-        createdByUserId: userId,
-        // Add Issue Classification fields if provided
-        ...(rootCause && { userRootCause: rootCause }),
-        ...(issueCategory && { userIssueCategory: issueCategory }),
-        // For BSG templates, we'll store additional metadata
-        ...(serviceId.startsWith('bsg_template_') && {
-          // Store service catalog metadata in the ticket
-          // You might want to add a serviceId field to the ticket model
-        })
-      }
-    });
+    // Map service catalog request to unified format
+    const unifiedData: UnifiedTicketCreation = {
+      title,
+      description,
+      priority: priority as any,
+      userRootCause: rootCause,
+      userIssueCategory: issueCategory,
+      customFieldValues: fieldValues,
+      attachments: uploadedFiles,
+    };
 
-    // If it's a BSG template, save the field values
+    // Detect service type and add appropriate fields
     if (serviceId.startsWith('bsg_template_')) {
       const templateId = parseInt(serviceId.replace('bsg_template_', ''));
-      
-      // Get template fields to validate
-      const templateFields = await prisma.bSGTemplateField.findMany({
-        where: { templateId }
-      });
-
-      // Save field values
-      const fieldValuePromises = templateFields.map(field => {
-        const value = fieldValues[field.fieldName];
-        if (value !== undefined && value !== '') {
-          return prisma.bSGTicketFieldValue.create({
-            data: {
-              ticketId: ticket.id,
-              fieldId: field.id,
-              fieldValue: String(value)
-            }
-          });
-        }
-        return null;
-      }).filter(Boolean);
-
-      if (fieldValuePromises.length > 0) {
-        await Promise.all(fieldValuePromises);
-      }
+      unifiedData.bsgTemplateId = templateId;
+      unifiedData.isKasdaTicket = true; // BSG templates are typically KASDA-related
+    } else if (serviceId.startsWith('service_')) {
+      const itemId = parseInt(serviceId.replace('service_', ''));
+      unifiedData.serviceItemId = itemId;
+    } else {
+      // Legacy service ID format
+      const itemId = parseInt(serviceId);
+      unifiedData.serviceItemId = itemId;
     }
 
-    // Handle file attachments
-    if (uploadedFiles && uploadedFiles.length > 0) {
-      const attachmentPromises = uploadedFiles.map(file => 
-        prisma.ticketAttachment.create({
-          data: {
-            ticketId: ticket.id,
-            fileName: file.originalname,
-            filePath: file.path,
-            fileSize: file.size,
-            fileType: file.mimetype,
-            uploadedByUserId: userId
-          }
-        })
-      );
+    console.log('Service Catalog - Creating ticket via unified service:', {
+      serviceId,
+      type: unifiedData.bsgTemplateId ? 'bsg' : 'service_catalog',
+      isKasda: unifiedData.isKasdaTicket
+    });
 
-      await Promise.all(attachmentPromises);
-    }
+    // Use unified ticket creation service
+    const ticket = await UnifiedTicketService.createUnifiedTicket(unifiedData, user);
 
     res.json({
       success: true,
@@ -598,16 +569,19 @@ router.post('/create-ticket', protect, conditionalUpload, asyncHandler(async (re
         title: ticket.title,
         status: ticket.status,
         createdAt: ticket.createdAt,
-        attachmentCount: uploadedFiles ? uploadedFiles.length : 0
+        attachmentCount: uploadedFiles ? uploadedFiles.length : 0,
+        requiresApproval: ticket.requiresBusinessApproval,
+        isKasdaTicket: ticket.isKasdaTicket
       },
-      message: `Ticket created successfully and is pending manager approval${uploadedFiles && uploadedFiles.length > 0 ? ` with ${uploadedFiles.length} attachment(s)` : ''}`
+      message: `Ticket created successfully${ticket.requiresBusinessApproval ? ' and is pending manager approval' : ''}${uploadedFiles && uploadedFiles.length > 0 ? ` with ${uploadedFiles.length} attachment(s)` : ''}`
     });
 
   } catch (error) {
     console.error('Error creating ticket from service catalog:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Failed to create ticket' 
+      message: 'Failed to create ticket',
+      error: process.env.NODE_ENV === 'development' ? error : undefined
     });
   }
 }));

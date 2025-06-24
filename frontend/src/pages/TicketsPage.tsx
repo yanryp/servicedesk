@@ -1,9 +1,10 @@
 // src/pages/TicketsPage.tsx
+// Stage 4 Migration: Updated to use unified enhanced endpoints via ticketsService
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useFileDownloader } from '../hooks/useFileDownloader';
+import { ticketsService } from '../services';
 import { 
   ClipboardDocumentListIcon,
   MagnifyingGlassIcon,
@@ -77,24 +78,27 @@ const TicketsPage: React.FC = () => {
         return;
       }
 
-      const params = new URLSearchParams({
+      // Build filters object for enhanced ticketsService
+      const filters: any = {
         page: currentPage.toString(),
         limit: '10',
-      });
-      if (statusFilter) params.append('status', statusFilter);
-      if (priorityFilter) params.append('priority', priorityFilter);
-      if (searchTerm) params.append('search', searchTerm);
+      };
+      if (statusFilter) filters.status = statusFilter;
+      if (priorityFilter) filters.priority = priorityFilter;
+      if (searchTerm) filters.search = searchTerm;
 
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:3001/api/tickets?${params.toString()}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setTickets(response.data.tickets);
-        setTotalPages(response.data.totalPages);
+        console.log('TicketsPage: Fetching tickets with enhanced service');
+        
+        // Use unified ticketsService instead of direct axios calls
+        const response = await ticketsService.getTickets(filters);
+        setTickets(response.tickets);
+        setTotalPages(response.totalPages);
         setError(null);
       } catch (err: any) {
-        setError(err.response?.data?.message || 'Failed to fetch tickets.');
+        console.error('TicketsPage: Failed to fetch tickets:', err);
+        setError(err.response?.data?.message || err.message || 'Failed to fetch tickets.');
       } finally {
         setLoading(false);
       }
