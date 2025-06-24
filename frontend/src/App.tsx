@@ -18,7 +18,6 @@ import ReportingPage from './pages/ReportingPage';
 import ManagerDashboard from './pages/ManagerDashboard';
 import CategorizationAnalyticsPage from './pages/CategorizationAnalyticsPage';
 import UncategorizedTicketsPage from './pages/UncategorizedTicketsPage';
-import BSGCreateTicketPage from './pages/BSGCreateTicketPage';
 import ServiceCatalogPage from './pages/ServiceCatalogPage';
 import ServiceCatalogV2Page from './pages/ServiceCatalogV2Page';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -169,13 +168,14 @@ function App() {
               <Route path="/create-ticket" element={<Navigate to="/service-catalog-v2" replace />} />
               <Route path="/service-catalog" element={<ServiceCatalogPage />} />
               <Route path="/service-catalog-v2" element={<ServiceCatalogV2Page />} />
-              <Route path="/bsg-create" element={<BSGCreateTicketPage />} />
               <Route path="/tickets/:ticketId" element={<TicketDetailPage />} />
               <Route path="/tickets/:ticketId/edit" element={<EditTicketPage />} />
               <Route path="/manager" element={<ProtectedRoute roles={['admin', 'manager']}><ManagerDashboard /></ProtectedRoute>} />
               <Route path="/reporting" element={<ProtectedRoute roles={['admin', 'manager']}><ReportingPage /></ProtectedRoute>} />
               <Route path="/categorization/analytics" element={<ProtectedRoute roles={['admin', 'manager']}><CategorizationAnalyticsPage /></ProtectedRoute>} />
               <Route path="/categorization/queue" element={<ProtectedRoute roles={['admin', 'manager', 'technician']}><UncategorizedTicketsPage /></ProtectedRoute>} />
+              {/* Catch-all redirect to home for authenticated users */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
         </main>

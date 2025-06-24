@@ -164,9 +164,17 @@ export class UnifiedTicketService {
     
     if (data.bsgTemplateId || data.templateId) {
       const templateId = data.bsgTemplateId || data.templateId!;
-      const template = await prisma.serviceTemplate.findUnique({
+      const template = await prisma.bSGTemplate.findUnique({
         where: { id: templateId },
-        include: { customFieldDefinitions: true }
+        include: { 
+          fields: {
+            include: {
+              fieldType: true,
+              options: true
+            }
+          },
+          category: true 
+        }
       });
       return { type: 'bsg_template', templateId, template };
     }
@@ -255,7 +263,20 @@ export class UnifiedTicketService {
   }
   
   static async createUnifiedTicket(data: UnifiedTicketCreation, user: any): Promise<any> {
+    console.log('UnifiedTicketService.createUnifiedTicket - Starting with data:', {
+      title: data.title,
+      bsgTemplateId: data.bsgTemplateId,
+      serviceItemId: data.serviceItemId,
+      isKasdaTicket: data.isKasdaTicket
+    });
+
     const templateInfo = await this.detectTemplateInfo(data);
+    console.log('UnifiedTicketService - Template info detected:', {
+      type: templateInfo.type,
+      templateId: templateInfo.templateId,
+      hasTemplate: !!templateInfo.template
+    });
+
     const slaDueDate = await this.calculateUnifiedSLA(data, templateInfo);
     const requiresApproval = await this.determineApprovalRequirement(data, templateInfo);
     
@@ -306,7 +327,9 @@ export class UnifiedTicketService {
 
     // Add optional foreign keys only if they exist
     if (serviceItemId) ticketData.serviceItemId = serviceItemId;
-    if (templateInfo.templateId) ticketData.serviceTemplateId = templateInfo.templateId;
+    if (templateInfo.templateId && templateInfo.type === 'service_template') {
+      ticketData.serviceTemplateId = templateInfo.templateId;
+    }
     if (serviceCatalogId) ticketData.serviceCatalogId = serviceCatalogId;
     if (data.governmentEntityId) ticketData.governmentEntityId = data.governmentEntityId;
     
@@ -348,10 +371,25 @@ export class UnifiedTicketService {
   }
   
   static async saveCustomFieldValues(ticketId: number, customFieldValues: Record<string, any>, templateInfo: any): Promise<void> {
-    if (templateInfo.type === 'bsg_template') {
-      // Save BSG template field values - Note: This would need actual BSG field mapping
-      console.log('BSG field values saving not fully implemented yet - requires field ID mapping');
-      // For now, skip BSG field saving until proper field ID mapping is implemented
+    if (templateInfo.type === 'bsg_template' && templateInfo.template) {
+      // Save BSG template field values
+      const bsgFieldValues = [];
+      for (const [fieldName, value] of Object.entries(customFieldValues)) {
+        const fieldDef = templateInfo.template.fields?.find((f: any) => f.fieldName === fieldName || f.fieldLabel === fieldName);
+        if (fieldDef && value !== undefined && value !== null && value !== '') {
+          bsgFieldValues.push({
+            ticketId,
+            fieldId: fieldDef.id,
+            fieldValue: typeof value === 'object' ? JSON.stringify(value) : String(value)
+          });
+        }
+      }
+      
+      if (bsgFieldValues.length > 0) {
+        await prisma.bSGTicketFieldValue.createMany({
+          data: bsgFieldValues
+        });
+      }
     } else if (templateInfo.type === 'service_template') {
       // Save service template field values
       const serviceFieldValues = [];
@@ -576,7 +614,7 @@ router.post('/create', protect, upload.array('attachments', 5), asyncHandler(asy
         isKasdaTicket: serviceItem.isKasdaRelated,
         governmentEntityId: governmentEntityId ? parseInt(governmentEntityId) : null,
         requiresBusinessApproval,
-        status: requiresBusinessApproval ? 'awaiting_approval' : 'open',
+        status: requiresBusinessApproval ? 'pending_approval' : 'open',
         slaDueDate,
         // Add categorization fields
         userRootCause: suggestedRootCause || null,

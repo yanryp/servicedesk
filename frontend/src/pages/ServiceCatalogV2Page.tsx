@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { 
   ArrowLeftIcon,
+  ArrowRightIcon,
   MagnifyingGlassIcon, 
   LifebuoyIcon,
   UsersIcon,
@@ -394,44 +395,128 @@ const ServiceCatalogV2Page: React.FC = () => {
 
   // Extract issue classification logic for reuse
   const setIssueClassificationDefaults = (categoryName: string, serviceName: string, templateName: string) => {
-    // Smart mapping logic
+    const category = categoryName.toLowerCase();
+    const service = serviceName.toLowerCase();
+    const template = templateName.toLowerCase();
+    
+    // BSG-specific template classifications
     if (
-      categoryName.includes('hardware') || 
-      categoryName.includes('infrastructure') ||
-      categoryName.includes('network') ||
-      categoryName.includes('technical') ||
-      serviceName.includes('hardware') ||
-      serviceName.includes('network') ||
-      serviceName.includes('server') ||
-      templateName.includes('hardware') ||
-      templateName.includes('network')
+      category.includes('kasda') || 
+      category.includes('treasury') ||
+      service.includes('kasda') ||
+      template.includes('kasda') ||
+      template.includes('treasury')
+    ) {
+      setRootCause('external_factor' as RootCauseType);
+      setIssueCategory('request' as IssueCategoryType);
+    } else if (
+      category.includes('atm') ||
+      service.includes('atm') ||
+      template.includes('atm')
     ) {
       setRootCause('system_error' as RootCauseType);
       setIssueCategory('problem' as IssueCategoryType);
     } else if (
-      categoryName.includes('user') || 
-      categoryName.includes('account') ||
-      categoryName.includes('transfer') ||
-      categoryName.includes('klaim') ||
-      serviceName.includes('user') ||
-      serviceName.includes('account') ||
-      serviceName.includes('bsgtouch') ||
-      serviceName.includes('transfer') ||
-      templateName.includes('user') ||
-      templateName.includes('transfer')
+      category.includes('qris') ||
+      service.includes('qris') ||
+      template.includes('qris') ||
+      template.includes('payment')
+    ) {
+      setRootCause('system_error' as RootCauseType);
+      setIssueCategory('problem' as IssueCategoryType);
+    } else if (
+      category.includes('olibs') ||
+      service.includes('olibs') ||
+      template.includes('olibs') ||
+      template.includes('online banking')
+    ) {
+      setRootCause('system_error' as RootCauseType);
+      setIssueCategory('problem' as IssueCategoryType);
+    } else if (
+      category.includes('xcard') ||
+      category.includes('card') ||
+      service.includes('card') ||
+      template.includes('card') ||
+      template.includes('xcard')
+    ) {
+      setRootCause('system_error' as RootCauseType);
+      setIssueCategory('complaint' as IssueCategoryType);
+    } else if (
+      category.includes('klaim') ||
+      category.includes('claim') ||
+      service.includes('klaim') ||
+      service.includes('claim') ||
+      template.includes('klaim') ||
+      template.includes('claim')
+    ) {
+      setRootCause('external_factor' as RootCauseType);
+      setIssueCategory('request' as IssueCategoryType);
+    } else if (
+      category.includes('switching') ||
+      service.includes('switching') ||
+      template.includes('switching')
+    ) {
+      setRootCause('system_error' as RootCauseType);
+      setIssueCategory('problem' as IssueCategoryType);
+    } else if (
+      // Hardware & Infrastructure
+      category.includes('hardware') || 
+      category.includes('infrastructure') ||
+      category.includes('network') ||
+      category.includes('technical') ||
+      service.includes('hardware') ||
+      service.includes('network') ||
+      service.includes('server') ||
+      template.includes('hardware') ||
+      template.includes('network') ||
+      template.includes('maintenance')
+    ) {
+      setRootCause('system_error' as RootCauseType);
+      setIssueCategory('problem' as IssueCategoryType);
+    } else if (
+      // User-related requests
+      category.includes('user') || 
+      category.includes('account') ||
+      category.includes('transfer') ||
+      service.includes('user') ||
+      service.includes('account') ||
+      service.includes('bsgtouch') ||
+      service.includes('transfer') ||
+      template.includes('user') ||
+      template.includes('transfer')
     ) {
       setRootCause('human_error' as RootCauseType);
       setIssueCategory('request' as IssueCategoryType);
     } else if (
-      categoryName.includes('software') || 
-      categoryName.includes('application') ||
-      serviceName.includes('software') ||
-      serviceName.includes('application') ||
-      templateName.includes('software')
+      // Software & Applications
+      category.includes('software') || 
+      category.includes('application') ||
+      service.includes('software') ||
+      service.includes('application') ||
+      template.includes('software') ||
+      template.includes('instalasi')
     ) {
       setRootCause('system_error' as RootCauseType);
       setIssueCategory('problem' as IssueCategoryType);
+    } else if (
+      // General requests
+      category.includes('general') ||
+      service.includes('general') ||
+      service.includes('lainnya') ||
+      service.includes('other') ||
+      template.includes('general')
+    ) {
+      setRootCause('undetermined' as RootCauseType);
+      setIssueCategory('request' as IssueCategoryType);
     }
+    
+    console.log(`🎯 Auto-classification applied:`, {
+      category: categoryName,
+      service: serviceName,
+      template: templateName,
+      rootCause: rootCause,
+      issueCategory: issueCategory
+    });
   };
 
   // Original smart defaults function (fallback for when master data isn't available)
@@ -957,6 +1042,49 @@ const ServiceCatalogV2Page: React.FC = () => {
           </div>
         </div>
       </header>
+
+      {/* Quick Access - General Ticket Option */}
+      {!searchTerm && currentView === 'categories' && (
+        <div className="mb-8">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
+                  <DocumentPlusIcon className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Create General Ticket</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Can't find a specific template? Create a general support request for any issue not covered by our service catalog.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  // Create a mock general service object and load it
+                  const generalService: Service = {
+                    id: 'req_other',
+                    name: 'Permintaan Lainnya',
+                    description: 'Other general requests not covered by specific categories',
+                    categoryId: 'general_requests',
+                    templateId: undefined,
+                    popularity: 0,
+                    usageCount: 0,
+                    hasFields: false,
+                    fieldCount: 0,
+                    type: 'static_service'
+                  };
+                  loadServiceTemplate(generalService);
+                }}
+                className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2"
+              >
+                <span>Get Started</span>
+                <ArrowRightIcon className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <main>
         {/* Content Grid */}

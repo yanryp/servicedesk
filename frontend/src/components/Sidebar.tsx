@@ -58,12 +58,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           href: '/service-catalog-v2',
           icon: RectangleStackIcon,
           roles: ['requester', 'technician', 'admin']
-        },
-        {
-          name: 'BSG Support',
-          href: '/bsg-create',
-          icon: TicketIcon,
-          roles: ['requester', 'technician', 'admin']
         }
       ]
     },
