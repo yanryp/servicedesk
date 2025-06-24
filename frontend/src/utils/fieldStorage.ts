@@ -12,8 +12,25 @@ class GlobalFieldStorage {
   // Set a field value
   setValue(fieldName: string, value: any) {
     this.storage[fieldName] = value;
+    // Update DOM element if it exists
+    this.updateDOMElement(fieldName, value);
     // Notify listeners with debouncing
     this.notifyListeners(fieldName, value);
+  }
+
+  // Update DOM element directly
+  private updateDOMElement(fieldName: string, value: any) {
+    // Escape field name for DOM selector
+    const safeFieldName = fieldName.replace(/[\/\s\.\[\]#:]/g, '_');
+    const element = document.getElementById(safeFieldName) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+    
+    if (element && element.value !== value) {
+      element.value = value;
+      // Trigger change event to ensure UI consistency
+      const event = new Event('change', { bubbles: true });
+      element.dispatchEvent(event);
+      console.log(`🔄 Updated DOM element ${fieldName} to: ${value}`);
+    }
   }
 
   // Get a field value

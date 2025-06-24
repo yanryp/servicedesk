@@ -137,6 +137,11 @@ const ServiceCatalogPage: React.FC = () => {
       // Clear global storage when loading new template
       globalFieldStorage.clearAll();
       console.log('🗑️ Cleared global storage for new template');
+      
+      // Set smart defaults after a brief delay to ensure fields are ready
+      setTimeout(() => {
+        setSmartDefaults(template, service);
+      }, 100);
     } catch (error) {
       console.error('Error loading service template:', error);
       toast.error('Failed to load service details');
@@ -200,6 +205,105 @@ const ServiceCatalogPage: React.FC = () => {
     console.warn('handleFieldChange called but fields should use global storage');
   }, []);
 
+  // Set smart default values based on template and category (for all service catalog templates)
+  const setSmartDefaults = useCallback((template: ServiceTemplate, service: Service) => {
+    const categoryName = template.category?.name?.toLowerCase() || '';
+    const serviceName = service.name.toLowerCase();
+    const templateName = template.name?.toLowerCase() || '';
+    
+    console.log(`🎯 Analyzing service for smart defaults:`);
+    console.log(`   📂 Category: "${categoryName}"`);
+    console.log(`   📋 Service: "${serviceName}"`);
+    console.log(`   📄 Template: "${templateName}"`);
+    console.log(`   🏷️ Template Type: "${template.type}"`);
+    
+    let defaultRootCause = '';
+    let defaultIssueCategory = '';
+    let reasonMatched = '';
+    
+    // Smart mapping based on service/template characteristics
+    if (
+      categoryName.includes('hardware') || 
+      categoryName.includes('infrastructure') ||
+      categoryName.includes('network') ||
+      categoryName.includes('technical') ||
+      serviceName.includes('hardware') ||
+      serviceName.includes('network') ||
+      serviceName.includes('server') ||
+      serviceName.includes('printer') ||
+      serviceName.includes('computer') ||
+      serviceName.includes('technical') ||
+      templateName.includes('hardware') ||
+      templateName.includes('network') ||
+      templateName.includes('technical')
+    ) {
+      defaultRootCause = 'system_error';
+      defaultIssueCategory = 'problem';
+      reasonMatched = 'Hardware/Infrastructure/Network related';
+    } else if (
+      categoryName.includes('user') || 
+      categoryName.includes('account') ||
+      categoryName.includes('access') ||
+      categoryName.includes('permission') ||
+      serviceName.includes('user') ||
+      serviceName.includes('account') ||
+      serviceName.includes('password') ||
+      serviceName.includes('login') ||
+      serviceName.includes('access') ||
+      serviceName.includes('permission') ||
+      templateName.includes('user') ||
+      templateName.includes('account') ||
+      templateName.includes('access')
+    ) {
+      defaultRootCause = 'human_error';
+      defaultIssueCategory = 'request';
+      reasonMatched = 'User/Account/Access related';
+    } else if (
+      categoryName.includes('software') || 
+      categoryName.includes('application') ||
+      categoryName.includes('system') ||
+      serviceName.includes('software') ||
+      serviceName.includes('application') ||
+      serviceName.includes('system') ||
+      serviceName.includes('app') ||
+      templateName.includes('software') ||
+      templateName.includes('application') ||
+      templateName.includes('system')
+    ) {
+      defaultRootCause = 'system_error';
+      defaultIssueCategory = 'problem';
+      reasonMatched = 'Software/Application/System related';
+    } else if (
+      categoryName.includes('request') ||
+      categoryName.includes('service') ||
+      serviceName.includes('request') ||
+      serviceName.includes('service') ||
+      serviceName.includes('new') ||
+      templateName.includes('request') ||
+      templateName.includes('service')
+    ) {
+      defaultRootCause = 'human_error';
+      defaultIssueCategory = 'request';
+      reasonMatched = 'Service Request related';
+    }
+    // For general/other templates, leave empty (no defaults)
+    
+    // Set defaults in global storage if we have them
+    if (defaultRootCause && reasonMatched) {
+      globalFieldStorage.setValue('rootCause', defaultRootCause);
+      console.log(`✅ Set default root cause: "${defaultRootCause}" (${reasonMatched})`);
+    }
+    
+    if (defaultIssueCategory && reasonMatched) {
+      globalFieldStorage.setValue('issueCategory', defaultIssueCategory);
+      console.log(`✅ Set default issue category: "${defaultIssueCategory}" (${reasonMatched})`);
+    }
+    
+    if (!reasonMatched) {
+      console.log(`ℹ️  No pattern match found - leaving issue classification blank for user choice`);
+    }
+  }, []);
+
   // Transform ServiceField to BSGTemplateField for the renderer
   const transformServiceFieldsToBSGFields = useCallback((serviceFields: any[]): any[] => {
     return serviceFields.map(field => ({
@@ -233,7 +337,7 @@ const ServiceCatalogPage: React.FC = () => {
       // Get current field values from global storage
       const currentFieldValues = globalFieldStorage.getAllValues();
       
-      // Extract issue classification from global storage
+      // Extract issue classification from global storage (for all service catalog templates)
       const rootCauseValue = currentFieldValues['rootCause'] as RootCauseType;
       const issueCategoryValue = currentFieldValues['issueCategory'] as IssueCategoryType;
       
@@ -643,7 +747,7 @@ const ServiceCatalogPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Issue Classification Section */}
+              {/* Issue Classification Section - Available for all service catalog templates */}
               <div className="bg-gray-50 p-4 rounded-xl">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold text-gray-800">Issue Classification</h3>
