@@ -154,6 +154,10 @@ const ServiceCatalogPage: React.FC = () => {
   const validateFields = (): boolean => {
     const errors: Record<string, string> = {};
     
+    // Debug: Log current global storage values
+    const currentFieldValues = globalFieldStorage.getAllValues();
+    console.log('🔍 Current global storage values:', currentFieldValues);
+    
     if (!ticketTitle.trim()) {
       errors.title = 'Title is required';
     }
@@ -162,13 +166,18 @@ const ServiceCatalogPage: React.FC = () => {
       errors.description = 'Description is required';
     }
 
-    // Validate template fields
+    // Validate template fields using global storage values
     if (selectedTemplate?.fields) {
       selectedTemplate.fields.forEach(field => {
         if (field.required) {
-          const value = fieldValues[field.name];
+          // Check global storage using field.name (which becomes fieldName in transformation)
+          const value = currentFieldValues[field.name];
+          console.log(`🔍 Validating field "${field.name}" (${field.label}): value = "${value}", required = ${field.required}`);
           if (!value || (typeof value === 'string' && !value.trim())) {
             errors[field.name] = `${field.label} is required`;
+            console.log(`❌ Field "${field.name}" failed validation`);
+          } else {
+            console.log(`✅ Field "${field.name}" passed validation`);
           }
         }
       });
