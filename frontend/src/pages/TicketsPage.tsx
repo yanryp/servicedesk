@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useFileDownloader } from '../hooks/useFileDownloader';
 import { ticketsService } from '../services';
+import { Ticket as TicketType } from '../types';
 import { 
   ClipboardDocumentListIcon,
   MagnifyingGlassIcon,
@@ -18,42 +19,11 @@ import {
   ClockIcon
 } from '@heroicons/react/24/outline';
 
-interface Attachment {
-  id: number;
-  filename?: string;
-  file_name?: string; // API uses snake_case
-  file_size?: number;
-  file_type?: string;
-}
-
-interface Ticket {
-  id: number;
-  title: string;
-  description: string;
-  status: string;
-  priority: string;
-  category: string | null;
-  created_by_user_id: number;
-  assigned_to_user_id: number | null;
-  created_at: string;
-  updated_at: string;
-  resolved_at: string | null;
-  attachments: Attachment[] | null;
-  sla_due_date: string | null;
-  // Enhanced user information for technician view
-  created_by_username?: string;
-  created_by_email?: string;
-  created_by_role?: string;
-  created_by_department?: string;
-  assigned_to_username?: string;
-  assigned_to_email?: string;
-  category_name?: string;
-  item_name?: string;
-  attachment_count?: number;
-}
+// Using imported Ticket type from ../types instead of local interface
+// Enhanced endpoint returns camelCase Prisma format, not snake_case legacy format
 
 const TicketsPage: React.FC = () => {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [tickets, setTickets] = useState<TicketType[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { user, token, isLoading: authIsLoading } = useAuth();
@@ -303,8 +273,8 @@ const TicketsPage: React.FC = () => {
               </thead>
               <tbody className="bg-white divide-y divide-slate-200">
                 {tickets.map((ticket) => {
-                  const isOverdue = ticket.sla_due_date && 
-                    new Date(ticket.sla_due_date) < new Date() && 
+                  const isOverdue = ticket.slaDueDate && 
+                    new Date(ticket.slaDueDate) < new Date() && 
                     ticket.status !== 'closed';
                   
                   return (
@@ -325,11 +295,11 @@ const TicketsPage: React.FC = () => {
                           <p className="text-xs text-slate-600 line-clamp-2" title={ticket.description}>
                             {ticket.description}
                           </p>
-                          {((ticket.attachments && ticket.attachments.length > 0) || (ticket.attachment_count && ticket.attachment_count > 0)) && (
+                          {ticket.attachments && ticket.attachments.length > 0 && (
                             <div className="mt-1 flex items-center space-x-1">
                               <DocumentArrowDownIcon className="w-3 h-3 text-slate-400" />
                               <span className="text-xs text-slate-500">
-                                {ticket.attachment_count || ticket.attachments?.length || 0} file(s)
+                                {ticket.attachments?.length || 0} file(s)
                               </span>
                             </div>
                           )}
@@ -355,14 +325,14 @@ const TicketsPage: React.FC = () => {
                         <td className="px-6 py-4">
                           <div className="text-sm">
                             <div className="font-medium text-slate-900">
-                              {ticket.created_by_username || `User #${ticket.created_by_user_id}`}
+                              {ticket.createdBy?.username || `User #${ticket.createdByUserId}`}
                             </div>
                             <div className="text-xs text-slate-500">
-                              {ticket.created_by_department || 'No department'}
+                              {ticket.createdBy?.department?.name || 'No department'}
                             </div>
-                            {ticket.created_by_email && (
+                            {ticket.createdBy?.email && (
                               <div className="text-xs text-slate-400">
-                                {ticket.created_by_email}
+                                {ticket.createdBy.email}
                               </div>
                             )}
                           </div>
@@ -373,11 +343,11 @@ const TicketsPage: React.FC = () => {
                       <td className="px-6 py-4">
                         <div className="text-sm">
                           <div className="font-medium text-slate-900">
-                            {ticket.category_name || ticket.category || 'Uncategorized'}
+                            {ticket.serviceItem?.name || ticket.item?.name || 'Uncategorized'}
                           </div>
-                          {ticket.item_name && (
+                          {ticket.serviceItem?.description && (
                             <div className="text-xs text-slate-500">
-                              {ticket.item_name}
+                              {ticket.serviceItem.description}
                             </div>
                           )}
                         </div>
@@ -386,23 +356,23 @@ const TicketsPage: React.FC = () => {
                       {/* Created Date */}
                       <td className="px-6 py-4">
                         <div className="text-sm text-slate-900">
-                          {new Date(ticket.created_at).toLocaleDateString()}
+                          {new Date(ticket.createdAt).toLocaleDateString()}
                         </div>
                         <div className="text-xs text-slate-500">
-                          {new Date(ticket.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {new Date(ticket.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </td>
                       
                       {/* SLA Due */}
                       <td className="px-6 py-4">
-                        {ticket.sla_due_date ? (
+                        {ticket.slaDueDate ? (
                           <div className={`text-sm ${isOverdue ? 'text-red-600 font-semibold' : 'text-slate-900'}`}>
                             <div className="flex items-center space-x-1">
                               {isOverdue && <ExclamationTriangleIcon className="w-4 h-4 text-red-500" />}
-                              <span>{new Date(ticket.sla_due_date).toLocaleDateString()}</span>
+                              <span>{new Date(ticket.slaDueDate).toLocaleDateString()}</span>
                             </div>
                             <div className="text-xs text-slate-500">
-                              {isOverdue ? 'Overdue' : new Date(ticket.sla_due_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {isOverdue ? 'Overdue' : new Date(ticket.slaDueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </div>
                           </div>
                         ) : (
