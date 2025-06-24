@@ -187,8 +187,22 @@ const GlobalStorageField: React.FC<GlobalStorageFieldProps> = ({
     inputElement.id = safeFieldName;
     inputElement.disabled = disabled;
     
-    // Get initial value from global storage
-    const initialValue = globalFieldStorage.getValue(field.fieldName) || '';
+    // Get initial value from global storage or set default for date fields
+    let initialValue = globalFieldStorage.getValue(field.fieldName) || '';
+    
+    // Set today's date as default for date and datetime fields if no value exists
+    if (!initialValue && (field.fieldType === 'date' || field.fieldType === 'datetime')) {
+      if (field.fieldType === 'date') {
+        initialValue = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+      } else if (field.fieldType === 'datetime') {
+        initialValue = new Date().toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM format
+      }
+      
+      // Store the default value in global storage
+      globalFieldStorage.setValue(field.fieldName, initialValue);
+      console.log(`📅 Set default date for ${field.fieldName}: ${initialValue}`);
+    }
+    
     inputElement.value = initialValue;
     
     // Set placeholder only for input and textarea elements

@@ -138,10 +138,10 @@ const ServiceCatalogPage: React.FC = () => {
       globalFieldStorage.clearAll();
       console.log('🗑️ Cleared global storage for new template');
       
-      // Set smart defaults after a brief delay to ensure fields are ready
+      // Set smart defaults after ensuring DOM elements are ready
       setTimeout(() => {
         setSmartDefaults(template, service);
-      }, 100);
+      }, 500); // Increased delay to ensure GlobalStorageField components have created DOM elements
     } catch (error) {
       console.error('Error loading service template:', error);
       toast.error('Failed to load service details');
@@ -276,15 +276,24 @@ const ServiceCatalogPage: React.FC = () => {
     } else if (
       categoryName.includes('request') ||
       categoryName.includes('service') ||
+      categoryName.includes('klaim') ||
+      categoryName.includes('transfer') ||
+      categoryName.includes('transaksi') ||
       serviceName.includes('request') ||
       serviceName.includes('service') ||
       serviceName.includes('new') ||
+      serviceName.includes('klaim') ||
+      serviceName.includes('transfer') ||
+      serviceName.includes('bsgtouch') ||
       templateName.includes('request') ||
-      templateName.includes('service')
+      templateName.includes('service') ||
+      templateName.includes('klaim') ||
+      templateName.includes('transfer') ||
+      templateName.includes('bsgtouch')
     ) {
       defaultRootCause = 'human_error';
       defaultIssueCategory = 'request';
-      reasonMatched = 'Service Request related';
+      reasonMatched = 'Service Request/Transaction related';
     }
     // For general/other templates, leave empty (no defaults)
     
@@ -292,11 +301,29 @@ const ServiceCatalogPage: React.FC = () => {
     if (defaultRootCause && reasonMatched) {
       globalFieldStorage.setValue('rootCause', defaultRootCause);
       console.log(`✅ Set default root cause: "${defaultRootCause}" (${reasonMatched})`);
+      
+      // Verify DOM element was updated
+      setTimeout(() => {
+        const element = document.getElementById('rootCause');
+        if (element && (element as HTMLSelectElement).value !== defaultRootCause) {
+          console.log(`🔄 Retrying root cause update - DOM element not ready initially`);
+          globalFieldStorage.setValue('rootCause', defaultRootCause);
+        }
+      }, 200);
     }
     
     if (defaultIssueCategory && reasonMatched) {
       globalFieldStorage.setValue('issueCategory', defaultIssueCategory);
       console.log(`✅ Set default issue category: "${defaultIssueCategory}" (${reasonMatched})`);
+      
+      // Verify DOM element was updated
+      setTimeout(() => {
+        const element = document.getElementById('issueCategory');
+        if (element && (element as HTMLSelectElement).value !== defaultIssueCategory) {
+          console.log(`🔄 Retrying issue category update - DOM element not ready initially`);
+          globalFieldStorage.setValue('issueCategory', defaultIssueCategory);
+        }
+      }, 200);
     }
     
     if (!reasonMatched) {
