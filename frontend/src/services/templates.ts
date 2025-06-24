@@ -1,4 +1,7 @@
 // src/services/templates.ts
+// DEPRECATED: This service is deprecated as part of Stage 6 migration to unified ITIL system
+// Use service templates or BSG templates instead
+// TODO: Remove after migrating TemplateSelector.tsx to use modern template systems
 import { api } from './api';
 import { TicketTemplate } from '../types';
 

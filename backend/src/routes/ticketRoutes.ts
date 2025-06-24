@@ -1,4 +1,7 @@
 // src/routes/ticketRoutes.ts
+// DEPRECATED: This file contains legacy ticket routes that are being phased out
+// Stage 5 Migration: Most endpoints have been replaced by enhancedTicketRoutes.ts
+// TODO: Remove in Stage 5 cleanup after confirming no external dependencies
 import { Router } from 'express';
 import { body, param, validationResult } from 'express-validator';
 import pool from '../db';
@@ -28,6 +31,17 @@ const getSlaDueDate = (priority: string): Date => {
 
 const router = Router();
 
+// Deprecation warning middleware for legacy endpoints
+const deprecationWarning = (endpoint: string, replacement: string) => {
+  return (req: any, res: any, next: any) => {
+    console.warn(`⚠️  DEPRECATED: ${req.method} ${endpoint} is deprecated. Use ${replacement} instead.`);
+    console.warn(`⚠️  Called by: ${req.get('User-Agent') || 'Unknown'} from ${req.ip}`);
+    res.setHeader('X-Deprecated-Endpoint', endpoint);
+    res.setHeader('X-Replacement-Endpoint', replacement);
+    next();
+  };
+};
+
 // --- Multer Setup for File Uploads ---
 
 // Ensure the uploads directory exists
@@ -53,8 +67,10 @@ const upload = multer({ storage: storage });
 // @route   POST /api/tickets
 // @desc    Create a new ticket (with optional file uploads)
 // @access  Private
+// DEPRECATED: Use /api/v2/tickets/unified-create instead
 router.post('/', 
   protect, 
+  deprecationWarning('/api/tickets', '/api/v2/tickets/unified-create'),
   upload.array('attachments', 5), // 'attachments' is the field name, max 5 files
   [
     body('title', 'Title is required').not().isEmpty().trim().escape(),
@@ -308,7 +324,8 @@ router.post('/',
 // @route   GET /api/tickets
 // @desc    Get tickets for the user (or all if admin/tech)
 // @access  Private
-router.get('/', protect, asyncHandler(async (req: AuthenticatedRequest, res) => {
+// DEPRECATED: Use /api/v2/tickets instead
+router.get('/', protect, deprecationWarning('/api/tickets', '/api/v2/tickets'), asyncHandler(async (req: AuthenticatedRequest, res) => {
     const user = req.user!;
     
     const page = parseInt(req.query.page as string, 10) || 1;
@@ -502,8 +519,10 @@ router.get('/pending-approvals', protect, asyncHandler(async (req: Authenticated
 // @route   GET /api/tickets/:ticketId
 // @desc    Get a single ticket by ID
 // @access  Private
+// DEPRECATED: Use /api/v2/tickets/:ticketId instead
 router.get('/:ticketId',
   protect,
+  deprecationWarning('/api/tickets/:ticketId', '/api/v2/tickets/:ticketId'),
   asyncHandler(async (req: AuthenticatedRequest, res) => {
     const { ticketId } = req.params;
     const user = req.user!;

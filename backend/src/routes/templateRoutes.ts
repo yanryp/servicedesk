@@ -1,10 +1,24 @@
 // backend/src/routes/templateRoutes.ts
+// DEPRECATED: This file contains legacy template routes that have been replaced by service templates and BSG templates
+// Stage 5 Migration: Use /api/service-templates or /api/bsg-templates endpoints instead
+// TODO: Remove in Stage 5 cleanup after confirming no external dependencies
 import express, { Request, Response, NextFunction, Router } from 'express';
 import { body, validationResult } from 'express-validator';
 import { query } from '../db';
 import { protect, authorize, AuthenticatedRequest } from '../middleware/authMiddleware';
 
 const router: Router = express.Router();
+
+// Deprecation warning middleware
+const deprecationWarning = (endpoint: string, replacement: string) => {
+  return (req: any, res: any, next: any) => {
+    console.warn(`⚠️  DEPRECATED: ${req.method} ${endpoint} is deprecated. Use ${replacement} instead.`);
+    console.warn(`⚠️  Called by: ${req.get('User-Agent') || 'Unknown'} from ${req.ip}`);
+    res.setHeader('X-Deprecated-Endpoint', endpoint);
+    res.setHeader('X-Replacement-Endpoint', replacement);
+    next();
+  };
+};
 
 // Utility to handle async route errors (consider moving to a shared utils file)
 const asyncHandler = (fn: (req: AuthenticatedRequest, res: Response, next: NextFunction) => Promise<any>) => 
@@ -15,9 +29,11 @@ const asyncHandler = (fn: (req: AuthenticatedRequest, res: Response, next: NextF
 // @route   POST /api/templates
 // @desc    Create a new ticket template
 // @access  Private (Admin, Manager)
+// DEPRECATED: Use /api/service-templates or /api/bsg-templates instead
 router.post('/', 
   protect, 
-  authorize('admin', 'manager'), 
+  authorize('admin', 'manager'),
+  deprecationWarning('/api/templates', '/api/service-templates'), 
   [
     body('name', 'Template name is required').not().isEmpty().trim().escape(),
     body('description').optional().trim().escape(),

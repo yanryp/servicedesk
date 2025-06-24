@@ -1,4 +1,7 @@
 // src/services/categories.ts
+// DEPRECATED: This service is deprecated as part of Stage 6 migration to unified ITIL system
+// Use serviceCatalogService instead for modern service catalog functionality
+// TODO: Remove after migrating CategorySelector.tsx to use service catalogs
 import { api } from './api';
 import { Category, SubCategory, Item, TicketTemplate } from '../types';
 

@@ -1,4 +1,7 @@
 // src/routes/templateManagementRoutes.ts
+// Stage 5 Migration: This file contains active template management routes for administration
+// These routes support template category and management functionality
+// Integration: Templates created here can be used via enhancedTicketRoutes.ts UnifiedTicketService
 import express, { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import asyncHandler from 'express-async-handler';

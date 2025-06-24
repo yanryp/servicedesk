@@ -1,4 +1,7 @@
 // BSG Template System API Routes
+// Stage 5 Migration: This file contains active BSG template routes that are still in use
+// These routes support BSGTemplateSelector and BSGDynamicFieldRenderer components
+// Integration: BSG ticket creation now flows through enhancedTicketRoutes.ts via UnifiedTicketService
 import { Router } from 'express';
 import { query, validationResult } from 'express-validator';
 import prisma from '../db/prisma';

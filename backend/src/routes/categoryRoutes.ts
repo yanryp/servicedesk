@@ -1,8 +1,22 @@
 // backend/src/routes/categoryRoutes.ts
+// DEPRECATED: This file contains legacy category routes that have been replaced by service catalogs
+// Stage 5 Migration: Use /api/service-catalog endpoints instead
+// TODO: Remove in Stage 5 cleanup after confirming no external dependencies
 import express, { Request, Response, NextFunction, Router } from 'express';
 import { query } from '../db';
 
 const router: Router = express.Router();
+
+// Deprecation warning middleware
+const deprecationWarning = (endpoint: string, replacement: string) => {
+  return (req: any, res: any, next: any) => {
+    console.warn(`⚠️  DEPRECATED: ${req.method} ${endpoint} is deprecated. Use ${replacement} instead.`);
+    console.warn(`⚠️  Called by: ${req.get('User-Agent') || 'Unknown'} from ${req.ip}`);
+    res.setHeader('X-Deprecated-Endpoint', endpoint);
+    res.setHeader('X-Replacement-Endpoint', replacement);
+    next();
+  };
+};
 
 // Utility to handle async route errors
 const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) => 
@@ -13,7 +27,8 @@ const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => P
 // @route   GET /api/categories
 // @desc    Get all top-level categories
 // @access  Public (or protect as needed, e.g., protect, authorize(['admin', 'manager', 'technician', 'requester']))
-router.get('/', asyncHandler(async (req: Request, res: Response) => {
+// DEPRECATED: Use /api/service-catalog/services instead
+router.get('/', deprecationWarning('/api/categories', '/api/service-catalog/services'), asyncHandler(async (req: Request, res: Response) => {
   const result = await query(`
     SELECT 
       c.id,
@@ -32,7 +47,8 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
 // @route   GET /api/categories/:categoryId/subcategories
 // @desc    Get all sub-categories for a given category ID
 // @access  Public (or protect as needed)
-router.get('/:categoryId/subcategories', asyncHandler(async (req: Request, res: Response) => {
+// DEPRECATED: Use /api/service-catalog/services instead
+router.get('/:categoryId/subcategories', deprecationWarning('/api/categories/:categoryId/subcategories', '/api/service-catalog/services'), asyncHandler(async (req: Request, res: Response) => {
   const { categoryId } = req.params;
   const result = await query('SELECT * FROM sub_categories WHERE category_id = $1 ORDER BY name ASC', [categoryId]);
   if (result.rows.length === 0) {

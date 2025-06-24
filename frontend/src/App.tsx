@@ -11,7 +11,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import TicketsPage from './pages/TicketsPage';
-import CreateTicketPage from './pages/CreateTicketPage';
+// CreateTicketPage removed in Stage 6 migration - use ServiceCatalogV2Page or BSGCreateTicketPage instead
 import TicketDetailPage from './pages/TicketDetailPage';
 import EditTicketPage from './pages/EditTicketPage';
 import ReportingPage from './pages/ReportingPage';
@@ -165,7 +165,8 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/admin/register" element={<ProtectedRoute roles={['admin']}><RegisterPage /></ProtectedRoute>} />
               <Route path="/tickets" element={<TicketsPage />} />
-              <Route path="/create-ticket" element={<CreateTicketPage />} />
+              {/* CreateTicketPage route removed in Stage 6 migration - redirect to service catalog */}
+              <Route path="/create-ticket" element={<Navigate to="/service-catalog-v2" replace />} />
               <Route path="/service-catalog" element={<ServiceCatalogPage />} />
               <Route path="/service-catalog-v2" element={<ServiceCatalogV2Page />} />
               <Route path="/bsg-create" element={<BSGCreateTicketPage />} />

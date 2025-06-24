@@ -55,20 +55,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         },
         {
           name: 'Service Catalog',
-          href: '/service-catalog',
-          icon: RectangleStackIcon,
-          roles: ['requester', 'technician', 'admin']
-        },
-        {
-          name: 'Service Catalog V2',
           href: '/service-catalog-v2',
           icon: RectangleStackIcon,
-          roles: ['requester', 'technician', 'admin']
-        },
-        {
-          name: 'Create Ticket',
-          href: '/create-ticket',
-          icon: PlusCircleIcon,
           roles: ['requester', 'technician', 'admin']
         },
         {
