@@ -149,18 +149,8 @@ const BSGDynamicFieldRenderer: React.FC<BSGDynamicFieldRendererProps> = ({
     }
   }, [fields]);
 
-  // Set default values for date fields
-  useEffect(() => {
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-    const dateTimeNow = new Date().toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM format
-    
-    fields.forEach(field => {
-      if ((field.fieldType === 'date' || field.fieldType === 'datetime') && !values[field.fieldName]) {
-        const defaultValue = field.fieldType === 'date' ? today : dateTimeNow;
-        onChange(field.fieldName, defaultValue);
-      }
-    });
-  }, [fields, values, onChange]);
+  // Date defaults are now handled by GlobalStorageField components directly
+  // No need for React state management here anymore
 
   // Memoized field change handler to prevent re-renders
   const handleFieldChange = useCallback((fieldName: string, value: any) => {
@@ -283,4 +273,19 @@ const BSGDynamicFieldRenderer: React.FC<BSGDynamicFieldRendererProps> = ({
   );
 };
 
-export default BSGDynamicFieldRenderer;
+// Memoize the entire component to prevent unnecessary re-renders
+export default React.memo(BSGDynamicFieldRenderer, (prevProps, nextProps) => {
+  // Only re-render if fields array actually changes (not just reference)
+  if (prevProps.fields.length !== nextProps.fields.length) return false;
+  if (prevProps.templateId !== nextProps.templateId) return false;
+  if (prevProps.disabled !== nextProps.disabled) return false;
+  if (prevProps.showCategories !== nextProps.showCategories) return false;
+  
+  // Compare fields by their IDs and types (ignore other props that cause re-renders)
+  const fieldsChanged = prevProps.fields.some((field, index) => {
+    const nextField = nextProps.fields[index];
+    return field.id !== nextField?.id || field.fieldType !== nextField?.fieldType;
+  });
+  
+  return !fieldsChanged;
+});

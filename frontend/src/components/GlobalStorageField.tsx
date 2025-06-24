@@ -79,7 +79,7 @@ const GlobalStorageField: React.FC<GlobalStorageFieldProps> = ({
   useEffect(() => {
     if (!containerRef.current || isInitializedRef.current) return;
 
-    console.log(`🏗️ Creating DOM elements for field: ${field.fieldName}`);
+    console.log(`🏗️ Creating DOM elements for field: ${field.fieldName} (${field.fieldType})`);
     
     const container = containerRef.current;
     container.innerHTML = '';
@@ -220,6 +220,8 @@ const GlobalStorageField: React.FC<GlobalStorageFieldProps> = ({
       const target = e.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
       const newValue = target.value;
       
+      console.log(`🔄 Field "${field.fieldName}" (${field.fieldType}) changed to: "${newValue}"`);
+      
       // Store in global storage
       globalFieldStorage.setValue(field.fieldName, newValue);
       
@@ -228,6 +230,8 @@ const GlobalStorageField: React.FC<GlobalStorageFieldProps> = ({
 
     inputElement.addEventListener('input', handleChange);
     inputElement.addEventListener('change', handleChange);
+    
+    console.log(`✅ Successfully created and attached listeners for field: ${field.fieldName} (${field.fieldType})`);
 
     // Store reference for cleanup
     inputElementRef.current = inputElement;
