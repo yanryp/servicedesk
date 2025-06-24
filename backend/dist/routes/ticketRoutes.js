@@ -13,6 +13,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 // src/routes/ticketRoutes.ts
+// DEPRECATED: This file contains legacy ticket routes that are being phased out
+// Stage 5 Migration: Most endpoints have been replaced by enhancedTicketRoutes.ts
+// TODO: Remove in Stage 5 cleanup after confirming no external dependencies
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const db_1 = __importDefault(require("../db"));
@@ -39,6 +42,16 @@ const getSlaDueDate = (priority) => {
     }
 };
 const router = (0, express_1.Router)();
+// Deprecation warning middleware for legacy endpoints
+const deprecationWarning = (endpoint, replacement) => {
+    return (req, res, next) => {
+        console.warn(`⚠️  DEPRECATED: ${req.method} ${endpoint} is deprecated. Use ${replacement} instead.`);
+        console.warn(`⚠️  Called by: ${req.get('User-Agent') || 'Unknown'} from ${req.ip}`);
+        res.setHeader('X-Deprecated-Endpoint', endpoint);
+        res.setHeader('X-Replacement-Endpoint', replacement);
+        next();
+    };
+};
 // --- Multer Setup for File Uploads ---
 // Ensure the uploads directory exists
 const uploadDir = path_1.default.join(__dirname, '..', '..', 'uploads');
@@ -60,7 +73,8 @@ const upload = (0, multer_1.default)({ storage: storage });
 // @route   POST /api/tickets
 // @desc    Create a new ticket (with optional file uploads)
 // @access  Private
-router.post('/', authMiddleware_1.protect, upload.array('attachments', 5), // 'attachments' is the field name, max 5 files
+// DEPRECATED: Use /api/v2/tickets/unified-create instead
+router.post('/', authMiddleware_1.protect, deprecationWarning('/api/tickets', '/api/v2/tickets/unified-create'), upload.array('attachments', 5), // 'attachments' is the field name, max 5 files
 [
     (0, express_validator_1.body)('title', 'Title is required').not().isEmpty().trim().escape(),
     (0, express_validator_1.body)('description', 'Description is required').not().isEmpty().trim().escape(),
@@ -284,7 +298,8 @@ router.post('/', authMiddleware_1.protect, upload.array('attachments', 5), // 'a
 // @route   GET /api/tickets
 // @desc    Get tickets for the user (or all if admin/tech)
 // @access  Private
-router.get('/', authMiddleware_1.protect, (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// DEPRECATED: Use /api/v2/tickets instead
+router.get('/', authMiddleware_1.protect, deprecationWarning('/api/tickets', '/api/v2/tickets'), (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
@@ -453,7 +468,8 @@ router.get('/pending-approvals', authMiddleware_1.protect, (0, asyncHandler_1.de
 // @route   GET /api/tickets/:ticketId
 // @desc    Get a single ticket by ID
 // @access  Private
-router.get('/:ticketId', authMiddleware_1.protect, (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// DEPRECATED: Use /api/v2/tickets/:ticketId instead
+router.get('/:ticketId', authMiddleware_1.protect, deprecationWarning('/api/tickets/:ticketId', '/api/v2/tickets/:ticketId'), (0, asyncHandler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { ticketId } = req.params;
     const user = req.user;
     // Use Prisma to fetch ticket with all related data
@@ -461,13 +477,6 @@ router.get('/:ticketId', authMiddleware_1.protect, (0, asyncHandler_1.default)((
         where: { id: parseInt(ticketId) },
         include: {
             createdBy: {
-                select: {
-                    id: true,
-                    username: true,
-                    email: true,
-                    departmentId: true,
-                    managerId: true
-                },
                 include: {
                     department: {
                         select: {
@@ -486,12 +495,6 @@ router.get('/:ticketId', authMiddleware_1.protect, (0, asyncHandler_1.default)((
                 }
             },
             assignedTo: {
-                select: {
-                    id: true,
-                    username: true,
-                    email: true,
-                    departmentId: true
-                },
                 include: {
                     department: {
                         select: {

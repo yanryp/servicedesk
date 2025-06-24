@@ -16,6 +16,7 @@ model User {
   createdAt                DateTime?                   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt                DateTime?                   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   managerId                Int?                        @map("manager_id")
+  unitId                   Int?                        @map("unit_id")
   currentWorkload          Int                         @default(0) @map("current_workload")
   departmentId             Int?                        @map("department_id")
   experienceLevel          String?                     @map("experience_level") @db.VarChar(50)
@@ -47,6 +48,7 @@ model User {
   department               Department?                 @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   manager                  User?                       @relation("UserManager", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   subordinates             User[]                      @relation("UserManager")
+  unit                     Unit?                       @relation(fields: [unitId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@map("users")
 }
@@ -69,8 +71,35 @@ model Department {
   templateMetadata     TemplateMetadata[]
   templateUsageLogs    TemplateUsageLog[]
   users                User[]
+  units                Unit[]
 
   @@map("departments")
+}
+
+model Unit {
+  id                  Int                   @id @default(autoincrement())
+  code                String                @unique @db.VarChar(50)
+  name                String                @db.VarChar(255)
+  displayName         String?               @map("display_name") @db.VarChar(255)
+  unitType            String                @default("branch") @map("unit_type") @db.VarChar(50) // branch, capem, department
+  parentId            Int?                  @map("parent_id")
+  departmentId        Int?                  @map("department_id")
+  isActive            Boolean               @default(true) @map("is_active")
+  sortOrder           Int                   @default(0) @map("sort_order")
+  metadata            Json?                 // Store additional branch-specific data
+  createdAt           DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime              @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
+  // Relations
+  department          Department?           @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parent              Unit?                 @relation("UnitHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children            Unit[]                @relation("UnitHierarchy")
+  users               User[]
+  
+  @@index([unitType, isActive])
+  @@index([parentId])
+  @@index([departmentId])
+  @@map("units")
 }
 
 model Category {
@@ -873,6 +902,8 @@ enum ticket_status {
   awaiting_changes           @map("awaiting-changes")
   assigned
   cancelled
+  duplicate
+  pending
 }
 
 enum service_type {

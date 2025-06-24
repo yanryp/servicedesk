@@ -13,11 +13,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 // backend/src/routes/templateRoutes.ts
+// DEPRECATED: This file contains legacy template routes that have been replaced by service templates and BSG templates
+// Stage 5 Migration: Use /api/service-templates or /api/bsg-templates endpoints instead
+// TODO: Remove in Stage 5 cleanup after confirming no external dependencies
 const express_1 = __importDefault(require("express"));
 const express_validator_1 = require("express-validator");
 const db_1 = require("../db");
 const authMiddleware_1 = require("../middleware/authMiddleware");
 const router = express_1.default.Router();
+// Deprecation warning middleware
+const deprecationWarning = (endpoint, replacement) => {
+    return (req, res, next) => {
+        console.warn(`⚠️  DEPRECATED: ${req.method} ${endpoint} is deprecated. Use ${replacement} instead.`);
+        console.warn(`⚠️  Called by: ${req.get('User-Agent') || 'Unknown'} from ${req.ip}`);
+        res.setHeader('X-Deprecated-Endpoint', endpoint);
+        res.setHeader('X-Replacement-Endpoint', replacement);
+        next();
+    };
+};
 // Utility to handle async route errors (consider moving to a shared utils file)
 const asyncHandler = (fn) => (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch(next);
@@ -25,7 +38,8 @@ const asyncHandler = (fn) => (req, res, next) => {
 // @route   POST /api/templates
 // @desc    Create a new ticket template
 // @access  Private (Admin, Manager)
-router.post('/', authMiddleware_1.protect, (0, authMiddleware_1.authorize)('admin', 'manager'), [
+// DEPRECATED: Use /api/service-templates or /api/bsg-templates instead
+router.post('/', authMiddleware_1.protect, (0, authMiddleware_1.authorize)('admin', 'manager'), deprecationWarning('/api/templates', '/api/service-templates'), [
     (0, express_validator_1.body)('name', 'Template name is required').not().isEmpty().trim().escape(),
     (0, express_validator_1.body)('description').optional().trim().escape(),
     (0, express_validator_1.body)('item_id').optional({ nullable: true }).isInt({ min: 1 }).withMessage('Item ID must be an integer if provided'),

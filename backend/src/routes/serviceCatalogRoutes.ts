@@ -503,9 +503,10 @@ const conditionalUpload = (req: any, res: any, next: any) => {
 // @desc    Create ticket from service catalog selection
 // @access  Private
 router.post('/create-ticket', protect, conditionalUpload, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const { serviceId, title, description, priority = 'medium', rootCause, issueCategory } = req.body;
+  const user = req.user!;
+  
   try {
-    const { serviceId, title, description, priority = 'medium', rootCause, issueCategory } = req.body;
-    const user = req.user!;
     const uploadedFiles = (req.files as Express.Multer.File[]) || [];
 
     // Parse fieldValues if it's a JSON string (from FormData)
@@ -577,11 +578,17 @@ router.post('/create-ticket', protect, conditionalUpload, asyncHandler(async (re
     });
 
   } catch (error) {
-    console.error('Error creating ticket from service catalog:', error);
+    console.error('Error creating ticket from service catalog:', {
+      error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined,
+      serviceId: serviceId,
+      requestBody: req.body,
+      userId: user.id
+    });
     res.status(500).json({ 
       success: false, 
       message: 'Failed to create ticket',
-      error: process.env.NODE_ENV === 'development' ? error : undefined
+      error: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
     });
   }
 }));

@@ -427,17 +427,94 @@ export class UnifiedTicketService {
   }
   
   static async createBusinessApproval(ticket: any): Promise<void> {
-    // Find the manager for approval
-    const manager = ticket.createdBy?.manager;
-    if (manager) {
+    console.log('UnifiedTicketService.createBusinessApproval - Finding unit-based manager for approval');
+    
+    // Get the ticket creator's unit information
+    const ticketCreator = await prisma.user.findUnique({
+      where: { id: ticket.createdByUserId },
+      include: {
+        unit: true,
+        department: true
+      }
+    });
+    
+    if (!ticketCreator) {
+      console.log('❌ Ticket creator not found for approval');
+      return;
+    }
+    
+    // Find managers from the same unit who can approve
+    let availableManagers: any[] = [];
+    
+    if (ticketCreator.unitId) {
+      // Find managers in the same unit
+      availableManagers = await prisma.user.findMany({
+        where: {
+          unitId: ticketCreator.unitId,
+          role: { in: ['manager', 'admin'] },
+          isAvailable: true,
+          isBusinessReviewer: true
+        },
+        orderBy: [
+          { role: 'desc' }, // Prefer admins over managers
+          { id: 'asc' }     // Consistent ordering
+        ]
+      });
+      
+      console.log(`Found ${availableManagers.length} unit managers for unit ${ticketCreator.unit?.name}`);
+    }
+    
+    // Fallback to department managers if no unit managers found
+    if (availableManagers.length === 0 && ticketCreator.departmentId) {
+      availableManagers = await prisma.user.findMany({
+        where: {
+          departmentId: ticketCreator.departmentId,
+          role: { in: ['manager', 'admin'] },
+          isAvailable: true,
+          isBusinessReviewer: true
+        },
+        orderBy: [
+          { role: 'desc' },
+          { id: 'asc' }
+        ]
+      });
+      
+      console.log(`Found ${availableManagers.length} department managers for ${ticketCreator.department?.name}`);
+    }
+    
+    // Final fallback to any available business reviewer
+    if (availableManagers.length === 0) {
+      availableManagers = await prisma.user.findMany({
+        where: {
+          role: { in: ['manager', 'admin'] },
+          isAvailable: true,
+          isBusinessReviewer: true
+        },
+        orderBy: [
+          { role: 'desc' },
+          { id: 'asc' }
+        ],
+        take: 1
+      });
+      
+      console.log(`Found ${availableManagers.length} fallback managers`);
+    }
+    
+    if (availableManagers.length > 0) {
+      const selectedManager = availableManagers[0];
+      
       await prisma.businessApproval.create({
         data: {
           ticketId: ticket.id,
-          businessReviewerId: manager.id,
+          businessReviewerId: selectedManager.id,
           approvalStatus: 'pending',
-          businessComments: `Ticket #${ticket.id}: ${ticket.title}`
+          businessComments: `Ticket #${ticket.id}: ${ticket.title} - Assigned to ${selectedManager.username} (${ticketCreator.unit?.name || ticketCreator.department?.name || 'No unit/dept'})`
         }
       });
+      
+      console.log(`✅ Business approval created with manager: ${selectedManager.username} (Unit: ${ticketCreator.unit?.name || 'N/A'})`);
+    } else {
+      console.log('❌ No available managers found for approval');
     }
   }
 }
@@ -755,6 +832,8 @@ router.get('/', protect, asyncHandler(async (req: AuthenticatedRequest, res: Res
       requestType,
       isKasdaOnly,
       businessImpact,
+      templateCategory,
+      skill,
       search 
     } = req.query;
 
@@ -796,6 +875,30 @@ router.get('/', protect, asyncHandler(async (req: AuthenticatedRequest, res: Res
     if (requestType) whereClause.requestType = requestType;
     if (businessImpact) whereClause.businessImpact = businessImpact;
     if (isKasdaOnly === 'true') whereClause.isKasdaTicket = true;
+
+    // Template category filtering - search through service items and BSG templates
+    if (templateCategory) {
+      whereClause.OR = [
+        ...(whereClause.OR || []),
+        {
+          serviceItem: {
+            name: { contains: templateCategory as string, mode: 'insensitive' }
+          }
+        },
+        {
+          serviceItem: {
+            description: { contains: templateCategory as string, mode: 'insensitive' }
+          }
+        }
+      ];
+    }
+
+    // Skill-based filtering - filter by assigned technician's skill
+    if (skill && user?.role === 'technician') {
+      whereClause.assignedTo = {
+        primarySkill: { contains: skill as string, mode: 'insensitive' }
+      };
+    }
 
     // Search functionality
     if (search) {
@@ -1756,6 +1859,276 @@ router.get('/attachments/:attachmentId/download', protect, asyncHandler(async (r
       success: false,
       message: 'Failed to download attachment',
       error: process.env.NODE_ENV === 'development' ? error : undefined
+    });
+  }
+}));
+
+// Update ticket status with ITIL workflow support
+router.patch('/:ticketId/status', protect, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { ticketId } = req.params;
+    const { status, comments } = req.body;
+    const { user } = req;
+
+    console.log(`Updating ticket ${ticketId} status to ${status} by user ${user?.id} (${user?.role})`);
+
+    // Validate status
+    const validStatuses = ['assigned', 'in_progress', 'pending', 'resolved', 'closed', 'rejected', 'cancelled', 'duplicate'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid status. Must be one of: ${validStatuses.join(', ')}`
+      });
+    }
+
+    // Find the ticket with necessary relations
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: parseInt(ticketId) },
+      include: {
+        createdBy: {
+          include: {
+            department: true,
+            manager: true
+          }
+        },
+        assignedTo: {
+          include: {
+            department: true
+          }
+        },
+        serviceCatalog: {
+          include: {
+            department: true
+          }
+        }
+      }
+    });
+
+    if (!ticket) {
+      return res.status(404).json({
+        success: false,
+        message: 'Ticket not found'
+      });
+    }
+
+    // Authorization checks
+    const isOwner = ticket.createdByUserId === user?.id;
+    const isAssigned = ticket.assignedToUserId === user?.id;
+    const isAdmin = user?.role === 'admin';
+    const isTechnician = user?.role === 'technician';
+    const isManager = user?.role === 'manager';
+
+    // Only technicians, admins, and assigned users can update status
+    if (!isAdmin && !isTechnician && !isAssigned && !isManager) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to update this ticket status'
+      });
+    }
+
+    // ITIL workflow validation
+    const currentStatus = ticket.status;
+    const isValidTransition = validateStatusTransition(currentStatus, status);
+    
+    if (!isValidTransition) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid status transition from ${currentStatus} to ${status}`
+      });
+    }
+
+    // Update ticket status and record the change
+    const updatedTicket = await prisma.ticket.update({
+      where: { id: parseInt(ticketId) },
+      data: {
+        status,
+        updatedAt: new Date(),
+        // Update resolved/closed timestamps
+        ...(status === 'resolved' && { resolvedAt: new Date() }),
+        ...(status === 'closed' && { closedAt: new Date() })
+      },
+      include: {
+        createdBy: {
+          include: {
+            department: true,
+            manager: true
+          }
+        },
+        assignedTo: {
+          include: {
+            department: true
+          }
+        },
+        attachments: true,
+        serviceCatalog: {
+          include: {
+            department: true
+          }
+        },
+        serviceItem: true
+      }
+    });
+
+    // Add a status change comment if comments were provided or for certain transitions
+    if (comments || ['resolved', 'closed', 'pending', 'cancelled', 'duplicate'].includes(status)) {
+      const statusChangeComment = comments || `Status changed to ${status.replace('_', ' ')}`;
+      
+      await prisma.ticketComment.create({
+        data: {
+          ticketId: parseInt(ticketId),
+          authorId: user!.id,
+          content: statusChangeComment,
+          isInternal: false, // Status changes are usually public
+          commentType: 'status_change'
+        }
+      });
+    }
+
+    // Log the status change for audit trail
+    console.log(`Ticket ${ticketId} status updated from ${currentStatus} to ${status} by ${user?.username}`);
+
+    res.json({
+      success: true,
+      message: `Ticket status updated to ${status.replace('_', ' ')}`,
+      data: updatedTicket
+    });
+
+  } catch (error) {
+    console.error('Error updating ticket status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update ticket status',
+      error: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
+    });
+  }
+}));
+
+// ITIL workflow validation function
+function validateStatusTransition(currentStatus: string, newStatus: string): boolean {
+  const validTransitions: Record<string, string[]> = {
+    'pending_approval': ['approved', 'rejected'],
+    'approved': ['assigned', 'in_progress', 'cancelled'], // Can cancel after approval
+    'assigned': ['in_progress', 'pending', 'cancelled', 'duplicate'], // Can cancel or mark duplicate
+    'open': ['assigned', 'in_progress', 'pending', 'cancelled', 'duplicate'],
+    'in_progress': ['pending', 'resolved', 'closed', 'assigned', 'cancelled', 'duplicate'], // Can skip resolved for simple tickets
+    'pending': ['in_progress', 'assigned', 'cancelled'],
+    'resolved': ['closed', 'in_progress'], // Allow reopening if resolution doesn't work
+    'closed': ['in_progress'], // Admin can reopen
+    'rejected': ['pending_approval'], // Can be resubmitted
+    'cancelled': [], // Final state
+    'duplicate': [] // Final state
+  };
+
+  return validTransitions[currentStatus]?.includes(newStatus) || false;
+}
+
+// Get available approvers for a unit
+router.get('/unit/:unitId/approvers', protect, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const unitId = parseInt(req.params.unitId);
+    
+    if (!unitId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Unit ID is required'
+      });
+    }
+    
+    // Find managers in the specified unit
+    const unitManagers = await prisma.user.findMany({
+      where: {
+        unitId: unitId,
+        role: { in: ['manager', 'admin'] },
+        isAvailable: true,
+        isBusinessReviewer: true
+      },
+      include: {
+        unit: true,
+        department: true
+      },
+      orderBy: [
+        { role: 'desc' },
+        { username: 'asc' }
+      ]
+    });
+    
+    // Get unit information
+    const unit = await prisma.unit.findUnique({
+      where: { id: unitId },
+      include: {
+        department: true,
+        parent: true
+      }
+    });
+    
+    res.json({
+      success: true,
+      data: {
+        unit: unit,
+        approvers: unitManagers.map(manager => ({
+          id: manager.id,
+          username: manager.username,
+          email: manager.email,
+          role: manager.role,
+          department: manager.department?.name,
+          unit: manager.unit?.name,
+          isAvailable: manager.isAvailable
+        }))
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error fetching unit approvers:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch unit approvers'
+    });
+  }
+}));
+
+// Get all units for dropdown selection
+router.get('/units', protect, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const units = await prisma.unit.findMany({
+      where: {
+        isActive: true
+      },
+      include: {
+        department: {
+          select: {
+            id: true,
+            name: true
+          }
+        },
+        parent: {
+          select: {
+            id: true,
+            name: true
+          }
+        },
+        _count: {
+          select: {
+            users: true
+          }
+        }
+      },
+      orderBy: [
+        { unitType: 'asc' },
+        { sortOrder: 'asc' },
+        { name: 'asc' }
+      ]
+    });
+    
+    res.json({
+      success: true,
+      data: units
+    });
+    
+  } catch (error) {
+    console.error('Error fetching units:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch units'
     });
   }
 }));
