@@ -229,6 +229,13 @@ export interface Ticket {
   isClassificationLocked?: boolean;
   techOverrideReason?: string;
   
+  // Business Approval fields (from enhanced pending-approvals endpoint)
+  businessApprovalId?: number;
+  approvalStatus?: 'pending' | 'approved' | 'rejected';
+  businessComments?: string;
+  approvalCreatedAt?: string;
+  businessReviewer?: User;
+  
   // Relations
   createdBy?: User;
   assignedTo?: User;

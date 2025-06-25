@@ -21,7 +21,14 @@ import {
   ExclamationTriangleIcon,
   ArrowLeftIcon,
   ChatBubbleLeftIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  PlayIcon,
+  PauseIcon,
+  CheckIcon,
+  XMarkIcon,
+  ArrowPathIcon,
+  DocumentDuplicateIcon,
+  NoSymbolIcon
 } from '@heroicons/react/24/outline';
 
 
@@ -29,6 +36,9 @@ import {
 const TicketDetailPage: React.FC = () => {
   const [rejectionReason, setRejectionReason] = useState('');
   const [isRejecting, setIsRejecting] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionComment, setTransitionComment] = useState('');
+  const [showTransitionForm, setShowTransitionForm] = useState<string | null>(null);
   const { ticketId } = useParams<{ ticketId: string }>();
   const [ticket, setTicket] = useState<FullTicket | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -111,6 +121,36 @@ const TicketDetailPage: React.FC = () => {
     }
   };
 
+  const handleStatusTransition = async (newStatus: string, action: string) => {
+    // Validate required comment for certain transitions
+    const requiresComment = ['resolved', 'closed', 'pending', 'cancelled', 'duplicate'].includes(newStatus);
+    if (requiresComment && !transitionComment.trim()) {
+      alert(`Please provide a comment for ${action.toLowerCase()}.`);
+      return;
+    }
+
+    setIsTransitioning(true);
+    try {
+      console.log(`TicketDetailPage: Transitioning ticket to ${newStatus}`);
+      
+      // Use ticketsService to update status
+      const updatedTicket = await ticketsService.updateTicketStatus(
+        parseInt(ticketId!), 
+        newStatus, 
+        transitionComment.trim() || undefined
+      );
+      
+      setTicket(updatedTicket);
+      setShowTransitionForm(null);
+      setTransitionComment('');
+    } catch (err: any) {
+      console.error(`TicketDetailPage: Failed to ${action.toLowerCase()} ticket:`, err);
+      setError(err.response?.data?.message || err.message || `Failed to ${action.toLowerCase()} ticket.`);
+    } finally {
+      setIsTransitioning(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -158,7 +198,6 @@ const TicketDetailPage: React.FC = () => {
 
   // Use backend-provided permissions for proper authorization
   const showApprovalButtons = (ticket as any).userPermissions?.canApprove || false;
-  const isOwner = (ticket as any).userPermissions?.isOwner || false;
   const canModify = (ticket as any).userPermissions?.canModify || false;
   const isDirectManager = (ticket as any).userPermissions?.isDirectManager || false;
 
@@ -174,11 +213,19 @@ const TicketDetailPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'pending_approval': 
       case 'pending-approval': return 'bg-amber-100 text-amber-800 border-amber-200';
+      case 'approved':
+      case 'assigned':
       case 'open': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'in_progress':
       case 'in-progress': return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'pending': return 'bg-orange-100 text-orange-800 border-orange-200';
       case 'resolved': return 'bg-green-100 text-green-800 border-green-200';
       case 'closed': return 'bg-slate-100 text-slate-800 border-slate-200';
+      case 'rejected': return 'bg-red-100 text-red-800 border-red-200';
+      case 'cancelled': return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'duplicate': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       default: return 'bg-slate-100 text-slate-800 border-slate-200';
     }
   };
@@ -541,6 +588,223 @@ const TicketDetailPage: React.FC = () => {
             console.log('Comment added to ticket', ticket.id);
           }}
         />
+      )}
+
+      {/* ITIL Status Transition Controls */}
+      {(user?.role === 'technician' || user?.role === 'admin') && 
+       (ticket.status as string) !== 'pending_approval' && 
+       (ticket.status as string) !== 'closed' && 
+       (ticket.status as string) !== 'rejected' && (
+        <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl p-8 border border-slate-200/50">
+          <div className="flex items-center space-x-2 mb-6">
+            <ArrowPathIcon className="w-5 h-5 text-slate-600" />
+            <h2 className="text-xl font-semibold text-slate-800">Ticket Actions</h2>
+            <span className="text-sm text-slate-500">
+              Current Status: {ticket.status.replace('_', ' ').toUpperCase()}
+            </span>
+          </div>
+
+          {/* Status Transition Form */}
+          {showTransitionForm && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <h3 className="font-medium text-blue-800 mb-3">
+                {showTransitionForm === 'resolved' && 'Mark Ticket as Resolved'}
+                {showTransitionForm === 'closed' && 'Close Ticket'}
+                {showTransitionForm === 'pending' && 'Request Information'}
+                {showTransitionForm === 'cancelled' && 'Cancel Ticket'}
+                {showTransitionForm === 'duplicate' && 'Mark as Duplicate'}
+              </h3>
+              <div className="space-y-3">
+                <textarea
+                  placeholder={`Please provide details for this ${
+                    showTransitionForm === 'resolved' ? 'resolution' : 
+                    showTransitionForm === 'closed' ? 'closure' : 
+                    showTransitionForm === 'cancelled' ? 'cancellation' :
+                    showTransitionForm === 'duplicate' ? 'duplicate ticket reference' :
+                    'information request'
+                  }...`}
+                  value={transitionComment}
+                  onChange={(e) => setTransitionComment(e.target.value)}
+                  rows={3}
+                  className="block w-full px-4 py-3 border border-blue-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => handleStatusTransition(showTransitionForm, 
+                      showTransitionForm === 'resolved' ? 'Mark Resolved' : 
+                      showTransitionForm === 'closed' ? 'Close' : 
+                      showTransitionForm === 'cancelled' ? 'Cancel' :
+                      showTransitionForm === 'duplicate' ? 'Mark Duplicate' :
+                      'Request Info'
+                    )}
+                    disabled={isTransitioning}
+                    className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  >
+                    {isTransitioning ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <CheckIcon className="w-4 h-4" />
+                    )}
+                    <span>{isTransitioning ? 'Processing...' : 'Confirm'}</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowTransitionForm(null);
+                      setTransitionComment('');
+                    }}
+                    disabled={isTransitioning}
+                    className="flex items-center space-x-2 border border-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium hover:bg-slate-50 disabled:opacity-50 transition-all duration-200"
+                  >
+                    <XMarkIcon className="w-4 h-4" />
+                    <span>Cancel</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons based on current status */}
+          <div className="flex flex-wrap gap-3">
+            {/* Start Work - for assigned tickets */}
+            {((ticket.status as string) === 'assigned' || (ticket.status as string) === 'approved' || (ticket.status as string) === 'open') && (
+              <button
+                onClick={() => handleStatusTransition('in_progress', 'Start Work')}
+                disabled={isTransitioning}
+                className="flex items-center space-x-2 bg-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <PlayIcon className="w-5 h-5" />
+                <span>Start Work</span>
+              </button>
+            )}
+
+            {/* Request Information - for in progress tickets */}
+            {(ticket.status as string) === 'in_progress' && (
+              <button
+                onClick={() => setShowTransitionForm('pending')}
+                disabled={isTransitioning}
+                className="flex items-center space-x-2 bg-orange-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <PauseIcon className="w-5 h-5" />
+                <span>Request Info</span>
+              </button>
+            )}
+
+            {/* Resume Work - for pending tickets */}
+            {(ticket.status as string) === 'pending' && (
+              <button
+                onClick={() => handleStatusTransition('in_progress', 'Resume Work')}
+                disabled={isTransitioning}
+                className="flex items-center space-x-2 bg-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <PlayIcon className="w-5 h-5" />
+                <span>Resume Work</span>
+              </button>
+            )}
+
+            {/* Mark Resolved - for in progress tickets */}
+            {(ticket.status as string) === 'in_progress' && (
+              <button
+                onClick={() => setShowTransitionForm('resolved')}
+                disabled={isTransitioning}
+                className="flex items-center space-x-2 bg-green-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <CheckIcon className="w-5 h-5" />
+                <span>Mark Resolved</span>
+              </button>
+            )}
+
+            {/* Close Ticket - for resolved tickets */}
+            {(ticket.status as string) === 'resolved' && (
+              <button
+                onClick={() => setShowTransitionForm('closed')}
+                disabled={isTransitioning}
+                className="flex items-center space-x-2 bg-slate-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <XMarkIcon className="w-5 h-5" />
+                <span>Close Ticket</span>
+              </button>
+            )}
+
+            {/* Direct Close - skip resolved for simple tickets */}
+            {(ticket.status as string) === 'in_progress' && (
+              <button
+                onClick={() => setShowTransitionForm('closed')}
+                disabled={isTransitioning}
+                className="flex items-center space-x-2 bg-gray-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <XMarkIcon className="w-5 h-5" />
+                <span>Close Direct</span>
+              </button>
+            )}
+
+            {/* Cancel Ticket - for invalid tickets */}
+            {((ticket.status as string) === 'assigned' || (ticket.status as string) === 'in_progress' || (ticket.status as string) === 'pending') && (
+              <button
+                onClick={() => setShowTransitionForm('cancelled')}
+                disabled={isTransitioning}
+                className="flex items-center space-x-2 bg-red-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <NoSymbolIcon className="w-5 h-5" />
+                <span>Cancel Ticket</span>
+              </button>
+            )}
+
+            {/* Mark as Duplicate */}
+            {((ticket.status as string) === 'assigned' || (ticket.status as string) === 'in_progress' || (ticket.status as string) === 'pending') && (
+              <button
+                onClick={() => setShowTransitionForm('duplicate')}
+                disabled={isTransitioning}
+                className="flex items-center space-x-2 bg-yellow-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <DocumentDuplicateIcon className="w-5 h-5" />
+                <span>Mark Duplicate</span>
+              </button>
+            )}
+
+            {/* Reopen - for closed tickets (admin only) */}
+            {(ticket.status as string) === 'closed' && user?.role === 'admin' && (
+              <button
+                onClick={() => handleStatusTransition('in_progress', 'Reopen Ticket')}
+                disabled={isTransitioning}
+                className="flex items-center space-x-2 bg-yellow-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <ArrowPathIcon className="w-5 h-5" />
+                <span>Reopen Ticket</span>
+              </button>
+            )}
+          </div>
+
+          {/* ITIL Workflow Guide */}
+          <div className="mt-6 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+            <h4 className="font-medium text-slate-700 mb-2">ITIL Workflow Options:</h4>
+            <div className="text-sm text-slate-600 space-y-1">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span>Assigned → Start Work → In Progress</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                <span>In Progress → Request Info → Pending → Resume Work</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>In Progress → Mark Resolved → Close Ticket</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                <span>In Progress → Close Direct (for simple issues)</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                <span>Any Active → Cancel (invalid tickets)</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                <span>Any Active → Mark Duplicate</span>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Manager Approval Section */}

@@ -247,6 +247,7 @@ const TicketApprovalCard: React.FC<TicketApprovalCardProps> = ({
               <div>
                 <span className="font-medium text-gray-500">Requested by:</span>
                 <p className="text-gray-900">{ticket.createdBy?.username || 'Unknown'}</p>
+                <p className="text-xs text-gray-500">{ticket.createdBy?.unit?.name || 'No unit'}</p>
               </div>
               <div>
                 <span className="font-medium text-gray-500">Email:</span>
@@ -266,6 +267,33 @@ const TicketApprovalCard: React.FC<TicketApprovalCardProps> = ({
                 <p className="text-gray-900">{formatTimeAgo(ticket.createdAt)}</p>
               </div>
             </div>
+
+            {/* Unit-based Approval Context */}
+            {ticket.businessReviewer && (
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="font-medium text-blue-900 mb-2">Unit-Based Approval Assignment</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                  <div>
+                    <span className="font-medium text-blue-700">Assigned Manager:</span>
+                    <p className="text-blue-900">{ticket.businessReviewer.username}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-blue-700">Manager Unit:</span>
+                    <p className="text-blue-900">{ticket.businessReviewer.unit?.name || 'No unit'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-blue-700">Assignment Date:</span>
+                    <p className="text-blue-900">{formatTimeAgo(ticket.approvalCreatedAt || ticket.createdAt)}</p>
+                  </div>
+                </div>
+                {ticket.businessComments && (
+                  <div className="mt-2">
+                    <span className="font-medium text-blue-700">Assignment Notes:</span>
+                    <p className="text-blue-900 text-xs mt-1">{ticket.businessComments}</p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {ticket.customFieldValues && ticket.customFieldValues.length > 0 && (
               <div className="mt-4 p-4 bg-gray-50 rounded-lg">

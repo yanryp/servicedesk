@@ -129,8 +129,18 @@ export const ticketsService = {
   },
 
   // Update ticket status
-  updateTicketStatus: async (ticketId: number, status: string): Promise<Ticket> => {
-    return api.patch<Ticket>(`/tickets/${ticketId}/status`, { status });
+  updateTicketStatus: async (ticketId: number, status: string, comments?: string): Promise<Ticket> => {
+    console.log('ticketsService: Using enhanced endpoint for status update');
+    const response = await api.patch<any>(`/v2/tickets/${ticketId}/status`, { 
+      status,
+      comments: comments || undefined
+    });
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    
+    return response;
   },
 
   // Approve ticket (Manager only) - Stage 3 Migration: Using Enhanced Endpoints

@@ -22,7 +22,7 @@ const ReportingPage: React.FC = () => {
         return;
       }
       try {
-        const response = await axios.get('http://localhost:3001/api/reporting/summary', {
+        const response = await axios.get('http://localhost:3001/api/reports/summary', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
