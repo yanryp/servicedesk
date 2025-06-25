@@ -238,28 +238,35 @@ export class UnifiedTicketService {
     return dueDate;
   }
   
-  static async determineApprovalRequirement(data: UnifiedTicketCreation, templateInfo: any): Promise<boolean> {
-    // Explicit approval requirement
+  static async determineApprovalRequirement(data: UnifiedTicketCreation, templateInfo: any, user: any): Promise<boolean> {
+    // Only requesters need approval - technicians and admins bypass approval
+    if (user.role !== 'requester') {
+      return false;
+    }
+    
+    // Explicit approval requirement (only applies to requesters)
     if (data.requiresBusinessApproval !== undefined) {
       return data.requiresBusinessApproval;
     }
     
-    // KASDA tickets always require approval
+    // All requester tickets need approval per user requirements
+    // KASDA tickets from requesters require approval
     if (data.isKasdaTicket) {
       return true;
     }
     
-    // High/Critical impact tickets require approval
+    // High/Critical impact tickets from requesters require approval
     if (data.businessImpact === 'critical' || data.businessImpact === 'high') {
       return true;
     }
     
-    // Template-based approval rules
+    // Template-based approval rules (only for requesters)
     if (templateInfo.template?.requiresApproval) {
       return true;
     }
     
-    return false;
+    // Default: All requester tickets need approval
+    return true;
   }
   
   static async createUnifiedTicket(data: UnifiedTicketCreation, user: any): Promise<any> {
@@ -278,7 +285,7 @@ export class UnifiedTicketService {
     });
 
     const slaDueDate = await this.calculateUnifiedSLA(data, templateInfo);
-    const requiresApproval = await this.determineApprovalRequirement(data, templateInfo);
+    const requiresApproval = await this.determineApprovalRequirement(data, templateInfo, user);
     
     // Determine service item and catalog
     let serviceItemId = data.serviceItemId;
@@ -646,9 +653,13 @@ router.post('/create', protect, upload.array('attachments', 5), asyncHandler(asy
     );
 
     // Determine if business approval is required
-    const requiresBusinessApproval = serviceItem.isKasdaRelated || 
+    // Only requesters need approval - technicians and admins bypass approval
+    const requiresBusinessApproval = user!.role === 'requester' && (
+      serviceItem.isKasdaRelated || 
       serviceItem.requiresGovApproval ||
-      (serviceTemplateId && serviceItem.templates[0]?.requiresBusinessApproval);
+      (serviceTemplateId && serviceItem.templates[0]?.requiresBusinessApproval) ||
+      true  // All requester tickets need approval per user requirements
+    );
 
     // Prepare categorization data
     const currentTime = new Date();
@@ -1178,31 +1189,93 @@ router.get('/pending-approvals', protect, asyncHandler(async (req: Authenticated
   }
 
   try {
+    console.log('Fetching unit-based pending approvals for user:', user.id, user.username, 'unit:', user.unitId);
 
-    console.log('Fetching pending approvals for user:', user.id, user.username, user.departmentId);
-
-    // Simplified query with department validation
-    const pendingTickets = await prisma.ticket.findMany({
+    // NEW: Query BusinessApproval table for tickets assigned to this manager
+    const businessApprovals = await prisma.businessApproval.findMany({
       where: {
-        status: 'pending_approval',
-        createdBy: {
-          managerId: user.id,
-          departmentId: user.departmentId
-        }
+        businessReviewerId: user.id,
+        approvalStatus: 'pending'
       },
       include: {
-        createdBy: {
+        ticket: {
           include: {
-            department: {
+            createdBy: {
+              include: {
+                department: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                },
+                unit: {
+                  select: {
+                    id: true,
+                    name: true,
+                    unitType: true
+                  }
+                }
+              }
+            },
+            assignedTo: {
+              include: {
+                department: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                },
+                unit: {
+                  select: {
+                    id: true,
+                    name: true,
+                    unitType: true
+                  }
+                }
+              }
+            },
+            serviceCatalog: {
               select: {
-                id: true,
+                name: true,
+                department: {
+                  select: {
+                    name: true
+                  }
+                }
+              }
+            },
+            serviceItem: {
+              select: {
+                name: true,
+                description: true
+              }
+            },
+            template: {
+              select: {
                 name: true
+              }
+            },
+            customFieldValues: {
+              include: {
+                fieldDefinition: {
+                  select: {
+                    fieldName: true,
+                    fieldLabel: true
+                  }
+                }
               }
             }
           }
         },
-        assignedTo: {
+        businessReviewer: {
           include: {
+            unit: {
+              select: {
+                id: true,
+                name: true,
+                unitType: true
+              }
+            },
             department: {
               select: {
                 id: true,
@@ -1215,7 +1288,25 @@ router.get('/pending-approvals', protect, asyncHandler(async (req: Authenticated
       orderBy: { createdAt: 'desc' }
     });
 
-    console.log('Found pending tickets:', pendingTickets.length);
+    // Extract tickets from business approvals and add approval context
+    const pendingTickets = businessApprovals.map(approval => ({
+      ...approval.ticket,
+      businessApprovalId: approval.id,
+      approvalStatus: approval.approvalStatus,
+      businessComments: approval.businessComments,
+      approvalCreatedAt: approval.createdAt,
+      businessReviewer: approval.businessReviewer
+    }));
+
+    console.log(`Found ${pendingTickets.length} unit-based pending approvals for manager ${user.username}`);
+    console.log('Approvals details:', pendingTickets.map(t => ({
+      ticketId: t.id,
+      title: t.title,
+      createdBy: t.createdBy?.username,
+      createdByUnit: t.createdBy?.unit?.name,
+      approvalId: t.businessApprovalId
+    })));
+
     res.json(pendingTickets);
 
   } catch (error) {
@@ -1433,9 +1524,8 @@ router.post('/bsg-tickets', protect, upload.array('attachments', 5), asyncHandle
     const slaDueDate = new Date(now.getTime() + (slaDurationHours * 60 * 60 * 1000));
 
     // Determine if manager approval is required
-    const requiresApproval = user!.role === 'requester' && 
-                           (priority === 'urgent' || priority === 'high' || 
-                            bsgTemplate.category.name.includes('OLIBS'));
+    // All requester tickets need approval per user requirements
+    const requiresApproval = user!.role === 'requester';
 
     // Create the BSG ticket with proper field mappings
     const ticket = await prisma.ticket.create({
@@ -1618,14 +1708,24 @@ router.post('/:ticketId/approve', protect, asyncHandler(async (req: Authenticate
     const { ticketId } = req.params;
     const { comments } = req.body;
 
-    // Get ticket with creator and manager info
+    // Get ticket with business approval info
     const ticket = await prisma.ticket.findUnique({
       where: { id: parseInt(ticketId) },
       include: {
         createdBy: {
           include: {
             department: true,
-            manager: true
+            unit: true
+          }
+        },
+        businessApproval: {
+          include: {
+            businessReviewer: {
+              include: {
+                unit: true,
+                department: true
+              }
+            }
           }
         }
       }
@@ -1638,49 +1738,85 @@ router.post('/:ticketId/approve', protect, asyncHandler(async (req: Authenticate
       });
     }
 
-    // Check authorization - manager can approve tickets from their department subordinates
+    // NEW: Check authorization using BusinessApproval table
     const canApprove = user?.role === 'admin' || 
       (user?.role === 'manager' && 
-       user?.id === ticket.createdBy?.managerId &&
-       user?.departmentId === ticket.createdBy?.departmentId);
+       user?.isBusinessReviewer === true &&
+       ticket.businessApproval?.businessReviewerId === user?.id &&
+       ticket.businessApproval?.approvalStatus === 'pending');
 
     if (!canApprove) {
+      const reason = !ticket.businessApproval 
+        ? 'No business approval found for this ticket'
+        : ticket.businessApproval.businessReviewerId !== user?.id
+        ? 'You are not assigned to approve this ticket'
+        : ticket.businessApproval.approvalStatus !== 'pending'
+        ? `Ticket approval is already ${ticket.businessApproval.approvalStatus}`
+        : 'Insufficient permissions for approval';
+        
       return res.status(403).json({
         success: false,
-        message: 'Access denied. You can only approve tickets from your department subordinates.'
+        message: `Access denied. ${reason}`
       });
     }
 
-    // Update ticket status to approved
-    const updatedTicket = await prisma.ticket.update({
-      where: { id: parseInt(ticketId) },
-      data: {
-        status: 'approved',
-        managerComments: comments || null,
-        updatedAt: new Date()
-      },
-      include: {
-        createdBy: {
-          include: {
-            department: true,
-            manager: true
-          }
+    // Update both ticket and business approval in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Update business approval status
+      await tx.businessApproval.update({
+        where: { id: ticket.businessApproval!.id },
+        data: {
+          approvalStatus: 'approved',
+          approvedAt: new Date(),
+          businessComments: comments || ticket.businessApproval!.businessComments
+        }
+      });
+
+      // Update ticket status to new (ready for assignment)
+      const updatedTicket = await tx.ticket.update({
+        where: { id: parseInt(ticketId) },
+        data: {
+          status: 'open', // Changed from 'pending_approval' to 'open' (ready for technician assignment)
+          managerComments: comments || null,
+          updatedAt: new Date()
         },
-        serviceCatalog: {
-          include: {
-            department: true
-          }
-        },
-        serviceItem: true
-      }
+        include: {
+          createdBy: {
+            include: {
+              department: true,
+              unit: true
+            }
+          },
+          businessApproval: {
+            include: {
+              businessReviewer: {
+                include: {
+                  unit: true,
+                  department: true
+                }
+              }
+            }
+          },
+          serviceCatalog: {
+            include: {
+              department: true
+            }
+          },
+          serviceItem: true
+        }
+      });
+
+      return updatedTicket;
     });
 
-    console.log(`Manager ${user?.username} approved ticket #${ticketId}`);
+    console.log(`Manager ${user?.username} approved ticket #${ticketId} via unit-based approval`);
+    console.log(`  Approved by: ${user?.username} (${ticket.businessApproval?.businessReviewer?.unit?.name})`);
+    console.log(`  Requested by: ${ticket.createdBy?.username} (${ticket.createdBy?.unit?.name})`);
 
     res.json({
       success: true,
-      message: 'Ticket approved successfully',
-      data: updatedTicket
+      message: 'Ticket approved successfully via unit-based approval system',
+      data: result
     });
 
   } catch (error) {

@@ -17,6 +17,7 @@ export interface AuthenticatedRequest extends Request {
     role: string; 
     email: string; 
     departmentId?: number;
+    unitId?: number;
     username?: string;
     isKasdaUser?: boolean;
     isBusinessReviewer?: boolean;
@@ -38,6 +39,7 @@ export const protect = (req: AuthenticatedRequest, res: Response, next: NextFunc
         role: string; 
         email: string; 
         departmentId?: number;
+        unitId?: number;
         username?: string;
         isKasdaUser?: boolean;
         isBusinessReviewer?: boolean;
@@ -53,6 +55,7 @@ export const protect = (req: AuthenticatedRequest, res: Response, next: NextFunc
         role: decoded.role, 
         email: decoded.email, 
         departmentId: decoded.departmentId,
+        unitId: decoded.unitId,
         username: decoded.username,
         isKasdaUser: decoded.isKasdaUser,
         isBusinessReviewer: decoded.isBusinessReviewer

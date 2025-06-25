@@ -237,10 +237,11 @@ router.post('/',
     try {
       await client.query('BEGIN');
 
-      // Set status to pending-approval and sla_due_date to null
+      // Set status based on user role - only requesters need approval
+      const initialStatus = req.user!.role === 'requester' ? 'pending-approval' : 'open';
       const newTicketResult = await client.query(
         'INSERT INTO tickets (title, description, created_by_user_id, item_id, template_id, priority, status) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-        [title, description, created_by_user_id, itemId, templateId || null, priority, 'pending-approval']
+        [title, description, created_by_user_id, itemId, templateId || null, priority, initialStatus]
       );
       const newTicket = newTicketResult.rows[0];
 

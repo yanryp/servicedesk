@@ -26,6 +26,7 @@ const protect = (req, res, next) => {
                 role: decoded.role,
                 email: decoded.email,
                 departmentId: decoded.departmentId,
+                unitId: decoded.unitId,
                 username: decoded.username,
                 isKasdaUser: decoded.isKasdaUser,
                 isBusinessReviewer: decoded.isBusinessReviewer
