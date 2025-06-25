@@ -78,7 +78,10 @@
       "Bash(PGPASSWORD= psql -h localhost -U yanrypangouw -d atm_management_system -c \"\\d master_bank\")",
       "Bash(PGPASSWORD= psql -h localhost -U yanrypangouw -d ticketing_system_db -c \"SELECT DISTINCT ft.name as field_type, COUNT(*) as usage_count FROM bsg_template_fields btf JOIN bsg_field_types ft ON btf.field_type_id = ft.id WHERE ft.name LIKE '%dropdown%' GROUP BY ft.name ORDER BY usage_count DESC;\")",
       "Bash(PGPASSWORD=:*)",
-      "Bash(open http://localhost:3000)"
+      "Bash(open http://localhost:3000)",
+      "Bash(npx tsx:*)",
+      "Bash(git rm:*)",
+      "mcp__playwright__browser_take_screenshot"
     ],
     "deny": []
   }

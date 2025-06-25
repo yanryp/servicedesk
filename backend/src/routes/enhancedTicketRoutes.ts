@@ -2079,9 +2079,8 @@ router.patch('/:ticketId/status', protect, asyncHandler(async (req: Authenticate
       data: {
         status,
         updatedAt: new Date(),
-        // Update resolved/closed timestamps
-        ...(status === 'resolved' && { resolvedAt: new Date() }),
-        ...(status === 'closed' && { closedAt: new Date() })
+        // Update resolved timestamp
+        ...(status === 'resolved' && { resolvedAt: new Date() })
       },
       include: {
         createdBy: {
