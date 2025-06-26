@@ -869,19 +869,42 @@ router.get('/', protect, asyncHandler(async (req: AuthenticatedRequest, res: Res
         ];
       }
     } else if (user?.role === 'technician') {
-      // Technicians see tickets assigned to their department
+      // Technicians see tickets assigned to their department based on KASDA flag and department routing
       if (user.departmentId) {
-        whereClause.serviceCatalog = {
-          departmentId: user.departmentId
-        };
+        if (user.departmentId === 1) { // Information Technology Department
+          // IT technicians see non-KASDA tickets (technical issues) that are ready for processing
+          whereClause.isKasdaTicket = false;
+          whereClause.status = { in: ['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed'] };
+        } else if (user.departmentId === 2) { // Dukungan & Layanan Department
+          // Support technicians see only KASDA tickets (user management, treasury) that are ready for processing
+          whereClause.isKasdaTicket = true;
+          whereClause.status = { in: ['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed'] };
+        } else {
+          // Other department technicians see tickets assigned to their specific department
+          whereClause.serviceCatalog = {
+            departmentId: user.departmentId
+          };
+          whereClause.status = { in: ['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed'] };
+        }
       }
     } else {
       // Requesters see only their own tickets
       whereClause.createdByUserId = user?.id;
     }
 
-    // Apply filters
-    if (status) whereClause.status = status;
+    // Apply filters - but don't override technician status restrictions
+    if (status && !(user?.role === 'technician' && user.departmentId)) {
+      whereClause.status = status;
+    } else if (status && user?.role === 'technician' && user.departmentId) {
+      // For technicians, combine their department filter with user's status filter
+      const technicianStatuses = user.departmentId === 1 || user.departmentId === 2 
+        ? ['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed']
+        : ['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed'];
+      
+      if (technicianStatuses.includes(status as string)) {
+        whereClause.status = status;
+      }
+    }
     if (priority) whereClause.priority = priority;
     if (requestType) whereClause.requestType = requestType;
     if (businessImpact) whereClause.businessImpact = businessImpact;
@@ -1395,7 +1418,10 @@ router.get('/:ticketId', protect, asyncHandler(async (req: AuthenticatedRequest,
       ticket.createdByUserId === user?.id ||
       (user?.departmentId === ticket.serviceCatalog?.departmentId) ||
       (user?.isBusinessReviewer && ticket.isKasdaTicket) ||
-      ticket.assignedToUserId === user?.id;
+      ticket.assignedToUserId === user?.id ||
+      // BSG Template System: Allow IT technicians to see non-KASDA tickets, Dukungan & Layanan to see KASDA tickets
+      (user?.role === 'technician' && user?.departmentId === 1 && !ticket.isKasdaTicket) || // IT Operations
+      (user?.role === 'technician' && user?.departmentId === 2 && ticket.isKasdaTicket);     // Dukungan & Layanan
 
     if (!canView) {
       return res.status(403).json({

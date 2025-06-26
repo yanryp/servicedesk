@@ -312,6 +312,8 @@ model ServiceTemplate {
   isVisible                Boolean                  @default(true) @map("is_visible")
   sortOrder                Int                      @default(0) @map("sort_order")
   estimatedResolutionTime  Int?                     @map("estimated_resolution_time")
+  defaultRootCause         root_cause_type?         @map("default_root_cause")
+  defaultIssueType         issue_category_type?     @map("default_issue_type")
   createdAt                DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt                DateTime                 @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   customFieldDefinitions   ServiceFieldDefinition[]

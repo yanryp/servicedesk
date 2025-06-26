@@ -87,6 +87,23 @@ const getIconForCategory = (categoryName: string): string => {
   return iconMap[categoryName.toUpperCase()] || 'document-text';
 };
 
+// Get appropriate icon for ServiceCatalog
+const getIconForServiceCatalog = (catalogName: string): string => {
+  const iconMap: Record<string, string> = {
+    'OLIBS System': 'users',
+    'BSG Applications': 'device-phone-mobile',
+    'ATM Management': 'credit-card',
+    'Core Banking': 'building-library',
+    'Network & Infrastructure': 'wifi',
+    'Security & Access': 'shield-check',
+    'Claims & Transactions': 'receipt',
+    'Hardware & Software': 'hard-drive',
+    'KASDA Services': 'building-office',
+    'IT Services': 'computer-desktop'
+  };
+  return iconMap[catalogName] || 'document-text';
+};
+
 // Transform BSG Templates to Services
 const transformBSGTemplatesToServices = (bsgTemplates: any[]) => {
   return bsgTemplates.map(template => ({
@@ -104,64 +121,44 @@ const transformBSGTemplatesToServices = (bsgTemplates: any[]) => {
 };
 
 // @route   GET /api/service-catalog/categories
-// @desc    Get all service catalog categories (from BSG templates + static)
+// @desc    Get all service catalog categories (from imported CSV templates)
 // @access  Private
 router.get('/categories', protect, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   try {
-    // Get BSG template categories
-    const bsgCategories = await prisma.bSGTemplateCategory.findMany({
+    // Get ServiceCatalog data with template counts
+    const serviceCatalogs = await prisma.serviceCatalog.findMany({
       where: { isActive: true },
       include: {
-        _count: {
-          select: {
+        serviceItems: {
+          include: {
             templates: {
-              where: { isActive: true }
+              where: { isVisible: true }
             }
           }
         }
       },
       orderBy: [
-        { sortOrder: 'asc' },
         { name: 'asc' }
       ]
     });
 
-    // Transform BSG categories to service catalog format
-    const serviceCatalogCategories = transformBSGCategoriesToServiceCatalog(bsgCategories);
-
-    // Add static categories for non-BSG services
-    const staticCategories = [
-      {
-        id: 'hardware_software',
-        name: 'Hardware & Software',
-        description: 'Computer hardware, software installation, and maintenance requests',
-        icon: 'hard-drive',
-        serviceCount: 3,
-        type: 'static_category'
-      },
-      {
-        id: 'network_connectivity',
-        name: 'Network & Connectivity',
-        description: 'Network issues, internet connectivity, and infrastructure problems',
-        icon: 'wifi',
-        serviceCount: 4,
-        type: 'static_category'
-      },
-      {
-        id: 'general_requests',
-        name: 'General Requests',
-        description: 'Other requests and administrative tasks',
-        icon: 'document-text',
-        serviceCount: 2,
-        type: 'static_category'
-      }
-    ];
-
-    const allCategories = [...serviceCatalogCategories, ...staticCategories];
+    // Transform ServiceCatalogs to frontend format
+    const serviceCatalogCategories = serviceCatalogs.map(catalog => {
+      const templateCount = catalog.serviceItems.reduce((sum: number, item: any) => sum + item.templates.length, 0);
+      
+      return {
+        id: `catalog_${catalog.id}`,
+        name: catalog.name,
+        description: catalog.description || `${catalog.name} services and support`,
+        icon: getIconForServiceCatalog(catalog.name),
+        serviceCount: templateCount,
+        type: 'service_catalog'
+      };
+    });
 
     res.json({
       success: true,
-      data: allCategories,
+      data: serviceCatalogCategories,
       userContext: {
         isKasdaUser: req.user?.isKasdaUser || false,
         department: req.user?.departmentId,
@@ -184,8 +181,62 @@ router.get('/category/:categoryId/services', protect, asyncHandler(async (req: A
   try {
     const { categoryId } = req.params;
     
-    // Check if it's a BSG category
-    if (categoryId.startsWith('bsg_')) {
+    // Check if it's a ServiceCatalog category
+    if (categoryId.startsWith('catalog_')) {
+      const serviceCatalogId = parseInt(categoryId.replace('catalog_', ''));
+      
+      // Get ServiceTemplates for this catalog
+      const serviceItems = await prisma.serviceItem.findMany({
+        where: {
+          serviceCatalogId: serviceCatalogId
+        },
+        include: {
+          templates: {
+            where: { isVisible: true },
+            include: {
+              customFieldDefinitions: {
+                orderBy: { sortOrder: 'asc' }
+              }
+            },
+            orderBy: { sortOrder: 'asc' }
+          },
+          serviceCatalog: {
+            select: {
+              name: true,
+              description: true
+            }
+          }
+        },
+        orderBy: { sortOrder: 'asc' }
+      });
+
+      // Transform to services format
+      const services: any[] = [];
+      for (const item of serviceItems) {
+        for (const template of item.templates) {
+          services.push({
+            id: `template_${template.id}`,
+            name: template.name,
+            description: template.description || `${template.name} service request`,
+            categoryId: categoryId,
+            templateId: template.id,
+            serviceItemId: item.id,
+            popularity: 0,
+            usageCount: 0,
+            hasFields: template.customFieldDefinitions.length > 0,
+            fieldCount: template.customFieldDefinitions.length,
+            type: 'service_template',
+            estimatedResolutionTime: template.estimatedResolutionTime
+          });
+        }
+      }
+      
+      res.json({
+        success: true,
+        data: services
+      });
+    } else if (categoryId.startsWith('bsg_')) {
+      // Handle legacy BSG categories
       const bsgCategoryId = parseInt(categoryId.replace('bsg_', ''));
       
       // Get BSG templates for this category
@@ -244,19 +295,22 @@ const getStaticServices = (categoryId: string) => {
         id: 'hw_install_os',
         name: 'Instalasi Sistem Operasi (Hardening)',
         description: 'Request a fresh and secure installation of a Windows or Linux operating system',
-        fields: []
+        fields: [],
+        category: 'Hardware & Software'
       },
       {
         id: 'hw_install_sw',
         name: 'Instalasi Perangkat Lunak',
         description: 'Request the installation of approved software on your computer',
-        fields: []
+        fields: [],
+        category: 'Hardware & Software'
       },
       {
         id: 'hw_maintenance',
         name: 'Maintenance Komputer/Printer',
         description: 'Schedule maintenance or repair for your computer or printer',
-        fields: []
+        fields: [],
+        category: 'Hardware & Software'
       }
     ],
     'network_connectivity': [
@@ -264,25 +318,29 @@ const getStaticServices = (categoryId: string) => {
         id: 'net_lan_issue',
         name: 'Gangguan Jaringan LAN',
         description: 'Report a problem with the local area network',
-        fields: []
+        fields: [],
+        category: 'Network & Infrastructure'
       },
       {
         id: 'net_internet_issue',
         name: 'Gangguan Jaringan Internet',
         description: 'Report slow or no internet access',
-        fields: []
+        fields: [],
+        category: 'Network & Infrastructure'
       },
       {
         id: 'net_wifi_issue',
         name: 'Masalah WiFi',
         description: 'WiFi connectivity and access point issues',
-        fields: []
+        fields: [],
+        category: 'Network & Infrastructure'
       },
       {
         id: 'net_vpn_issue',
         name: 'Masalah VPN',
         description: 'VPN connection and access issues',
-        fields: []
+        fields: [],
+        category: 'Network & Infrastructure'
       }
     ],
     'general_requests': [
@@ -290,13 +348,15 @@ const getStaticServices = (categoryId: string) => {
         id: 'req_data',
         name: 'Permintaan Data/Report',
         description: 'Request for specific data logs or reports',
-        fields: []
+        fields: [],
+        category: 'General Support'
       },
       {
         id: 'req_other',
         name: 'Permintaan Lainnya',
         description: 'Other general requests not covered by specific categories',
-        fields: []
+        fields: [],
+        category: 'General Support'
       }
     ]
   };
@@ -311,8 +371,73 @@ router.get('/service/:serviceId/template', protect, asyncHandler(async (req: Aut
   try {
     const { serviceId } = req.params;
     
-    // Check if it's a BSG service
-    if (serviceId.startsWith('bsg_template_')) {
+    // Check if it's a ServiceTemplate
+    if (serviceId.startsWith('template_')) {
+      const templateId = parseInt(serviceId.replace('template_', ''));
+      
+      // Get ServiceTemplate with fields
+      const template = await prisma.serviceTemplate.findUnique({
+        where: { id: templateId },
+        include: {
+          serviceItem: {
+            include: {
+              serviceCatalog: {
+                select: {
+                  name: true,
+                  description: true
+                }
+              }
+            }
+          },
+          customFieldDefinitions: {
+            orderBy: { sortOrder: 'asc' }
+          }
+        }
+      });
+
+      if (!template) {
+        return res.status(404).json({
+          success: false,
+          message: 'Template not found'
+        });
+      }
+
+      // Transform template fields to service catalog format
+      const transformedFields = template.customFieldDefinitions.map((field: any) => ({
+        id: field.id,
+        name: field.fieldName,
+        label: field.fieldLabel,
+        type: field.fieldType,
+        required: field.isRequired,
+        description: field.placeholder,
+        placeholder: field.placeholder,
+        helpText: '',
+        maxLength: field.validationRules?.maxLength || null,
+        validationRules: field.validationRules,
+        options: [], // ServiceFieldDefinitions don't have options yet
+        originalFieldType: field.fieldType,
+        isDropdownField: field.fieldType === 'dropdown',
+        masterDataType: null
+      }));
+
+      res.json({
+        success: true,
+        data: {
+          id: serviceId,
+          templateId: template.id,
+          serviceItemId: template.serviceItemId,
+          name: template.name,
+          description: template.description,
+          category: template.serviceItem.serviceCatalog,
+          fields: transformedFields,
+          type: 'service_template',
+          estimatedResolutionTime: template.estimatedResolutionTime,
+          defaultRootCause: template.defaultRootCause,
+          defaultIssueType: template.defaultIssueType
+        }
+      });
+    } else if (serviceId.startsWith('bsg_template_')) {
+      // Handle legacy BSG services
       const templateId = parseInt(serviceId.replace('bsg_template_', ''));
       
       // Get BSG template with fields
@@ -541,10 +666,39 @@ router.post('/create-ticket', protect, conditionalUpload, asyncHandler(async (re
     };
 
     // Detect service type and add appropriate fields
-    if (serviceId.startsWith('bsg_template_')) {
+    if (serviceId.startsWith('template_')) {
+      // ServiceTemplate ID format
+      const templateId = parseInt(serviceId.replace('template_', ''));
+      
+      // Get the template to determine service item
+      const template = await prisma.serviceTemplate.findUnique({
+        where: { id: templateId },
+        include: {
+          serviceItem: {
+            include: {
+              serviceCatalog: true
+            }
+          }
+        }
+      });
+      
+      if (template) {
+        unifiedData.serviceItemId = template.serviceItemId;
+        // ServiceCatalog templates are not KASDA tickets (those come from BSG)
+        unifiedData.isKasdaTicket = false;
+      }
+    } else if (serviceId.startsWith('bsg_template_')) {
       const templateId = parseInt(serviceId.replace('bsg_template_', ''));
       unifiedData.bsgTemplateId = templateId;
-      unifiedData.isKasdaTicket = true; // BSG templates are typically KASDA-related
+      
+      // Check if this BSG template is KASDA-related
+      const bsgTemplate = await prisma.bSGTemplate.findUnique({
+        where: { id: templateId },
+        include: { category: true }
+      });
+      
+      // Only mark as KASDA ticket if it's in KASDA category
+      unifiedData.isKasdaTicket = bsgTemplate?.category?.name === 'KASDA';
     } else if (serviceId.startsWith('service_')) {
       const itemId = parseInt(serviceId.replace('service_', ''));
       unifiedData.serviceItemId = itemId;
@@ -594,7 +748,7 @@ router.post('/create-ticket', protect, conditionalUpload, asyncHandler(async (re
 }));
 
 // @route   GET /api/service-catalog/search
-// @desc    Search services across all categories
+// @desc    Search services across all categories (ServiceCatalog + BSG + Static)
 // @access  Private
 router.get('/search', protect, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -607,15 +761,95 @@ router.get('/search', protect, asyncHandler(async (req: AuthenticatedRequest, re
       });
     }
 
-    // Search BSG templates
+    const searchQuery = query.toLowerCase();
+    const searchTerms = searchQuery.split(/\s+/).filter(term => term.length > 0);
+    const allResults: any[] = [];
+
+    // Create flexible search conditions for multiple terms
+    const createMultiTermSearchConditions = (searchTerms: string[]) => {
+      const conditions: any[] = [];
+      
+      // For each search term, create OR conditions across all searchable fields
+      searchTerms.forEach(term => {
+        conditions.push(
+          { name: { contains: term, mode: 'insensitive' } },
+          { description: { contains: term, mode: 'insensitive' } },
+          // Search in service item names
+          { serviceItem: { name: { contains: term, mode: 'insensitive' } } },
+          // Search in service catalog names (application names)
+          { serviceItem: { serviceCatalog: { name: { contains: term, mode: 'insensitive' } } } }
+        );
+      });
+      
+      return conditions;
+    };
+
+    // 1. Search ServiceCatalog templates (our main 271 services)
+    const serviceTemplates = await prisma.serviceTemplate.findMany({
+      where: {
+        isVisible: true,
+        OR: createMultiTermSearchConditions(searchTerms)
+      },
+      include: {
+        serviceItem: {
+          include: {
+            serviceCatalog: {
+              select: {
+                id: true,
+                name: true,
+                description: true
+              }
+            }
+          }
+        },
+        customFieldDefinitions: true
+      },
+      take: 30
+    });
+
+    // Transform ServiceTemplates to search results
+    for (const template of serviceTemplates) {
+      allResults.push({
+        id: `template_${template.id}`,
+        name: template.name,
+        description: template.description || `${template.name} service request`,
+        categoryId: `catalog_${template.serviceItem.serviceCatalog.id}`,
+        categoryName: template.serviceItem.serviceCatalog.name,
+        templateId: template.id,
+        serviceItemId: template.serviceItem.id,
+        popularity: 0,
+        usageCount: 0,
+        hasFields: template.customFieldDefinitions.length > 0,
+        fieldCount: template.customFieldDefinitions.length,
+        type: 'service_template',
+        estimatedResolutionTime: template.estimatedResolutionTime,
+        // Add search context for better UX
+        searchContext: `${template.serviceItem.serviceCatalog.name} - ${template.name}`
+      });
+    }
+
+    // 2. Search BSG templates (legacy support)
+    const createBSGSearchConditions = (searchTerms: string[]) => {
+      const conditions: any[] = [];
+      
+      searchTerms.forEach(term => {
+        conditions.push(
+          { name: { contains: term, mode: 'insensitive' } },
+          { displayName: { contains: term, mode: 'insensitive' } },
+          { description: { contains: term, mode: 'insensitive' } },
+          // Search in category names (application names)
+          { category: { name: { contains: term, mode: 'insensitive' } } },
+          { category: { displayName: { contains: term, mode: 'insensitive' } } }
+        );
+      });
+      
+      return conditions;
+    };
+
     const bsgTemplates = await prisma.bSGTemplate.findMany({
       where: {
         isActive: true,
-        OR: [
-          { name: { contains: query, mode: 'insensitive' } },
-          { displayName: { contains: query, mode: 'insensitive' } },
-          { description: { contains: query, mode: 'insensitive' } }
-        ]
+        OR: createBSGSearchConditions(searchTerms)
       },
       include: {
         category: {
@@ -634,26 +868,96 @@ router.get('/search', protect, asyncHandler(async (req: AuthenticatedRequest, re
     });
 
     const bsgServices = transformBSGTemplatesToServices(bsgTemplates);
+    // Add search context to BSG services
+    bsgServices.forEach((service: any) => {
+      const template = bsgTemplates.find(t => t.id === parseInt(service.templateId));
+      if (template) {
+        service.searchContext = `${template.category.displayName || template.category.name} - ${service.name}`;
+        service.categoryName = template.category.displayName || template.category.name;
+      }
+    });
 
-    // Add static services that match the query
+    // 3. Search static services
     const allStaticServices = [
       ...getStaticServices('hardware_software'),
       ...getStaticServices('network_connectivity'),
       ...getStaticServices('general_requests')
     ];
 
-    const matchingStaticServices = allStaticServices.filter(service =>
-      service.name.toLowerCase().includes(query.toLowerCase()) ||
-      service.description.toLowerCase().includes(query.toLowerCase())
-    );
+    const matchingStaticServices = allStaticServices.filter((service: any) => {
+      const serviceName = service.name.toLowerCase();
+      const serviceDescription = service.description.toLowerCase();
+      const serviceCategory = (service.category || '').toLowerCase();
+      
+      // Check if all search terms are found in the service (name, description, or category)
+      return searchTerms.every(term => 
+        serviceName.includes(term) ||
+        serviceDescription.includes(term) ||
+        serviceCategory.includes(term)
+      );
+    }).map((service: any) => ({
+      ...service,
+      searchContext: `${service.category || 'General'} - ${service.name}`,
+      categoryName: service.category || 'General'
+    }));
 
-    const allResults = [...bsgServices, ...matchingStaticServices];
+    // 4. Combine all results
+    allResults.push(...bsgServices, ...matchingStaticServices);
+
+    // 5. Enhanced sorting for multi-term search results
+    const calculateRelevanceScore = (item: any) => {
+      const itemName = item.name.toLowerCase();
+      const itemDescription = (item.description || '').toLowerCase();
+      const itemCategory = (item.categoryName || '').toLowerCase();
+      const itemSearchContext = (item.searchContext || '').toLowerCase();
+      
+      let score = 0;
+      
+      // Check how many search terms are found and where
+      searchTerms.forEach(term => {
+        // Exact name match gets highest score
+        if (itemName === term) score += 100;
+        // Name contains term
+        else if (itemName.includes(term)) score += 50;
+        // Description contains term
+        else if (itemDescription.includes(term)) score += 20;
+        // Category contains term
+        else if (itemCategory.includes(term)) score += 30;
+        // Search context contains term
+        else if (itemSearchContext.includes(term)) score += 15;
+      });
+      
+      // Bonus for exact phrase match
+      if (itemName.includes(searchQuery)) score += 25;
+      if (itemDescription.includes(searchQuery)) score += 10;
+      
+      // Bonus for shorter names (more specific matches)
+      score += Math.max(0, 20 - itemName.length * 0.5);
+      
+      return score;
+    };
+
+    // Sort results by relevance score (highest first)
+    const sortedResults = allResults.sort((a, b) => {
+      const scoreA = calculateRelevanceScore(a);
+      const scoreB = calculateRelevanceScore(b);
+      
+      // Primary sort by relevance score
+      if (scoreA !== scoreB) return scoreB - scoreA;
+      
+      // Secondary sort by name length (shorter first for same score)
+      if (a.name.length !== b.name.length) return a.name.length - b.name.length;
+      
+      // Tertiary sort alphabetically
+      return a.name.localeCompare(b.name);
+    });
 
     res.json({
       success: true,
-      data: allResults,
+      data: sortedResults.slice(0, 50), // Limit to top 50 results
       query,
-      resultCount: allResults.length
+      resultCount: sortedResults.length,
+      searchTip: 'Try searching by application + service type (e.g., "OLIBS user", "XCARD password", "BSG reset") or just application names (e.g., "OLIBS", "XCARD")'
     });
 
   } catch (error) {
