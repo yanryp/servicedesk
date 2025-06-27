@@ -20,6 +20,7 @@ import CategorizationAnalyticsPage from './pages/CategorizationAnalyticsPage';
 import UncategorizedTicketsPage from './pages/UncategorizedTicketsPage';
 import ServiceCatalogPage from './pages/ServiceCatalogPage';
 import ServiceCatalogV2Page from './pages/ServiceCatalogV2Page';
+import ServiceCatalogAdminPage from './pages/ServiceCatalogAdminPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
 
@@ -168,6 +169,7 @@ function App() {
               <Route path="/create-ticket" element={<Navigate to="/service-catalog-v2" replace />} />
               <Route path="/service-catalog" element={<ServiceCatalogPage />} />
               <Route path="/service-catalog-v2" element={<ServiceCatalogV2Page />} />
+              <Route path="/service-catalog-admin" element={<ProtectedRoute roles={['admin', 'manager']}><ServiceCatalogAdminPage /></ProtectedRoute>} />
               <Route path="/tickets/:ticketId" element={<TicketDetailPage />} />
               <Route path="/tickets/:ticketId/edit" element={<EditTicketPage />} />
               <Route path="/manager" element={<ProtectedRoute roles={['admin', 'manager']}><ManagerDashboard /></ProtectedRoute>} />

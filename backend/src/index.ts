@@ -9,6 +9,7 @@ import authRouter from './routes/auth'; // Import the auth router
 import ticketRouter from './routes/ticketRoutes'; // Import ticket router (legacy)
 import enhancedTicketRouter from './routes/enhancedTicketRoutes'; // Import enhanced ticket router
 import serviceCatalogRouter from './routes/serviceCatalogRoutes'; // Import service catalog router
+import serviceCatalogAdminRouter from './routes/serviceCatalogAdminRoutes'; // Import service catalog admin router
 import categorizationRouter from './routes/categorizationRoutes'; // Import categorization router
 import categorizationAnalyticsRouter from './routes/categorizationAnalyticsRoutes'; // Import analytics router
 import reportingRoutes from './routes/reportingRoutes'; // Import reporting router
@@ -80,6 +81,7 @@ app.use('/api/auth', authRouter);
 // ITIL-enhanced routes (new)
 app.use('/api/v2/tickets', enhancedTicketRouter); // Enhanced ticket router with ITIL support
 app.use('/api/service-catalog', serviceCatalogRouter); // Service catalog router
+app.use('/api/service-catalog-admin', serviceCatalogAdminRouter); // Service catalog admin router
 app.use('/api/categorization', categorizationRouter); // Ticket categorization routes
 app.use('/api/analytics/categorization', categorizationAnalyticsRouter); // Categorization analytics
 

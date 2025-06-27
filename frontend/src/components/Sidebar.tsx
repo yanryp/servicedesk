@@ -88,6 +88,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           roles: ['admin']
         },
         {
+          name: 'Service Catalog Admin',
+          href: '/service-catalog-admin',
+          icon: RectangleStackIcon,
+          roles: ['admin', 'manager']
+        },
+        {
           name: 'Analytics',
           href: '/categorization/analytics',
           icon: ChartBarIcon,
