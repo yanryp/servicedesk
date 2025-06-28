@@ -54,7 +54,12 @@ router.get('/catalogs', protect, requireAdminAccess, asyncHandler(async (req: Au
         },
         serviceItems: {
           include: {
-            customFieldDefinitions: true
+            customFieldDefinitions: true,
+            templates: {
+              include: {
+                customFieldDefinitions: true
+              }
+            }
           }
         }
       },
@@ -63,30 +68,31 @@ router.get('/catalogs', protect, requireAdminAccess, asyncHandler(async (req: Au
       ]
     });
 
-    // Add statistics to each catalog - now showing ServiceItems with their custom fields
+    // Add statistics to each catalog - using ServiceTemplate custom fields (the working system)
     const catalogsWithStats = catalogs.map(catalog => {
-      const totalFields = catalog.serviceItems.reduce((sum: number, item: any) => sum + (item.customFieldDefinitions?.length || 0), 0);
-      const itemsWithFields = catalog.serviceItems.filter((item: any) => (item.customFieldDefinitions?.length || 0) > 0).length;
+      // Count custom fields from ServiceTemplates (where they actually exist)
+      const totalTemplateFields = catalog.serviceItems.reduce((sum: number, item: any) => {
+        return sum + (item.templates?.reduce((templateSum: number, template: any) => 
+          templateSum + (template.customFieldDefinitions?.length || 0), 0) || 0);
+      }, 0);
       
-      // Enhanced debug logging
-      console.log(`DEBUG: Catalog ${catalog.name}:`);
-      console.log(`  Service Items: ${catalog.serviceItems.length}`);
-      console.log(`  Total Fields: ${totalFields}`);
-      console.log(`  Items with Fields: ${itemsWithFields}`);
+      const templatesWithFields = catalog.serviceItems.reduce((sum: number, item: any) => {
+        return sum + (item.templates?.filter((template: any) => 
+          (template.customFieldDefinitions?.length || 0) > 0).length || 0);
+      }, 0);
       
-      catalog.serviceItems.forEach(item => {
-        console.log(`    ${item.name}: customFieldDefinitions = ${item.customFieldDefinitions ? 'defined' : 'undefined'}, length = ${item.customFieldDefinitions?.length || 0}`);
-        if (item.customFieldDefinitions && item.customFieldDefinitions.length > 0) {
-          console.log(`      Fields: ${item.customFieldDefinitions.map(f => f.fieldName).join(', ')}`);
-        }
-      });
+      const totalTemplates = catalog.serviceItems.reduce((sum: number, item: any) => 
+        sum + (item.templates?.length || 0), 0);
+      
+      console.log(`✅ Catalog ${catalog.name}: ${totalTemplateFields} fields in ${templatesWithFields} templates`);
       
       return {
         ...catalog,
         statistics: {
           serviceItemCount: catalog.serviceItems.length,
-          templateCount: totalFields, // Now represents total custom fields
-          visibleTemplateCount: itemsWithFields // Now represents service items with custom fields
+          templateCount: totalTemplates,
+          customFieldCount: totalTemplateFields,
+          templatesWithFields: templatesWithFields
         }
       };
     });
@@ -97,12 +103,9 @@ router.get('/catalogs', protect, requireAdminAccess, asyncHandler(async (req: Au
       meta: {
         totalCatalogs: catalogs.length,
         totalServiceItems: catalogs.reduce((sum: number, c: any) => sum + c.serviceItems.length, 0),
-        totalCustomFields: catalogs.reduce((sum: number, c: any) => 
-          sum + c.serviceItems.reduce((itemSum: number, item: any) => itemSum + item.customFieldDefinitions.length, 0), 0
-        ),
-        serviceItemsWithFields: catalogs.reduce((sum: number, c: any) => 
-          sum + c.serviceItems.filter((item: any) => item.customFieldDefinitions.length > 0).length, 0
-        )
+        totalCustomFields: catalogsWithStats.reduce((sum: number, c: any) => sum + c.statistics.customFieldCount, 0),
+        totalTemplates: catalogsWithStats.reduce((sum: number, c: any) => sum + c.statistics.templateCount, 0),
+        templatesWithFields: catalogsWithStats.reduce((sum: number, c: any) => sum + c.statistics.templatesWithFields, 0)
       }
     });
   } catch (error) {

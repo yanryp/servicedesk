@@ -1869,14 +1869,24 @@ router.post('/:ticketId/reject', protect, asyncHandler(async (req: Authenticated
       });
     }
 
-    // Get ticket with creator and manager info
+    // Get ticket with BusinessApproval and creator info (consistent with approve endpoint)
     const ticket = await prisma.ticket.findUnique({
       where: { id: parseInt(ticketId) },
       include: {
+        businessApproval: {
+          include: {
+            businessReviewer: {
+              include: {
+                unit: true,
+                department: true
+              }
+            }
+          }
+        },
         createdBy: {
           include: {
             department: true,
-            manager: true
+            unit: true
           }
         }
       }
@@ -1889,49 +1899,85 @@ router.post('/:ticketId/reject', protect, asyncHandler(async (req: Authenticated
       });
     }
 
-    // Check authorization - manager can reject tickets from their department subordinates
+    // NEW: Check authorization using BusinessApproval table (consistent with approve endpoint)
     const canReject = user?.role === 'admin' || 
       (user?.role === 'manager' && 
-       user?.id === ticket.createdBy?.managerId &&
-       user?.departmentId === ticket.createdBy?.departmentId);
+       user?.isBusinessReviewer === true &&
+       ticket.businessApproval?.businessReviewerId === user?.id &&
+       ticket.businessApproval?.approvalStatus === 'pending');
 
     if (!canReject) {
+      const reason = !ticket.businessApproval 
+        ? 'No business approval found for this ticket'
+        : ticket.businessApproval.businessReviewerId !== user?.id
+        ? 'You are not assigned to reject this ticket'
+        : ticket.businessApproval.approvalStatus !== 'pending'
+        ? `Ticket approval is already ${ticket.businessApproval.approvalStatus}`
+        : 'Insufficient permissions for rejection';
+        
       return res.status(403).json({
         success: false,
-        message: 'Access denied. You can only reject tickets from your department subordinates.'
+        message: `Access denied. ${reason}`
       });
     }
 
-    // Update ticket status to rejected
-    const updatedTicket = await prisma.ticket.update({
-      where: { id: parseInt(ticketId) },
-      data: {
-        status: 'rejected',
-        managerComments: comments,
-        updatedAt: new Date()
-      },
-      include: {
-        createdBy: {
-          include: {
-            department: true,
-            manager: true
-          }
+    // Update both ticket and business approval in a transaction (consistent with approve endpoint)
+    const result = await prisma.$transaction(async (tx) => {
+      // Update business approval status to rejected
+      await tx.businessApproval.update({
+        where: { id: ticket.businessApproval!.id },
+        data: {
+          approvalStatus: 'rejected',
+          approvedAt: new Date(), // Track rejection timestamp
+          businessComments: comments
+        }
+      });
+
+      // Update ticket status to rejected
+      const updatedTicket = await tx.ticket.update({
+        where: { id: parseInt(ticketId) },
+        data: {
+          status: 'rejected',
+          managerComments: comments,
+          updatedAt: new Date()
         },
-        serviceCatalog: {
-          include: {
-            department: true
-          }
-        },
-        serviceItem: true
-      }
+        include: {
+          createdBy: {
+            include: {
+              department: true,
+              unit: true
+            }
+          },
+          businessApproval: {
+            include: {
+              businessReviewer: {
+                include: {
+                  unit: true,
+                  department: true
+                }
+              }
+            }
+          },
+          serviceCatalog: {
+            include: {
+              department: true
+            }
+          },
+          serviceItem: true
+        }
+      });
+
+      return updatedTicket;
     });
 
-    console.log(`Manager ${user?.username} rejected ticket #${ticketId}: ${comments}`);
+    console.log(`Manager ${user?.username} rejected ticket #${ticketId} via unit-based approval`);
+    console.log(`  Rejected by: ${user?.username} (${ticket.businessApproval?.businessReviewer?.unit?.name})`);
+    console.log(`  Requested by: ${ticket.createdBy?.username} (${ticket.createdBy?.unit?.name})`);
 
     res.json({
       success: true,
-      message: 'Ticket rejected successfully',
-      data: updatedTicket
+      message: 'Ticket rejected successfully via unit-based approval system',
+      data: result
     });
 
   } catch (error) {

@@ -70,32 +70,30 @@ model Department {
   templateCategories   TemplateCategory[]
   templateMetadata     TemplateMetadata[]
   templateUsageLogs    TemplateUsageLog[]
-  users                User[]
   units                Unit[]
+  users                User[]
 
   @@map("departments")
 }
 
 model Unit {
-  id                  Int                   @id @default(autoincrement())
-  code                String                @unique @db.VarChar(50)
-  name                String                @db.VarChar(255)
-  displayName         String?               @map("display_name") @db.VarChar(255)
-  unitType            String                @default("branch") @map("unit_type") @db.VarChar(50) // branch, capem, department
-  parentId            Int?                  @map("parent_id")
-  departmentId        Int?                  @map("department_id")
-  isActive            Boolean               @default(true) @map("is_active")
-  sortOrder           Int                   @default(0) @map("sort_order")
-  metadata            Json?                 // Store additional branch-specific data
-  createdAt           DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt           DateTime              @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  
-  // Relations
-  department          Department?           @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  parent              Unit?                 @relation("UnitHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children            Unit[]                @relation("UnitHierarchy")
-  users               User[]
-  
+  id           Int         @id @default(autoincrement())
+  code         String      @unique @db.VarChar(50)
+  name         String      @db.VarChar(255)
+  displayName  String?     @map("display_name") @db.VarChar(255)
+  unitType     String      @default("branch") @map("unit_type") @db.VarChar(50)
+  parentId     Int?        @map("parent_id")
+  departmentId Int?        @map("department_id")
+  isActive     Boolean     @default(true) @map("is_active")
+  sortOrder    Int         @default(0) @map("sort_order")
+  metadata     Json?
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parent       Unit?       @relation("UnitHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children     Unit[]      @relation("UnitHierarchy")
+  users        User[]
+
   @@index([unitType, isActive])
   @@index([parentId])
   @@index([departmentId])
@@ -282,20 +280,21 @@ model ServiceCatalog {
 }
 
 model ServiceItem {
-  id                  Int               @id @default(autoincrement())
-  serviceCatalogId    Int               @map("service_catalog_id")
-  name                String            @db.VarChar(255)
-  description         String?
-  requestType         request_type      @default(service_request) @map("request_type")
-  isKasdaRelated      Boolean           @default(false) @map("is_kasda_related")
-  requiresGovApproval Boolean           @default(false) @map("requires_gov_approval")
-  isActive            Boolean           @default(true) @map("is_active")
-  sortOrder           Int               @default(0) @map("sort_order")
-  createdAt           DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt           DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  serviceCatalog      ServiceCatalog    @relation(fields: [serviceCatalogId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  templates           ServiceTemplate[]
-  tickets             Ticket[]          @relation("ServiceItemTickets")
+  id                        Int                      @id @default(autoincrement())
+  serviceCatalogId          Int                      @map("service_catalog_id")
+  name                      String                   @db.VarChar(255)
+  description               String?
+  requestType               request_type             @default(service_request) @map("request_type")
+  isKasdaRelated            Boolean                  @default(false) @map("is_kasda_related")
+  requiresGovApproval       Boolean                  @default(false) @map("requires_gov_approval")
+  isActive                  Boolean                  @default(true) @map("is_active")
+  sortOrder                 Int                      @default(0) @map("sort_order")
+  createdAt                 DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                 DateTime                 @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  service_field_definitions ServiceFieldDefinition[]
+  serviceCatalog            ServiceCatalog           @relation(fields: [serviceCatalogId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  templates                 ServiceTemplate[]
+  tickets                   Ticket[]                 @relation("ServiceItemTickets")
 
   @@unique([serviceCatalogId, name])
   @@map("service_items")
@@ -328,7 +327,8 @@ model ServiceTemplate {
 
 model ServiceFieldDefinition {
   id                Int                       @id @default(autoincrement())
-  serviceTemplateId Int                       @map("service_template_id")
+  serviceTemplateId Int?                      @map("service_template_id")
+  service_item_id   Int?
   fieldName         String                    @map("field_name") @db.VarChar(255)
   fieldLabel        String                    @map("field_label") @db.VarChar(255)
   fieldType         field_type                @map("field_type")
@@ -342,10 +342,12 @@ model ServiceFieldDefinition {
   isVisible         Boolean                   @default(true) @map("is_visible")
   createdAt         DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime                  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  serviceTemplate   ServiceTemplate           @relation(fields: [serviceTemplateId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  service_items     ServiceItem?              @relation(fields: [service_item_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  serviceTemplate   ServiceTemplate?          @relation(fields: [serviceTemplateId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   ticketFieldValues TicketServiceFieldValue[]
 
   @@unique([serviceTemplateId, fieldName])
+  @@unique([service_item_id, fieldName])
   @@map("service_field_definitions")
 }
 

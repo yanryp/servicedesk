@@ -23,7 +23,10 @@ const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => P
 
 // POST /api/auth/register
 router.post('/register', asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-  const { username, email, password, role, departmentId, firstName, lastName, specialization } = req.body;
+  const { 
+    username, email, password, role, departmentId, firstName, lastName, specialization,
+    unitId, managerId, workloadCapacity, isBusinessReviewer, isKasdaUser 
+  } = req.body;
 
   // Basic validation
   if (!username || !email || !password || !role || !departmentId) {
@@ -76,6 +79,13 @@ router.post('/register', asyncHandler(async (req: Request, res: Response, next: 
     role: role as any,
     departmentId: parseInt(departmentId)
   };
+
+  // Add optional fields if provided
+  if (unitId) userData.unitId = parseInt(unitId);
+  if (managerId) userData.managerId = parseInt(managerId);
+  if (workloadCapacity) userData.workloadCapacity = parseInt(workloadCapacity);
+  if (typeof isBusinessReviewer === 'boolean') userData.isBusinessReviewer = isBusinessReviewer;
+  if (typeof isKasdaUser === 'boolean') userData.isKasdaUser = isKasdaUser;
 
   // Add technician specialization fields if provided
   if (role === 'technician' && specialization) {
@@ -170,6 +180,83 @@ router.post('/login', asyncHandler(async (req: Request, res: Response, next: Nex
       unit: user.unit
     }
   });
+}));
+
+// GET /api/auth/units/:departmentId - Get units by department for user management
+router.get('/units/:departmentId', asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  const { departmentId } = req.params;
+
+  if (!departmentId || isNaN(parseInt(departmentId))) {
+    return next(Object.assign(new Error('Valid department ID is required'), { status: 400 }));
+  }
+
+  try {
+    const units = await prisma.unit.findMany({
+      where: {
+        departmentId: parseInt(departmentId),
+        isActive: true
+      },
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        displayName: true,
+        unitType: true,
+        sortOrder: true
+      },
+      orderBy: [
+        { sortOrder: 'asc' },
+        { name: 'asc' }
+      ]
+    });
+
+    res.json(units);
+  } catch (error) {
+    console.error('Error fetching units:', error);
+    return next(Object.assign(new Error('Failed to fetch units'), { status: 500 }));
+  }
+}));
+
+// GET /api/auth/managers/:departmentId - Get potential managers by department for user management
+router.get('/managers/:departmentId', asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  const { departmentId } = req.params;
+
+  if (!departmentId || isNaN(parseInt(departmentId))) {
+    return next(Object.assign(new Error('Valid department ID is required'), { status: 400 }));
+  }
+
+  try {
+    const managers = await prisma.user.findMany({
+      where: {
+        departmentId: parseInt(departmentId),
+        role: {
+          in: ['manager', 'admin']
+        }
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        unit: {
+          select: {
+            id: true,
+            name: true,
+            displayName: true
+          }
+        }
+      },
+      orderBy: [
+        { role: 'asc' }, // admins first, then managers
+        { username: 'asc' }
+      ]
+    });
+
+    res.json(managers);
+  } catch (error) {
+    console.error('Error fetching managers:', error);
+    return next(Object.assign(new Error('Failed to fetch managers'), { status: 500 }));
+  }
 }));
 
 // Basic error handling middleware (add to index.ts or a dedicated error handling module later)
