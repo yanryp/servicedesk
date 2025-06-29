@@ -18,7 +18,21 @@ import {
   BuildingOfficeIcon,
   ComputerDesktopIcon,
   QrCodeIcon,
-  UserIcon
+  UserIcon,
+  BanknotesIcon,
+  CircleStackIcon,
+  DocumentChartBarIcon,
+  ShieldCheckIcon,
+  PhoneIcon,
+  DevicePhoneMobileIcon,
+  CurrencyDollarIcon,
+  ChartBarIcon,
+  ClipboardDocumentListIcon,
+  CogIcon,
+  WrenchScrewdriverIcon,
+  GlobeAltIcon,
+  KeyIcon,
+  PresentationChartLineIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 import BSGDynamicFieldRenderer from '../components/BSGDynamicFieldRenderer';
@@ -26,18 +40,48 @@ import { serviceCatalogService, ServiceCategory, Service, ServiceTemplate } from
 import { TicketPriority, RootCauseType, IssueCategoryType } from '../types';
 import toast from 'react-hot-toast';
 
-// Icon mapping for categories
+// Enhanced icon mapping for categories
 const iconMap = {
+  // Core Banking
   'users': UsersIcon,
+  'credit-card': CreditCardIcon,
+  'banknotes': BanknotesIcon,
+  'currency-dollar': CurrencyDollarIcon,
+  'circle-stack': CircleStackIcon,
+  
+  // Technology & Hardware  
   'hard-drive': ServerIcon,
   'computer-desktop': ComputerDesktopIcon,
+  'server': ServerIcon,
   'wifi': WifiIcon,
-  'credit-card': CreditCardIcon,
+  'globe-alt': GlobeAltIcon,
+  
+  // Digital Services
   'receipt': ReceiptPercentIcon,
-  'document-text': DocumentTextIcon,
-  'building-office': BuildingOfficeIcon,
   'qr-code': QrCodeIcon,
+  'device-phone-mobile': DevicePhoneMobileIcon,
+  
+  // Support & Admin
+  'document-text': DocumentTextIcon,
+  'clipboard-document-list': ClipboardDocumentListIcon,
+  'building-office': BuildingOfficeIcon,
+  'phone': PhoneIcon,
+  'shield-check': ShieldCheckIcon,
+  'key': KeyIcon,
+  
+  // Operations
+  'cog': CogIcon,
+  'wrench-screwdriver': WrenchScrewdriverIcon,
+  'chart-bar': ChartBarIcon,
+  'document-chart-bar': DocumentChartBarIcon,
+  'presentation-chart-line': PresentationChartLineIcon,
+  
+  // Alerts & Issues
   'siren': ExclamationTriangleIcon,
+  'exclamation-triangle': ExclamationTriangleIcon,
+
+  // Fallback
+  'default': DocumentTextIcon
 };
 
 interface ServiceCatalogFormData {
@@ -621,37 +665,92 @@ const ServiceCatalogV2Page: React.FC = () => {
   const renderCategories = () => {
     if (loading) {
       return Array.from({ length: 6 }).map((_, index) => (
-        <div key={index} className="bg-gray-200 p-6 rounded-2xl animate-pulse">
-          <div className="bg-gray-300 rounded-xl w-14 h-14 mb-4"></div>
-          <div className="bg-gray-300 h-4 rounded mb-2"></div>
-          <div className="bg-gray-300 h-3 rounded w-3/4"></div>
+        <div key={index} className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-200 to-slate-300 rounded-3xl blur-lg opacity-50 animate-pulse"></div>
+          <div className="relative bg-white/70 backdrop-blur-md border border-white/30 p-8 rounded-3xl animate-pulse">
+            <div className="bg-slate-300 rounded-2xl w-16 h-16 mb-6 animate-pulse"></div>
+            <div className="bg-slate-300 h-5 rounded-lg mb-3 animate-pulse"></div>
+            <div className="bg-slate-300 h-4 rounded-lg w-3/4 animate-pulse"></div>
+          </div>
         </div>
       ));
     }
 
     return categories.map((category, index) => {
-      const IconComponent = iconMap[category.icon as keyof typeof iconMap] || DocumentTextIcon;
+      // Enhanced category icon selection with fallback logic
+      const getCategoryIcon = () => {
+        // First try the category's icon field
+        if (category.icon && iconMap[category.icon as keyof typeof iconMap]) {
+          return iconMap[category.icon as keyof typeof iconMap];
+        }
+        
+        // Fallback to name-based detection
+        const categoryName = category.name.toLowerCase();
+        if (categoryName.includes('atm') || categoryName.includes('hardware')) {
+          return CircleStackIcon;
+        } else if (categoryName.includes('claims') || categoryName.includes('dispute')) {
+          return ClipboardDocumentListIcon;
+        } else if (categoryName.includes('core') || categoryName.includes('banking') || categoryName.includes('financial')) {
+          return CurrencyDollarIcon;
+        } else if (categoryName.includes('corporate') || categoryName.includes('employee') || categoryName.includes('support')) {
+          return UsersIcon;
+        } else if (categoryName.includes('digital') || categoryName.includes('channel')) {
+          return QrCodeIcon;
+        } else if (categoryName.includes('general') || categoryName.includes('default')) {
+          return DocumentTextIcon;
+        } else if (categoryName.includes('kasda') || categoryName.includes('treasury')) {
+          return BanknotesIcon;
+        } else {
+          return DocumentTextIcon; // Final fallback
+        }
+      };
+      
+      const IconComponent = getCategoryIcon();
       
       return (
         <div
           key={category.id}
-          className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+          className="relative group cursor-pointer"
+          style={{ animationDelay: `${index * 100}ms` }}
           onClick={() => loadServicesForCategory(category)}
         >
-          <div className="flex items-center justify-center bg-blue-100 text-blue-600 rounded-xl w-14 h-14 mb-4">
-            <IconComponent className="w-7 h-7" />
-          </div>
-          <h3 className="text-lg font-bold text-gray-900">{category.name}</h3>
-          <p className="text-sm text-gray-500 mt-1 h-10">{category.description}</p>
-          <div className="flex items-center justify-between mt-3">
-            <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-              {category.serviceCount} service{category.serviceCount !== 1 ? 's' : ''}
-            </span>
-            {category.type === 'bsg_category' && (
-              <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                BSG Template
+          {/* Glassmorphism glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-indigo-600/10 rounded-3xl blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500 transform group-hover:scale-105"></div>
+          
+          {/* Main card */}
+          <div className="relative bg-white/80 backdrop-blur-md border border-white/30 p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-500 group-hover:-translate-y-2 group-hover:bg-white/90">
+            {/* Icon container with gradient */}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl blur-md opacity-15 group-hover:opacity-25 transition-opacity duration-300"></div>
+              <div className="relative flex items-center justify-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl w-16 h-16 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <IconComponent className="w-8 h-8" />
+              </div>
+            </div>
+            
+            {/* Content */}
+            <h3 className="text-xl font-bold text-slate-800 mb-3 group-hover:text-slate-900 transition-colors">
+              {category.name}
+            </h3>
+            <p className="text-slate-600 text-sm leading-relaxed h-12 group-hover:text-slate-700 transition-colors">
+              {category.description}
+            </p>
+            
+            {/* Tags */}
+            <div className="flex items-center justify-between mt-6">
+              <span className="text-xs font-medium text-blue-700 bg-blue-100/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-blue-200/50">
+                {category.serviceCount} service{category.serviceCount !== 1 ? 's' : ''}
               </span>
-            )}
+              {category.type === 'bsg_category' && (
+                <span className="text-xs font-medium text-emerald-700 bg-emerald-100/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-emerald-200/50">
+                  BSG Template
+                </span>
+              )}
+            </div>
+            
+            {/* Subtle hover indicator */}
+            <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <ArrowRightIcon className="w-5 h-5 text-slate-400" />
+            </div>
           </div>
         </div>
       );
@@ -662,78 +761,196 @@ const ServiceCatalogV2Page: React.FC = () => {
   const renderServices = (servicesToRender: Service[]) => {
     if (loadingServices) {
       return Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="bg-gray-200 p-6 rounded-2xl animate-pulse">
-          <div className="bg-gray-300 rounded-xl w-14 h-14 mb-4"></div>
-          <div className="bg-gray-300 h-4 rounded mb-2"></div>
-          <div className="bg-gray-300 h-3 rounded w-3/4"></div>
+        <div key={index} className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-200 to-slate-300 rounded-3xl blur-lg opacity-50 animate-pulse"></div>
+          <div className="relative bg-white/70 backdrop-blur-md border border-white/30 p-8 rounded-3xl animate-pulse">
+            <div className="bg-slate-300 rounded-2xl w-16 h-16 mb-6 animate-pulse"></div>
+            <div className="bg-slate-300 h-5 rounded-lg mb-3 animate-pulse"></div>
+            <div className="bg-slate-300 h-4 rounded-lg w-3/4 animate-pulse"></div>
+          </div>
         </div>
       ));
     }
 
-    return servicesToRender.map((service, index) => (
-      <div
-        key={service.id}
-        className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-        onClick={() => loadServiceTemplate(service)}
-      >
-        <div className="flex items-center justify-center bg-blue-100 text-blue-600 rounded-xl w-14 h-14 mb-4">
-          <DocumentTextIcon className="w-7 h-7" />
-        </div>
-        <h3 className="text-lg font-bold text-gray-900">{service.name}</h3>
-        <p className="text-sm text-gray-500 mt-1 h-10">{service.description}</p>
-        <div className="flex items-center justify-between mt-3">
-          {service.hasFields && (
-            <span className="text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
-              {service.fieldCount} field{(service.fieldCount || 0) !== 1 ? 's' : ''}
-            </span>
-          )}
-          {service.type === 'bsg_service' && (
-            <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
-              BSG Service
-            </span>
-          )}
+    return servicesToRender.map((service, index) => {
+      // Enhanced dynamic icon selection based on service name/category
+      const getServiceIcon = () => {
+        const serviceName = service.name.toLowerCase();
+        
+        // ATM & Cash Services
+        if (serviceName.includes('atm') || serviceName.includes('cash') || serviceName.includes('tunai')) {
+          return CircleStackIcon;
+        }
+        // EDC & Payment Terminals
+        else if (serviceName.includes('edc') || serviceName.includes('terminal') || serviceName.includes('pos')) {
+          return CreditCardIcon;
+        }
+        // KASDA & Treasury Services
+        else if (serviceName.includes('kasda') || serviceName.includes('treasury') || serviceName.includes('bendahara')) {
+          return BanknotesIcon;
+        }
+        // Core Banking & Financial Systems
+        else if (serviceName.includes('core') || serviceName.includes('banking') || serviceName.includes('financial') || serviceName.includes('keuangan')) {
+          return CurrencyDollarIcon;
+        }
+        // QRIS & Digital Payments
+        else if (serviceName.includes('qris') || serviceName.includes('digital') || serviceName.includes('payment') || serviceName.includes('pembayaran')) {
+          return QrCodeIcon;
+        }
+        // Network & Communication
+        else if (serviceName.includes('network') || serviceName.includes('wifi') || serviceName.includes('internet') || serviceName.includes('jaringan')) {
+          return WifiIcon;
+        }
+        // User Management & Accounts
+        else if (serviceName.includes('user') || serviceName.includes('account') || serviceName.includes('pengguna') || serviceName.includes('akun')) {
+          return UsersIcon;
+        }
+        // Reports & Analytics
+        else if (serviceName.includes('report') || serviceName.includes('laporan') || serviceName.includes('analytic') || serviceName.includes('chart')) {
+          return DocumentChartBarIcon;
+        }
+        // Hardware & Equipment
+        else if (serviceName.includes('hardware') || serviceName.includes('equipment') || serviceName.includes('perangkat')) {
+          return ComputerDesktopIcon;
+        }
+        // Server & System Infrastructure
+        else if (serviceName.includes('server') || serviceName.includes('system') || serviceName.includes('infrastruktur')) {
+          return ServerIcon;
+        }
+        // Branch & Office Services
+        else if (serviceName.includes('branch') || serviceName.includes('cabang') || serviceName.includes('office') || serviceName.includes('kantor')) {
+          return BuildingOfficeIcon;
+        }
+        // Support & Help Services
+        else if (serviceName.includes('support') || serviceName.includes('help') || serviceName.includes('bantuan') || serviceName.includes('dukungan')) {
+          return PhoneIcon;
+        }
+        // Security & Access
+        else if (serviceName.includes('security') || serviceName.includes('access') || serviceName.includes('keamanan') || serviceName.includes('akses')) {
+          return ShieldCheckIcon;
+        }
+        // Configuration & Settings
+        else if (serviceName.includes('config') || serviceName.includes('setting') || serviceName.includes('pengaturan') || serviceName.includes('konfigurasi')) {
+          return CogIcon;
+        }
+        // Maintenance & Repair
+        else if (serviceName.includes('maintenance') || serviceName.includes('repair') || serviceName.includes('pemeliharaan') || serviceName.includes('perbaikan')) {
+          return WrenchScrewdriverIcon;
+        }
+        // Mobile & Apps
+        else if (serviceName.includes('mobile') || serviceName.includes('app') || serviceName.includes('aplikasi') || serviceName.includes('handphone')) {
+          return DevicePhoneMobileIcon;
+        }
+        // Claims & Disputes
+        else if (serviceName.includes('claim') || serviceName.includes('dispute') || serviceName.includes('klaim') || serviceName.includes('sengketa')) {
+          return ClipboardDocumentListIcon;
+        }
+        // Default fallback
+        else {
+          return DocumentTextIcon;
+        }
+      };
+
+      const ServiceIcon = getServiceIcon();
+
+      return (
+        <div
+          key={service.id}
+          className="relative group cursor-pointer"
+          style={{ animationDelay: `${index * 100}ms` }}
+          onClick={() => loadServiceTemplate(service)}
+        >
+          {/* Glassmorphism glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-indigo-600/10 rounded-3xl blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500 transform group-hover:scale-105"></div>
+          
+          {/* Main card */}
+          <div className="relative bg-white/80 backdrop-blur-md border border-white/30 p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-500 group-hover:-translate-y-2 group-hover:bg-white/90">
+            {/* Icon container with gradient */}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl blur-md opacity-15 group-hover:opacity-25 transition-opacity duration-300"></div>
+              <div className="relative flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl w-16 h-16 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <ServiceIcon className="w-8 h-8" />
+              </div>
+            </div>
+          
+          {/* Content */}
+          <h3 className="text-xl font-bold text-slate-800 mb-3 group-hover:text-slate-900 transition-colors">
+            {service.name}
+          </h3>
+          <p className="text-slate-600 text-sm leading-relaxed h-12 group-hover:text-slate-700 transition-colors">
+            {service.description}
+          </p>
+          
+          {/* Tags */}
+          <div className="flex items-center justify-between mt-6">
+            {service.hasFields && (
+              <span className="text-xs font-medium text-purple-700 bg-purple-100/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-purple-200/50">
+                {service.fieldCount} field{(service.fieldCount || 0) !== 1 ? 's' : ''}
+              </span>
+            )}
+            {service.type === 'bsg_service' && (
+              <span className="text-xs font-medium text-emerald-700 bg-emerald-100/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-emerald-200/50">
+                BSG Service
+              </span>
+            )}
+          </div>
+          
+          {/* Subtle hover indicator */}
+          <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <ArrowRightIcon className="w-5 h-5 text-slate-400" />
+          </div>
         </div>
       </div>
-    ));
+    )});
   };
 
   // Render breadcrumb navigation
   const renderBreadcrumb = () => {
     return (
-      <div className="mb-6 flex items-center space-x-2">
-        <button
-          onClick={() => {
-            if (currentView === 'create') {
-              setCurrentView(currentCategory ? 'services' : 'categories');
-            } else if (currentView === 'services') {
-              setCurrentView('categories');
-              setCurrentCategory(null);
-              setSearchTerm('');
-            }
-          }}
-          className="text-blue-600 hover:underline font-medium flex items-center"
-        >
-          {currentView !== 'categories' && <ArrowLeftIcon className="w-4 h-4 mr-1" />}
-          {currentView === 'create' ? 'Back to Services' : 'All Categories'}
-        </button>
-        {currentCategory && currentView !== 'create' && (
-          <span className="text-gray-500">
-            <span className="mx-2 text-gray-400">/</span>
-            {currentCategory.name}
-          </span>
-        )}
-        {searchTerm && currentView !== 'create' && (
-          <span className="text-gray-500">
-            <span className="mx-2 text-gray-400">/</span>
-            Search results for "{searchTerm}"
-          </span>
-        )}
-        {selectedService && currentView === 'create' && (
-          <span className="text-gray-500">
-            <span className="mx-2 text-gray-400">/</span>
-            {selectedService.name}
-          </span>
-        )}
+      <div className="mb-8">
+        <div className="bg-white/60 backdrop-blur-md border border-white/30 rounded-2xl p-4 shadow-lg">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => {
+                if (currentView === 'create') {
+                  setCurrentView(currentCategory ? 'services' : 'categories');
+                } else if (currentView === 'services') {
+                  setCurrentView('categories');
+                  setCurrentCategory(null);
+                  setSearchTerm('');
+                }
+              }}
+              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+            >
+              {currentView !== 'categories' && <ArrowLeftIcon className="w-4 h-4" />}
+              <span>{currentView === 'create' ? 'Back to Services' : 'All Categories'}</span>
+            </button>
+            {currentCategory && currentView !== 'create' && (
+              <div className="flex items-center space-x-2">
+                <span className="text-slate-400 text-lg">/</span>
+                <span className="text-slate-700 font-medium px-3 py-1 bg-slate-100/80 backdrop-blur-sm rounded-lg border border-slate-200/50">
+                  {currentCategory.name}
+                </span>
+              </div>
+            )}
+            {searchTerm && currentView !== 'create' && (
+              <div className="flex items-center space-x-2">
+                <span className="text-slate-400 text-lg">/</span>
+                <span className="text-slate-700 font-medium px-3 py-1 bg-amber-100/80 backdrop-blur-sm rounded-lg border border-amber-200/50">
+                  Search results for "{searchTerm}"
+                </span>
+              </div>
+            )}
+            {selectedService && currentView === 'create' && (
+              <div className="flex items-center space-x-2">
+                <span className="text-slate-400 text-lg">/</span>
+                <span className="text-slate-700 font-medium px-3 py-1 bg-green-100/80 backdrop-blur-sm rounded-lg border border-green-200/50">
+                  {selectedService.name}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     );
   };
@@ -741,28 +958,35 @@ const ServiceCatalogV2Page: React.FC = () => {
   // Main render logic
   if (currentView === 'create' && selectedService && selectedTemplate) {
     return (
-      <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
-        {/* Header */}
-        <header className="mb-8">
-          {renderBreadcrumb()}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">{selectedService.name}</h1>
-              <p className="mt-1 text-lg text-gray-600">{selectedService.description}</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30">
+        <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+          {/* Header */}
+          <header className="mb-8">
+            {renderBreadcrumb()}
+            <div className="bg-white/80 backdrop-blur-md border border-white/20 shadow-xl rounded-3xl p-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    {selectedService.name}
+                  </h1>
+                  <p className="mt-2 text-xl text-slate-600">{selectedService.description}</p>
+                </div>
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl">
+                  <DocumentTextIcon className="w-8 h-8 text-white" />
+                </div>
+              </div>
             </div>
-            <div className="p-3 bg-blue-600 rounded-full text-white">
-              <DocumentTextIcon className="w-7 h-7" />
-            </div>
-          </div>
-        </header>
+          </header>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          {/* Basic Ticket Information */}
-          <div className="bg-white border border-gray-200 rounded-xl p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-              <DocumentPlusIcon className="w-6 h-6 mr-2 text-blue-600" />
-              Ticket Details
-            </h2>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            {/* Basic Ticket Information */}
+            <div className="bg-white/80 backdrop-blur-md border border-white/30 rounded-3xl p-8 shadow-xl">
+              <h2 className="text-2xl font-bold text-slate-800 mb-8 flex items-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg mr-3 flex items-center justify-center">
+                  <DocumentPlusIcon className="w-5 h-5 text-white" />
+                </div>
+                Ticket Details
+              </h2>
 
             <div className="space-y-4">
               <div>
@@ -777,7 +1001,7 @@ const ServiceCatalogV2Page: React.FC = () => {
                     minLength: { value: 5, message: 'Title must be at least 5 characters' }
                   })}
                   disabled={isSubmitting}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="block w-full px-5 py-4 bg-white/70 backdrop-blur-sm border border-white/30 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-white/90 transition-all duration-300 text-slate-700 placeholder-slate-500"
                   placeholder="Brief description of your request"
                 />
                 {errors.title && (
@@ -793,7 +1017,7 @@ const ServiceCatalogV2Page: React.FC = () => {
                   id="priority"
                   {...register('priority', { required: 'Priority is required' })}
                   disabled={isSubmitting}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="block w-full px-5 py-4 bg-white/70 backdrop-blur-sm border border-white/30 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-white/90 transition-all duration-300 text-slate-700"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -817,7 +1041,7 @@ const ServiceCatalogV2Page: React.FC = () => {
                     minLength: { value: 10, message: 'Description must be at least 10 characters' }
                   })}
                   disabled={isSubmitting}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="block w-full px-5 py-4 bg-white/70 backdrop-blur-sm border border-white/30 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-white/90 transition-all duration-300 text-slate-700 placeholder-slate-500 resize-none"
                   placeholder="Provide detailed description of your request"
                 />
                 {errors.description && (
@@ -827,30 +1051,40 @@ const ServiceCatalogV2Page: React.FC = () => {
             </div>
           </div>
 
-          {/* Dynamic Template Fields */}
-          {loadingTemplate ? (
-            <div className="flex items-center justify-center py-12 bg-gray-50 rounded-xl">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="ml-3 text-gray-600">Loading template fields...</span>
-            </div>
-          ) : templateFields.length > 0 ? (
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <BSGDynamicFieldRenderer
-                templateId={selectedTemplate.templateId || 0}
-                fields={templateFields}
-                values={fieldValues}
-                onChange={handleFieldChange}
-                errors={fieldErrors}
-                disabled={isSubmitting}
-                showCategories={templateFields.length > 6}
-                onMasterDataLoaded={(masterData) => setSmartDefaultsWithMasterData(selectedTemplate, selectedService, templateFields, masterData)}
-              />
-            </div>
-          ) : null}
+            {/* Dynamic Template Fields */}
+            {loadingTemplate ? (
+              <div className="bg-white/80 backdrop-blur-md border border-white/30 rounded-3xl p-12 shadow-xl">
+                <div className="flex items-center justify-center">
+                  <div className="relative">
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur-lg opacity-20 animate-pulse"></div>
+                  </div>
+                  <span className="ml-4 text-slate-600 text-lg font-medium">Loading template fields...</span>
+                </div>
+              </div>
+            ) : templateFields.length > 0 ? (
+              <div className="bg-white/80 backdrop-blur-md border border-white/30 rounded-3xl p-8 shadow-xl">
+                <BSGDynamicFieldRenderer
+                  templateId={selectedTemplate.templateId || 0}
+                  fields={templateFields}
+                  values={fieldValues}
+                  onChange={handleFieldChange}
+                  errors={fieldErrors}
+                  disabled={isSubmitting}
+                  showCategories={templateFields.length > 6}
+                  onMasterDataLoaded={(masterData) => setSmartDefaultsWithMasterData(selectedTemplate, selectedService, templateFields, masterData)}
+                />
+              </div>
+            ) : null}
 
-          {/* Issue Classification */}
-          <div className="bg-white border border-gray-200 rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Issue Classification</h3>
+            {/* Issue Classification */}
+            <div className="bg-white/80 backdrop-blur-md border border-white/30 rounded-3xl p-8 shadow-xl">
+              <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+                <div className="w-6 h-6 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg mr-3 flex items-center justify-center">
+                  <span className="w-3 h-3 bg-white rounded-full"></span>
+                </div>
+                Issue Classification
+              </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -861,7 +1095,7 @@ const ServiceCatalogV2Page: React.FC = () => {
                   value={rootCause}
                   onChange={(e) => setRootCause(e.target.value as RootCauseType | '')}
                   disabled={isSubmitting}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="block w-full px-5 py-4 bg-white/70 backdrop-blur-sm border border-white/30 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-white/90 transition-all duration-300 text-slate-700"
                 >
                   <option value="">Select root cause...</option>
                   <option value="human_error">User/Process Error</option>
@@ -879,7 +1113,7 @@ const ServiceCatalogV2Page: React.FC = () => {
                   value={issueCategory}
                   onChange={(e) => setIssueCategory(e.target.value as IssueCategoryType | '')}
                   disabled={isSubmitting}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="block w-full px-5 py-4 bg-white/70 backdrop-blur-sm border border-white/30 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-white/90 transition-all duration-300 text-slate-700"
                 >
                   <option value="">Select issue type...</option>
                   <option value="request">Service Request - I need something new or changed</option>
@@ -889,19 +1123,24 @@ const ServiceCatalogV2Page: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-              <p className="text-xs text-blue-800">
-                <strong>Why do we ask for this information?</strong> This classification helps our technicians prioritize and route your ticket to the right team faster. You can leave these blank if you're unsure.
-              </p>
-            </div>
+              <div className="mt-6 p-4 bg-blue-100/50 backdrop-blur-sm rounded-2xl border border-blue-200/50">
+                <p className="text-sm text-blue-800">
+                  <strong>Why do we ask for this information?</strong> This classification helps our technicians prioritize and route your ticket to the right team faster. You can leave these blank if you're unsure.
+                </p>
+              </div>
           </div>
 
-          {/* File Attachments */}
-          <div className="bg-white border border-gray-200 rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">File Attachments</h3>
+            {/* File Attachments */}
+            <div className="bg-white/80 backdrop-blur-md border border-white/30 rounded-3xl p-8 shadow-xl">
+              <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+                <div className="w-6 h-6 bg-gradient-to-r from-emerald-600 to-blue-600 rounded-lg mr-3 flex items-center justify-center">
+                  <span className="w-3 h-3 bg-white rounded-full"></span>
+                </div>
+                File Attachments
+              </h3>
             
-            {/* File Upload Area */}
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+              {/* File Upload Area */}
+              <div className="border-2 border-dashed border-white/40 bg-white/30 backdrop-blur-sm rounded-2xl p-8 text-center hover:border-white/60 hover:bg-white/40 transition-all duration-300 group">
               <input
                 type="file"
                 multiple
@@ -962,14 +1201,16 @@ const ServiceCatalogV2Page: React.FC = () => {
             )}
           </div>
 
-          {/* User Information */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="font-semibold text-blue-800 flex items-center">
-                <UserIcon className="w-5 h-5 mr-2" />
-                User Information
-              </h4>
-            </div>
+            {/* User Information */}
+            <div className="bg-gradient-to-r from-blue-100/80 to-indigo-100/80 backdrop-blur-md border border-white/30 rounded-3xl p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-xl font-bold text-blue-800 flex items-center">
+                  <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg mr-3 flex items-center justify-center">
+                    <UserIcon className="w-4 h-4 text-white" />
+                  </div>
+                  User Information
+                </h4>
+              </div>
             <div className="text-sm text-gray-700 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col">
                 <span className="font-medium text-gray-600">Name:</span>
@@ -982,132 +1223,156 @@ const ServiceCatalogV2Page: React.FC = () => {
             </div>
           </div>
 
-          {/* Submit Button */}
-          <div className="flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={() => setCurrentView(currentCategory ? 'services' : 'categories')}
-              disabled={isSubmitting}
-              className="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 font-medium transition-colors disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-            >
-              {isSubmitting ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Creating Ticket...
-                </>
-              ) : (
-                'Create Ticket'
-              )}
-            </button>
-          </div>
-        </form>
+            {/* Submit Button */}
+            <div className="flex justify-end space-x-6">
+              <button
+                type="button"
+                onClick={() => setCurrentView(currentCategory ? 'services' : 'categories')}
+                disabled={isSubmitting}
+                className="px-8 py-4 bg-white/70 backdrop-blur-sm border border-white/30 rounded-2xl text-slate-700 hover:bg-white/90 font-semibold transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="relative px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:from-blue-700 hover:to-indigo-700 font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl blur-sm opacity-15"></div>
+                <div className="relative flex items-center">
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
+                      Creating Ticket...
+                    </>
+                  ) : (
+                    'Create Ticket'
+                  )}
+                </div>
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     );
   }
 
   // Categories and Services browsing view
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-      {/* Header */}
-      <header className="mb-8">
-        {renderBreadcrumb()}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">IT Service Catalog</h1>
-            <p className="mt-1 text-lg text-gray-600">How can we help you today?</p>
-          </div>
-          <div className="p-3 bg-blue-600 rounded-full text-white">
-            <LifebuoyIcon className="w-7 h-7" />
-          </div>
-        </div>
-        
-        {/* Search Bar */}
-        <div className="mt-6 relative">
-          <input
-            type="text"
-            placeholder="Search for a service (e.g., 'password', 'new user', 'printer')..."
-            className="w-full p-4 pl-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
-          </div>
-        </div>
-      </header>
-
-      {/* Quick Access - General Ticket Option */}
-      {!searchTerm && currentView === 'categories' && (
-        <div className="mb-8">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        {/* Header */}
+        <header className="mb-8">
+          {renderBreadcrumb()}
+          <div className="bg-white/80 backdrop-blur-md border border-white/20 shadow-xl rounded-3xl p-8 mb-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
-                  <DocumentPlusIcon className="w-8 h-8" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900">Create General Ticket</h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Can't find a specific template? Create a general support request for any issue not covered by our service catalog.
-                  </p>
+              <div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  IT Service Catalog
+                </h1>
+                <p className="mt-2 text-xl text-slate-600">How can we help you today?</p>
+              </div>
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl">
+                <LifebuoyIcon className="w-8 h-8 text-white" />
+              </div>
+            </div>
+            
+            {/* Search Bar */}
+            <div className="mt-8 relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/8 to-indigo-600/8 rounded-2xl blur-md"></div>
+              <div className="relative bg-white/70 backdrop-blur-md border border-white/30 rounded-2xl overflow-hidden shadow-lg">
+                <input
+                  type="text"
+                  placeholder="Search for a service (e.g., 'password', 'new user', 'printer')..."
+                  className="w-full p-5 pl-14 bg-transparent border-0 text-slate-700 placeholder-slate-500 focus:outline-none focus:ring-0 text-lg"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                  <MagnifyingGlassIcon className="w-6 h-6 text-slate-500" />
                 </div>
               </div>
-              <button
-                onClick={() => {
-                  // Create a mock general service object and load it
-                  const generalService: Service = {
-                    id: 'req_other',
-                    name: 'Permintaan Lainnya',
-                    description: 'Other general requests not covered by specific categories',
-                    categoryId: 'general_requests',
-                    templateId: undefined,
-                    popularity: 0,
-                    usageCount: 0,
-                    hasFields: false,
-                    fieldCount: 0,
-                    type: 'static_service'
-                  };
-                  loadServiceTemplate(generalService);
-                }}
-                className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2"
-              >
-                <span>Get Started</span>
-                <ArrowRightIcon className="w-4 h-4" />
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        </header>
 
-      <main>
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {searchTerm ? (
-            searchResults.length > 0 ? (
-              renderServices(searchResults)
-            ) : (
-              <div className="col-span-full text-center py-16">
-                <MagnifyingGlassIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-800">No Services Found</h3>
-                <p className="text-gray-500 mt-1">
-                  We couldn't find any services matching your search. Try using different keywords.
-                </p>
+        {/* Quick Access - General Ticket Option */}
+        {!searchTerm && currentView === 'categories' && (
+          <div className="mb-8">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/8 to-indigo-600/8 rounded-3xl blur-md group-hover:blur-lg transition-all duration-500"></div>
+              <div className="relative bg-white/80 backdrop-blur-md border border-white/30 rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-6">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl blur-sm opacity-10"></div>
+                      <div className="relative w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
+                        <DocumentPlusIcon className="w-8 h-8" />
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-slate-800">Create General Ticket</h3>
+                      <p className="text-slate-600 mt-2 text-lg">
+                        Can't find a specific template? Create a general support request for any issue not covered by our service catalog.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      // Create a mock general service object and load it
+                      const generalService: Service = {
+                        id: 'req_other',
+                        name: 'Permintaan Lainnya',
+                        description: 'Other general requests not covered by specific categories',
+                        categoryId: 'general_requests',
+                        templateId: undefined,
+                        popularity: 0,
+                        usageCount: 0,
+                        hasFields: false,
+                        fieldCount: 0,
+                        type: 'static_service'
+                      };
+                      loadServiceTemplate(generalService);
+                    }}
+                    className="relative group/btn px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-3"
+                  >
+                    <span className="text-lg">Get Started</span>
+                    <ArrowRightIcon className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform duration-300" />
+                  </button>
+                </div>
               </div>
-            )
-          ) : currentView === 'categories' ? (
-            renderCategories()
-          ) : currentView === 'services' && currentCategory ? (
-            renderServices(services)
-          ) : null}
-        </div>
-      </main>
+            </div>
+          </div>
+        )}
+
+        <main>
+          {/* Content Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {searchTerm ? (
+              searchResults.length > 0 ? (
+                renderServices(searchResults)
+              ) : (
+                <div className="col-span-full text-center py-20">
+                  <div className="relative mx-auto w-20 h-20 mb-8">
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-400 to-slate-600 rounded-2xl blur-sm opacity-15"></div>
+                    <div className="relative bg-white/80 backdrop-blur-md border border-white/30 rounded-2xl p-4 flex items-center justify-center shadow-lg">
+                      <MagnifyingGlassIcon className="w-12 h-12 text-slate-500" />
+                    </div>
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-800 mb-3">No Services Found</h3>
+                  <p className="text-slate-600 text-lg">
+                    We couldn't find any services matching your search. Try using different keywords.
+                  </p>
+                </div>
+              )
+            ) : currentView === 'categories' ? (
+              renderCategories()
+            ) : currentView === 'services' && currentCategory ? (
+              renderServices(services)
+            ) : null}
+          </div>
+        </main>
+      </div>
     </div>
   );
 };

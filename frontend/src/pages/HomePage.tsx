@@ -9,7 +9,8 @@ import {
   CheckCircleIcon,
   BuildingOffice2Icon,
   ArrowRightIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  RectangleStackIcon
 } from '@heroicons/react/24/outline';
 
 const HomePage: React.FC = () => {
@@ -117,19 +118,19 @@ const HomePage: React.FC = () => {
               ) : (
                 <>
                   <Link
+                    to="/service-catalog-v2"
+                    className="flex items-center space-x-3 w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg"
+                  >
+                    <RectangleStackIcon className="w-5 h-5" />
+                    <span>Service Catalog</span>
+                    <ArrowRightIcon className="w-4 h-4 ml-auto" />
+                  </Link>
+                  <Link
                     to="/create-ticket"
                     className="flex items-center space-x-3 w-full px-4 py-3 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-all duration-200"
                   >
                     <PlusCircleIcon className="w-5 h-5" />
-                    <span>Create New Ticket</span>
-                  </Link>
-                  <Link
-                    to="/bsg-create"
-                    className="flex items-center space-x-3 w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg"
-                  >
-                    <BuildingOffice2Icon className="w-5 h-5" />
-                    <span>BSG Banking Support</span>
-                    <ArrowRightIcon className="w-4 h-4 ml-auto" />
+                    <span>Create General Ticket</span>
                   </Link>
                 </>
               )}
@@ -159,10 +160,10 @@ const HomePage: React.FC = () => {
               </div>
             </div>
             <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              BSG Banking Support System
+              BSG Helpdesk Service Catalog
             </h2>
             <p className="text-slate-600 mt-2">
-              Streamlined banking templates with 70.6% efficiency optimization
+              Comprehensive service catalog with specialized banking templates
             </p>
           </div>
 
@@ -175,14 +176,14 @@ const HomePage: React.FC = () => {
               </h3>
               <div className="space-y-3">
                 <Link
-                  to="/bsg-create"
+                  to="/service-catalog-v2"
                   className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 group shadow-lg"
                 >
                   <div className="flex items-center space-x-3">
-                    <BuildingOffice2Icon className="w-5 h-5" />
+                    <RectangleStackIcon className="w-5 h-5" />
                     <div>
-                      <div className="font-medium">BSG Banking Support</div>
-                      <div className="text-xs opacity-90">24+ specialized templates</div>
+                      <div className="font-medium">Service Catalog</div>
+                      <div className="text-xs opacity-90">Browse all available services</div>
                     </div>
                   </div>
                   <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -195,8 +196,8 @@ const HomePage: React.FC = () => {
                   <div className="flex items-center space-x-3">
                     <PlusCircleIcon className="w-5 h-5" />
                     <div>
-                      <div className="font-medium">General Support Ticket</div>
-                      <div className="text-xs opacity-75">Standard ticket creation</div>
+                      <div className="font-medium">General Ticket</div>
+                      <div className="text-xs opacity-75">Quick ticket creation</div>
                     </div>
                   </div>
                   <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

@@ -7,6 +7,7 @@ import { useFileDownloader } from '../hooks/useFileDownloader';
 import { ticketsService } from '../services';
 import TicketCategorization from '../components/TicketCategorization';
 import TicketComments from '../components/TicketComments';
+import TicketTimeline from '../components/TicketTimeline';
 import { Ticket as FullTicket } from '../types';
 import { 
   TicketIcon,
@@ -566,6 +567,11 @@ const TicketDetailPage: React.FC = () => {
             ))}
           </div>
         </div>
+      )}
+
+      {/* Ticket Progress Timeline - for requesters to track status */}
+      {user?.role === 'requester' && ticket && (
+        <TicketTimeline ticket={ticket} showAllSteps={true} />
       )}
 
       {/* Ticket Categorization */}
