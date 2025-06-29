@@ -6,6 +6,7 @@ export { default as templatesService } from './templates';
 export { default as ticketsService } from './tickets';
 export { default as categorizationService } from './categorization';
 export { departmentService } from './departments';
+export { default as serviceCatalogService } from './serviceCatalog';
 
 // BSG Template System Services
 export { BSGTemplateService, default as bsgTemplateService } from './bsgTemplate';

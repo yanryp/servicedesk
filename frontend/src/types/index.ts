@@ -66,6 +66,7 @@ export interface Unit {
 export interface User {
   id: number;
   username: string;
+  name?: string;
   email: string;
   role: UserRole;
   departmentId?: number;
@@ -82,6 +83,7 @@ export interface User {
 export interface AuthUser {
   id: number;
   username: string;
+  name?: string;
   email: string;
   role: UserRole;
   departmentId?: number;
@@ -99,12 +101,16 @@ export interface LoginRequest {
 
 export interface RegisterRequest {
   username: string;
+  name?: string;
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
   role: UserRole;
   departmentId?: number;
+  unitId?: number;
+  managerId?: number;
+  workloadCapacity?: number;
+  isBusinessReviewer?: boolean;
+  isKasdaUser?: boolean;
   primarySkill?: string;
   experienceLevel?: string;
   secondarySkills?: string;
@@ -283,6 +289,18 @@ export interface TicketFilters {
   search?: string;
   assignedToUserId?: number;
   createdByUserId?: number;
+  // Extended filters for technician workspace
+  assignedToMe?: boolean;
+  departmentId?: number;
+  unassigned?: boolean;
+  templateCategory?: string;
+  skill?: string;
+  // Catalog-based filters
+  categoryId?: number;
+  subCategoryId?: number;
+  itemId?: number;
+  serviceItemId?: number;
+  catalogTag?: string;
 }
 
 // Form interfaces
