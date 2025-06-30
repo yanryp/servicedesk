@@ -13,13 +13,15 @@
     "db:deploy": "prisma migrate deploy",
     "db:reset": "prisma migrate reset",
     "db:seed": "prisma db seed",
+    "db:seed:bsg": "ts-node scripts/seed-bsg-complete.ts",
+    "db:seed:legacy": "ts-node scripts/seed-complete.ts",
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "postinstall": "prisma generate"
   },
   "prisma": {
-    "seed": "ts-node scripts/seed-complete.ts"
+    "seed": "ts-node scripts/seed-bsg-complete.ts"
   },
   "keywords": [],
   "author": "",

@@ -29,8 +29,11 @@
     "lint:backend": "cd backend && npm run lint",
     "db:migrate": "cd backend && npx prisma migrate dev",
     "db:seed": "cd backend && npx prisma db seed",
+    "db:seed:bsg": "cd backend && npm run db:seed:bsg",
+    "db:seed:legacy": "cd backend && npm run db:seed:legacy",
     "db:reset": "cd backend && npx prisma migrate reset",
-    "db:studio": "cd backend && npx prisma studio"
+    "db:studio": "cd backend && npx prisma studio",
+    "setup:bsg": "npm run db:reset && npm run db:seed:bsg"
   },
   "devDependencies": {
     "@playwright/test": "^1.47.2",
