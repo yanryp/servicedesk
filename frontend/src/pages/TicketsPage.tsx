@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useFileDownloader } from '../hooks/useFileDownloader';
 import { ticketsService } from '../services';
 import { Ticket as TicketType } from '../types';
+import { Card, Button, StatusBadge, PriorityBadge, ProgressBar, LoadingSpinner, EmptyState } from '../components/ui';
 import { 
   ClipboardDocumentListIcon,
   MagnifyingGlassIcon,
@@ -236,12 +237,11 @@ const TicketsPage: React.FC = () => {
 
   if (authIsLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-gray-600">Loading your tickets...</p>
-        </div>
-      </div>
+      <LoadingSpinner 
+        size="lg" 
+        text="Loading your tickets..." 
+        className="min-h-[400px]"
+      />
     );
   }
 
@@ -286,7 +286,7 @@ const TicketsPage: React.FC = () => {
       </div>
 
       {/* Quick Filters & Actions */}
-      <div className="bg-white shadow-lg rounded-2xl p-6 border border-gray-200">
+      <Card variant="elevated" padding="lg">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             <SparklesIcon className="w-5 h-5 text-gray-600" />
@@ -368,28 +368,25 @@ const TicketsPage: React.FC = () => {
             <option value="urgent">Urgent</option>
           </select>
         </div>
-      </div>
+      </Card>
 
       {/* Tickets Display */}
       {tickets.length === 0 ? (
-        <div className="bg-white shadow-lg rounded-2xl p-12 border border-gray-200 text-center">
-          <ClipboardDocumentListIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">No Tickets Found</h3>
-          <p className="text-gray-600 mb-6">
-            {searchTerm || statusFilter || priorityFilter
-              ? "No tickets match your current filters. Try adjusting your search criteria."
-              : "You haven't created any tickets yet. Create your first support ticket to get started."
+        <Card variant="elevated" padding="xl">
+          <EmptyState
+            icon={ClipboardDocumentListIcon}
+            title="No Tickets Found"
+            description={
+              searchTerm || statusFilter || priorityFilter
+                ? "No tickets match your current filters. Try adjusting your search criteria."
+                : "You haven't created any tickets yet. Create your first support ticket to get started."
             }
-          </p>
-          {!searchTerm && !statusFilter && !priorityFilter && isRequester && (
-            <Link
-              to="/service-catalog-v2"
-              className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl"
-            >
-              <span>Create Your First Ticket</span>
-            </Link>
-          )}
-        </div>
+            action={!searchTerm && !statusFilter && !priorityFilter && isRequester ? {
+              label: "Create Your First Ticket",
+              onClick: () => window.location.href = "/service-catalog-v2"
+            } : undefined}
+          />
+        </Card>
       ) : (
         <>
           {/* Tickets Grid */}
@@ -401,22 +398,18 @@ const TicketsPage: React.FC = () => {
                 ticket.status !== 'closed';
 
               return (
-                <div
+                <Card
                   key={ticket.id}
-                  className="bg-white shadow-lg rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                  variant="default"
+                  padding="none"
+                  hover
+                  className="overflow-hidden"
                 >
                   {/* Card Header */}
                   <div className="p-6 pb-4">
                     <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center space-x-2">
-                        {getStatusIcon(ticket.status)}
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(ticket.status)}`}>
-                          {ticket.status.replace('_', ' ').toUpperCase()}
-                        </span>
-                      </div>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(ticket.priority)}`}>
-                        {ticket.priority.toUpperCase()}
-                      </span>
+                      <StatusBadge status={ticket.status} size="sm" />
+                      <PriorityBadge priority={ticket.priority} size="sm" />
                     </div>
                     
                     <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
@@ -429,21 +422,15 @@ const TicketsPage: React.FC = () => {
 
                     {/* Progress Bar */}
                     <div className="mb-4">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-medium text-gray-600">Progress</span>
-                        <span className="text-xs text-gray-500">
-                          {statusProgress.currentIndex + 1} of {statusProgress.totalSteps}
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-500"
-                          style={{ width: `${statusProgress.progress}%` }}
-                        ></div>
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {statusWorkflow[statusProgress.currentIndex]?.description || 'Processing...'}
-                      </div>
+                      <ProgressBar
+                        progress={statusProgress.progress}
+                        status={ticket.status}
+                        size="md"
+                        showLabel
+                        label={`Progress: ${statusProgress.currentIndex + 1} of ${statusProgress.totalSteps}`}
+                        description={statusWorkflow[statusProgress.currentIndex]?.description || 'Processing...'}
+                        animated
+                      />
                     </div>
                   </div>
 
@@ -503,7 +490,7 @@ const TicketsPage: React.FC = () => {
                       )}
                     </div>
                   </div>
-                </div>
+                </Card>
               );
             })}
           </div>

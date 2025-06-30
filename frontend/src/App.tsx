@@ -21,6 +21,7 @@ import UncategorizedTicketsPage from './pages/UncategorizedTicketsPage';
 import ServiceCatalogPage from './pages/ServiceCatalogPage';
 import ServiceCatalogV2Page from './pages/ServiceCatalogV2Page';
 import ServiceCatalogAdminPage from './pages/ServiceCatalogAdminPage';
+import TechnicianWorkspace from './components/technician/TechnicianWorkspace';
 import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
 
@@ -144,42 +145,68 @@ function App() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile Header */}
-        <header className="lg:hidden bg-white/80 backdrop-blur-md border-b border-slate-200/50 p-4">
+        {/* Enhanced Mobile Header */}
+        <header className="lg:hidden bg-white/90 backdrop-blur-md border-b border-slate-200/50 p-4 shadow-lg">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setMobileSidebarOpen(true)}
-              className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+              className="p-2 rounded-xl hover:bg-slate-100 transition-all duration-200 active:scale-95"
             >
               <Bars3Icon className="w-6 h-6 text-slate-600" />
             </button>
-            <h1 className="text-lg font-semibold text-slate-800">BSG Helpdesk</h1>
-            <div className="w-10 h-10" /> {/* Spacer for centering */}
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                <TicketIcon className="w-4 h-4 text-white" />
+              </div>
+              <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                BSG Helpdesk
+              </h1>
+            </div>
+            <div className="w-10 h-10 flex items-center justify-center">
+              {user && (
+                <div className="w-8 h-8 bg-gradient-to-r from-slate-400 to-slate-600 rounded-lg flex items-center justify-center">
+                  <span className="text-xs font-bold text-white">
+                    {user.username?.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
         {/* Content */}
         <main className="flex-1 overflow-auto">
-          <div className="container mx-auto p-6 max-w-7xl">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/admin/register" element={<ProtectedRoute roles={['admin']}><RegisterPage /></ProtectedRoute>} />
-              <Route path="/tickets" element={<TicketsPage />} />
-              {/* CreateTicketPage route removed in Stage 6 migration - redirect to service catalog */}
-              <Route path="/create-ticket" element={<Navigate to="/service-catalog-v2" replace />} />
-              <Route path="/service-catalog" element={<ServiceCatalogPage />} />
-              <Route path="/service-catalog-v2" element={<ServiceCatalogV2Page />} />
-              <Route path="/service-catalog-admin" element={<ProtectedRoute roles={['admin', 'manager']}><ServiceCatalogAdminPage /></ProtectedRoute>} />
-              <Route path="/tickets/:ticketId" element={<TicketDetailPage />} />
-              <Route path="/tickets/:ticketId/edit" element={<EditTicketPage />} />
-              <Route path="/manager" element={<ProtectedRoute roles={['admin', 'manager']}><ManagerDashboard /></ProtectedRoute>} />
-              <Route path="/reporting" element={<ProtectedRoute roles={['admin', 'manager']}><ReportingPage /></ProtectedRoute>} />
-              <Route path="/categorization/analytics" element={<ProtectedRoute roles={['admin', 'manager']}><CategorizationAnalyticsPage /></ProtectedRoute>} />
-              <Route path="/categorization/queue" element={<ProtectedRoute roles={['admin', 'manager', 'technician']}><UncategorizedTicketsPage /></ProtectedRoute>} />
-              {/* Catch-all redirect to home for authenticated users */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </div>
+          <Routes>
+            {/* Technician Workspace - Full-screen inbox-style interface without container */}
+            <Route path="/technician/workspace" element={<ProtectedRoute roles={['technician']}><TechnicianWorkspace /></ProtectedRoute>} />
+            
+            {/* All other routes wrapped in container */}
+            <Route path="/" element={<div className="container mx-auto p-6 max-w-7xl"><HomePage /></div>} />
+            <Route path="/admin/register" element={<ProtectedRoute roles={['admin']}><div className="container mx-auto p-6 max-w-7xl"><RegisterPage /></div></ProtectedRoute>} />
+            
+            {/* Tickets - Redirect technicians to workspace, others to regular tickets page */}
+            <Route path="/tickets" element={
+              user?.role === 'technician' ? (
+                <Navigate to="/technician/workspace" replace />
+              ) : (
+                <div className="container mx-auto p-6 max-w-7xl"><TicketsPage /></div>
+              )
+            } />
+            
+            {/* CreateTicketPage route removed in Stage 6 migration - redirect to service catalog */}
+            <Route path="/create-ticket" element={<Navigate to="/service-catalog-v2" replace />} />
+            <Route path="/service-catalog" element={<ProtectedRoute roles={['requester', 'technician', 'manager', 'admin']}><div className="container mx-auto p-6 max-w-7xl"><ServiceCatalogPage /></div></ProtectedRoute>} />
+            <Route path="/service-catalog-v2" element={<ProtectedRoute roles={['requester', 'technician', 'manager', 'admin']}><div className="container mx-auto p-6 max-w-7xl"><ServiceCatalogV2Page /></div></ProtectedRoute>} />
+            <Route path="/service-catalog-admin" element={<ProtectedRoute roles={['admin']}><div className="container mx-auto p-6 max-w-7xl"><ServiceCatalogAdminPage /></div></ProtectedRoute>} />
+            <Route path="/tickets/:ticketId" element={<ProtectedRoute roles={['requester', 'technician', 'manager', 'admin']}><div className="container mx-auto p-6 max-w-7xl"><TicketDetailPage /></div></ProtectedRoute>} />
+            <Route path="/tickets/:ticketId/edit" element={<ProtectedRoute roles={['requester', 'technician', 'manager', 'admin']}><div className="container mx-auto p-6 max-w-7xl"><EditTicketPage /></div></ProtectedRoute>} />
+            <Route path="/manager" element={<ProtectedRoute roles={['admin', 'manager']}><div className="container mx-auto p-6 max-w-7xl"><ManagerDashboard /></div></ProtectedRoute>} />
+            <Route path="/reporting" element={<ProtectedRoute roles={['admin', 'manager']}><div className="container mx-auto p-6 max-w-7xl"><ReportingPage /></div></ProtectedRoute>} />
+            <Route path="/categorization/analytics" element={<ProtectedRoute roles={['admin', 'manager']}><div className="container mx-auto p-6 max-w-7xl"><CategorizationAnalyticsPage /></div></ProtectedRoute>} />
+            <Route path="/categorization/queue" element={<ProtectedRoute roles={['admin', 'technician']}><div className="container mx-auto p-6 max-w-7xl"><UncategorizedTicketsPage /></div></ProtectedRoute>} />
+            {/* Catch-all redirect to home for authenticated users */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </main>
       </div>
     </div>

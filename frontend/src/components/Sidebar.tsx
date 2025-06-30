@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   TicketIcon,
   ClipboardDocumentListIcon,
-  PlusCircleIcon,
+  InboxIcon,
   UserIcon,
   ChartBarIcon,
   ArrowRightOnRectangleIcon,
@@ -40,24 +40,39 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const isActive = (path: string) => {
+    if (path === '/technician/workspace') {
+      return location.pathname === path;
+    }
+    if (path === '/tickets' && user?.role === 'technician') {
+      // Technicians should see workspace as active when on /tickets route
+      return location.pathname === '/technician/workspace';
+    }
     return location.pathname === path;
   };
 
   const navigationSections = [
     {
-      title: 'Tickets',
+      title: 'Workspace',
       items: [
+        // Technician Workspace
+        {
+          name: 'Technician Workspace',
+          href: '/technician/workspace',
+          icon: InboxIcon,
+          roles: ['technician']
+        },
+        // My Tickets for non-technicians
         {
           name: 'My Tickets',
           href: '/tickets',
           icon: ClipboardDocumentListIcon,
-          roles: ['requester', 'technician', 'manager', 'admin']
+          roles: ['requester', 'manager', 'admin']
         },
         {
           name: 'Service Catalog',
           href: '/service-catalog-v2',
           icon: RectangleStackIcon,
-          roles: ['requester', 'technician', 'admin']
+          roles: ['requester', 'technician', 'manager', 'admin']
         }
       ]
     },
@@ -68,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           name: 'Categorization Queue',
           href: '/categorization/queue',
           icon: TagIcon,
-          roles: ['technician', 'manager', 'admin']
+          roles: ['technician', 'admin']
         },
         {
           name: 'Approvals',
@@ -91,7 +106,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           name: 'Service Catalog Admin',
           href: '/service-catalog-admin',
           icon: RectangleStackIcon,
-          roles: ['admin', 'manager']
+          roles: ['admin']
         },
         {
           name: 'Analytics',
@@ -216,6 +231,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                       <span>•</span>
                       <span className="text-blue-600 font-medium truncate">
                         {user.department.name}
+                      </span>
+                    </>
+                  )}
+                  {user?.unit && (
+                    <>
+                      <span>•</span>
+                      <span className="text-green-600 font-medium truncate">
+                        {user.unit.name}
                       </span>
                     </>
                   )}
