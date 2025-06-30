@@ -831,6 +831,24 @@ router.post('/create', protect, upload.array('attachments', 5), asyncHandler(asy
   }
 }));
 
+// Simple in-memory cache for ticket counts (expires every 5 minutes)
+const ticketCountsCache = new Map<string, { data: any, timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Helper function to get cached data
+const getCachedData = (key: string) => {
+  const cached = ticketCountsCache.get(key);
+  if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+    return cached.data;
+  }
+  return null;
+};
+
+// Helper function to set cached data
+const setCachedData = (key: string, data: any) => {
+  ticketCountsCache.set(key, { data, timestamp: Date.now() });
+};
+
 // Get tickets with department-based filtering
 router.get('/', protect, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -845,11 +863,13 @@ router.get('/', protect, asyncHandler(async (req: AuthenticatedRequest, res: Res
       businessImpact,
       templateCategory,
       skill,
-      search 
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc'
     } = req.query;
 
     const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
-    const take = parseInt(limit as string);
+    const take = Math.min(parseInt(limit as string), 100); // Limit max results to 100
 
     let whereClause: any = {};
 
@@ -869,24 +889,42 @@ router.get('/', protect, asyncHandler(async (req: AuthenticatedRequest, res: Res
         ];
       }
     } else if (user?.role === 'technician') {
-      // Technicians see tickets assigned to their department based on KASDA flag and department routing
+      // Technicians see tickets assigned to them personally OR department-based tickets
+      const departmentFilters = [];
+      
+      // Always include tickets personally assigned to this technician
+      departmentFilters.push({
+        assignedToUserId: user.id,
+        status: { in: ['assigned', 'in_progress', 'pending', 'resolved', 'closed'] }
+      });
+      
+      // Add department-based tickets based on their specialization
       if (user.departmentId) {
         if (user.departmentId === 1) { // Information Technology Department
           // IT technicians see non-KASDA tickets (technical issues) that are ready for processing
-          whereClause.isKasdaTicket = false;
-          whereClause.status = { in: ['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed'] };
+          departmentFilters.push({
+            isKasdaTicket: false,
+            status: { in: ['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed'] }
+          });
         } else if (user.departmentId === 2) { // Dukungan & Layanan Department
-          // Support technicians see only KASDA tickets (user management, treasury) that are ready for processing
-          whereClause.isKasdaTicket = true;
-          whereClause.status = { in: ['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed'] };
+          // Support technicians see KASDA tickets (user management, treasury) that are ready for processing
+          departmentFilters.push({
+            isKasdaTicket: true,
+            status: { in: ['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed'] }
+          });
         } else {
           // Other department technicians see tickets assigned to their specific department
-          whereClause.serviceCatalog = {
-            departmentId: user.departmentId
-          };
-          whereClause.status = { in: ['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed'] };
+          departmentFilters.push({
+            serviceCatalog: {
+              departmentId: user.departmentId
+            },
+            status: { in: ['open', 'assigned', 'in_progress', 'pending', 'resolved', 'closed'] }
+          });
         }
       }
+      
+      // Use OR condition to combine personal assignments with department-based tickets
+      whereClause.OR = departmentFilters;
     } else {
       // Requesters see only their own tickets
       whereClause.createdByUserId = user?.id;
@@ -936,19 +974,53 @@ router.get('/', protect, asyncHandler(async (req: AuthenticatedRequest, res: Res
 
     // Search functionality
     if (search) {
-      whereClause.OR = [
-        ...(whereClause.OR || []),
+      const searchConditions = [
         { title: { contains: search as string, mode: 'insensitive' } },
         { description: { contains: search as string, mode: 'insensitive' } }
       ];
+      
+      if (whereClause.OR) {
+        // If there are existing OR conditions, wrap them with search
+        whereClause.AND = [
+          ...(whereClause.AND || []),
+          {
+            OR: whereClause.OR
+          },
+          {
+            OR: searchConditions
+          }
+        ];
+        delete whereClause.OR;
+      } else {
+        // No existing OR conditions, just add search
+        whereClause.OR = searchConditions;
+      }
     }
 
-    // KASDA user filtering
+    // KASDA user filtering - combine with search if exists
     if (user?.isKasdaUser) {
-      whereClause.OR = [
+      const kasdaConditions = [
         { createdByUserId: user.id },
         { isKasdaTicket: true }
       ];
+      
+      if (search && whereClause.AND) {
+        // Search exists, add KASDA filtering to AND conditions
+        whereClause.AND.push({
+          OR: kasdaConditions
+        });
+      } else if (whereClause.OR) {
+        // Existing OR conditions, combine with KASDA
+        whereClause.AND = [
+          ...(whereClause.AND || []),
+          { OR: whereClause.OR },
+          { OR: kasdaConditions }
+        ];
+        delete whereClause.OR;
+      } else {
+        // No existing conditions, just add KASDA
+        whereClause.OR = kasdaConditions;
+      }
     }
 
     const tickets = await prisma.ticket.findMany({
@@ -965,16 +1037,58 @@ router.get('/', protect, asyncHandler(async (req: AuthenticatedRequest, res: Res
           select: {
             id: true,
             username: true,
+            name: true,
             email: true,
-            role: true
+            role: true,
+            unit: {
+              select: {
+                id: true,
+                code: true,
+                name: true,
+                unitType: true,
+                department: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            },
+            department: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
           }
         },
         assignedTo: {
           select: {
             id: true,
             username: true,
+            name: true,
             email: true,
-            role: true
+            role: true,
+            unit: {
+              select: {
+                id: true,
+                code: true,
+                name: true,
+                unitType: true,
+                department: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            },
+            department: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
           }
         },
         businessApproval: {
@@ -991,12 +1105,24 @@ router.get('/', protect, asyncHandler(async (req: AuthenticatedRequest, res: Res
         },
         attachments: true
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: sortBy === 'createdAt' ? { createdAt: sortOrder as 'asc' | 'desc' } :
+               sortBy === 'updatedAt' ? { updatedAt: sortOrder as 'asc' | 'desc' } :
+               sortBy === 'priority' ? { priority: sortOrder as 'asc' | 'desc' } :
+               sortBy === 'status' ? { status: sortOrder as 'asc' | 'desc' } :
+               { createdAt: 'desc' },
       skip,
       take
     });
 
-    const totalTickets = await prisma.ticket.count({ where: whereClause });
+    // Cache key for total count
+    const countCacheKey = `ticket_count_${user?.id}_${JSON.stringify(whereClause)}`;
+    let totalTickets = getCachedData(countCacheKey);
+    
+    if (totalTickets === null) {
+      totalTickets = await prisma.ticket.count({ where: whereClause });
+      setCachedData(countCacheKey, totalTickets);
+    }
+    
     const totalPages = Math.ceil(totalTickets / take);
 
     res.json({
@@ -1040,10 +1166,20 @@ router.get('/pending-business-approvals', protect, asyncHandler(async (req: Auth
       });
     }
 
+    // MULTI-MANAGER SUPPORT: Allow any manager in the same unit to see pending approvals
     const pendingApprovals = await prisma.businessApproval.findMany({
       where: {
         approvalStatus: 'pending',
-        businessReviewerId: user.id
+        OR: [
+          { businessReviewerId: user.id },
+          {
+            ticket: {
+              createdBy: {
+                unitId: user.unitId
+              }
+            }
+          }
+        ]
       },
       include: {
         ticket: {
@@ -1116,7 +1252,12 @@ router.post('/business-approval/:ticketId', protect, asyncHandler(async (req: Au
         ticket: {
           include: {
             serviceItem: true,
-            governmentEntity: true
+            governmentEntity: true,
+            createdBy: {
+              include: {
+                unit: true
+              }
+            }
           }
         }
       }
@@ -1129,10 +1270,14 @@ router.post('/business-approval/:ticketId', protect, asyncHandler(async (req: Au
       });
     }
 
-    if (businessApproval.businessReviewerId !== user.id) {
+    // MULTI-MANAGER SUPPORT: Check if user can approve (either assigned manager or same unit manager)
+    const canApproveTicket = businessApproval.businessReviewerId === user.id || 
+      (businessApproval.ticket?.createdBy?.unitId === user.unitId && user.isBusinessReviewer);
+    
+    if (!canApproveTicket) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. You are not assigned to review this ticket.'
+        message: 'Access denied. You are not authorized to review this ticket.'
       });
     }
 
@@ -1214,11 +1359,24 @@ router.get('/pending-approvals', protect, asyncHandler(async (req: Authenticated
   try {
     console.log('Fetching unit-based pending approvals for user:', user.id, user.username, 'unit:', user.unitId);
 
-    // NEW: Query BusinessApproval table for tickets assigned to this manager
+    // MULTI-MANAGER SUPPORT: Query BusinessApproval table for tickets that ANY manager in this unit can approve
+    // This supports multiple managers per unit (backup managers when primary is unavailable)
     const businessApprovals = await prisma.businessApproval.findMany({
       where: {
-        businessReviewerId: user.id,
-        approvalStatus: 'pending'
+        approvalStatus: 'pending',
+        // Allow any manager in the same unit to approve tickets from their unit
+        OR: [
+          // Original: tickets specifically assigned to this manager
+          { businessReviewerId: user.id },
+          // New: tickets from the same unit that any unit manager can approve
+          {
+            ticket: {
+              createdBy: {
+                unitId: user.unitId // Tickets created by users in the same unit as this manager
+              }
+            }
+          }
+        ]
       },
       include: {
         ticket: {
@@ -1764,18 +1922,20 @@ router.post('/:ticketId/approve', protect, asyncHandler(async (req: Authenticate
       });
     }
 
-    // NEW: Check authorization using BusinessApproval table
+    // MULTI-MANAGER SUPPORT: Check authorization using BusinessApproval table
+    // Allow admin, assigned manager, or any manager from the same unit to approve
     const canApprove = user?.role === 'admin' || 
       (user?.role === 'manager' && 
        user?.isBusinessReviewer === true &&
-       ticket.businessApproval?.businessReviewerId === user?.id &&
-       ticket.businessApproval?.approvalStatus === 'pending');
+       ticket.businessApproval?.approvalStatus === 'pending' &&
+       (ticket.businessApproval?.businessReviewerId === user?.id || 
+        ticket.createdBy?.unitId === user?.unitId));
 
     if (!canApprove) {
       const reason = !ticket.businessApproval 
         ? 'No business approval found for this ticket'
-        : ticket.businessApproval.businessReviewerId !== user?.id
-        ? 'You are not assigned to approve this ticket'
+        : ticket.businessApproval.businessReviewerId !== user?.id && ticket.createdBy?.unitId !== user?.unitId
+        ? 'You are not authorized to approve this ticket (not assigned manager or same unit manager)'
         : ticket.businessApproval.approvalStatus !== 'pending'
         ? `Ticket approval is already ${ticket.businessApproval.approvalStatus}`
         : 'Insufficient permissions for approval';
@@ -1899,18 +2059,20 @@ router.post('/:ticketId/reject', protect, asyncHandler(async (req: Authenticated
       });
     }
 
-    // NEW: Check authorization using BusinessApproval table (consistent with approve endpoint)
+    // MULTI-MANAGER SUPPORT: Check authorization using BusinessApproval table (consistent with approve endpoint)
+    // Allow admin, assigned manager, or any manager from the same unit to reject
     const canReject = user?.role === 'admin' || 
       (user?.role === 'manager' && 
        user?.isBusinessReviewer === true &&
-       ticket.businessApproval?.businessReviewerId === user?.id &&
-       ticket.businessApproval?.approvalStatus === 'pending');
+       ticket.businessApproval?.approvalStatus === 'pending' &&
+       (ticket.businessApproval?.businessReviewerId === user?.id || 
+        ticket.createdBy?.unitId === user?.unitId));
 
     if (!canReject) {
       const reason = !ticket.businessApproval 
         ? 'No business approval found for this ticket'
-        : ticket.businessApproval.businessReviewerId !== user?.id
-        ? 'You are not assigned to reject this ticket'
+        : ticket.businessApproval.businessReviewerId !== user?.id && ticket.createdBy?.unitId !== user?.unitId
+        ? 'You are not authorized to reject this ticket (not assigned manager or same unit manager)'
         : ticket.businessApproval.approvalStatus !== 'pending'
         ? `Ticket approval is already ${ticket.businessApproval.approvalStatus}`
         : 'Insufficient permissions for rejection';
@@ -2205,6 +2367,136 @@ router.patch('/:ticketId/status', protect, asyncHandler(async (req: Authenticate
     res.status(500).json({
       success: false,
       message: 'Failed to update ticket status',
+      error: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
+    });
+  }
+}));
+
+// Start work and auto-assign - for tickets picked up from Available Queue
+router.patch('/:ticketId/start-work', protect, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { ticketId } = req.params;
+    const { comments } = req.body;
+    const { user } = req;
+
+    console.log(`Starting work and auto-assigning ticket ${ticketId} to user ${user?.id} (${user?.role})`);
+
+    // Only technicians and admins can start work
+    if (user?.role !== 'technician' && user?.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only technicians can start work on tickets'
+      });
+    }
+
+    // Find the ticket
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: parseInt(ticketId) },
+      include: {
+        createdBy: {
+          include: {
+            department: true,
+            manager: true
+          }
+        },
+        assignedTo: {
+          include: {
+            department: true
+          }
+        },
+        serviceCatalog: {
+          include: {
+            department: true
+          }
+        }
+      }
+    });
+
+    if (!ticket) {
+      return res.status(404).json({
+        success: false,
+        message: 'Ticket not found'
+      });
+    }
+
+    // Validate current status - must be approved or assigned
+    if (!['approved', 'assigned', 'open'].includes(ticket.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot start work on ticket with status: ${ticket.status}`
+      });
+    }
+
+    // Check if ticket is already assigned to someone else
+    if (ticket.assignedToUserId && ticket.assignedToUserId !== user?.id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Ticket is already assigned to another technician'
+      });
+    }
+
+    // Update ticket: assign to current user and set status to in_progress
+    const updatedTicket = await prisma.ticket.update({
+      where: { id: parseInt(ticketId) },
+      data: {
+        status: 'in_progress',
+        assignedToUserId: user?.id,
+        updatedAt: new Date()
+      },
+      include: {
+        createdBy: {
+          include: {
+            department: true,
+            manager: true
+          }
+        },
+        assignedTo: {
+          include: {
+            department: true
+          }
+        },
+        attachments: true,
+        serviceCatalog: {
+          include: {
+            department: true
+          }
+        },
+        serviceItem: true,
+        governmentEntity: true,
+        businessApproval: {
+          include: {
+            businessReviewer: true
+          }
+        }
+      }
+    });
+
+    // Add a comment about the assignment and start of work
+    if (comments || ticket.assignedToUserId !== user?.id) {
+      await prisma.ticketComment.create({
+        data: {
+          ticketId: parseInt(ticketId),
+          authorId: user?.id || 0,
+          content: comments || `Technician ${user?.username} has been assigned and started working on this ticket`,
+          commentType: 'status_change',
+          isInternal: false
+        }
+      });
+    }
+
+    console.log(`Successfully assigned ticket ${ticketId} to ${user?.username} and set status to in_progress`);
+
+    res.json({
+      success: true,
+      message: 'Ticket assigned and work started successfully',
+      data: updatedTicket
+    });
+
+  } catch (error) {
+    console.error('Error starting work and assigning ticket:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to start work and assign ticket',
       error: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
     });
   }

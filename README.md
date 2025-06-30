@@ -1,139 +1,253 @@
-# Enterprise Ticketing System
+# BSG Enterprise Ticketing System
 
-This project is an enterprise-grade ticketing system designed to replace ManageEngine ServiceDesk Plus Free Edition. 
+![BSG Banking](https://img.shields.io/badge/BSG-Banking%20System-blue)
+![Status](https://img.shields.io/badge/Status-Production%20Ready-green)
+![License](https://img.shields.io/badge/License-ISC-blue)
 
-## Tech Stack
-- **Frontend:** React.js with TypeScript
-- **Backend:** Node.js with Express.js and TypeScript
-- **Database:** PostgreSQL
+## 🏢 Overview
 
-## Project Structure
-- `frontend/`: Contains the React.js frontend application
-- `backend/`: Contains the Node.js backend API
+The BSG Enterprise Ticketing System is a comprehensive helpdesk solution designed specifically for BSG Banking network, replacing ManageEngine ServiceDesk Plus Free Edition. It provides unlimited technician accounts, advanced approval workflows, and complete branch network integration across 53 BSG banking locations.
 
-## Key Features
+## ✨ Key Features
 
-### Multi-Level Category System
-- Hierarchical structure: Categories → Sub-Categories → Items → Templates
-- Custom fields based on templates
-- Dynamic form generation based on selected template
+### 🔐 Role-Based Access Control
+- **Admin**: Complete system management and user administration
+- **Manager**: Ticket approval authority within their branch unit
+- **Technician**: Ticket processing and resolution
+- **Requester**: Ticket creation and tracking
 
-### Ticket Approval Workflow
-- New tickets are created with 'pending-approval' status
-- Manager actions:
-  - **Approve**: Changes status to 'approved', clears manager comments, sets SLA due date
-  - **Reject**: Changes status to 'rejected', adds manager comments
-  - **Request Changes**: Changes status to 'awaiting-changes', adds manager comments
-- When a requester updates a ticket in 'awaiting-changes' status, it automatically transitions back to 'pending-approval'
-- Once approved, tickets can be assigned to technicians for processing
+### 🏦 BSG Branch Network Integration
+- **53 Branch Units**: Complete CABANG (27) and CAPEM (24) network coverage
+- **Geographic Distribution**: 4 provinces, 9 regional clusters
+- **Unit-Based Approval**: Independent approval authority for each branch
+- **Equal Authority Model**: CAPEM managers have same approval rights as CABANG
 
-### Role-Based Access Control
-- **Requesters**: Can create and update their own tickets
-- **Managers**: Can review, approve, reject, or request changes for tickets from their team members
-- **Technicians**: Can work on approved tickets
-- **Admins**: Have full access to all system features
+### 📋 Service Catalog System
+- **Modern Service Catalog**: ITIL-aligned service offerings
+- **Government Services**: KASDA integration with special approval workflows
+- **Banking Services**: OLIBS and BSGDirect support
+- **IT Services**: Hardware and network support
 
-## Recent Improvements
+### ⚡ Advanced Workflow Engine
+- **Approval Workflow**: Manager approval before ticket activation
+- **SLA Management**: Post-approval SLA calculations
+- **Escalation System**: Time-based and condition-based escalations
+- **Real-time Notifications**: WebSocket and email notifications
 
-### Fixed Issues
-- Fixed automatic status transition from 'awaiting-changes' to 'pending-approval' when a requester updates their ticket
-- Corrected database column name mismatches in SQL queries:
-  - `ta.filename` → `ta.file_name`
-  - `ta.filepath` → `ta.file_path`
-  - `ta.mimetype` → `ta.file_type`
-  - `ta.filesize` → `ta.file_size`
-- Fixed database client double release errors
-
-## Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js (v14+)
-- PostgreSQL (v12+)
-- npm or yarn
+- Node.js 18+
+- PostgreSQL 13+
+- npm 9+
 
 ### Installation
 
-1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/ticketing-system.git
+# Clone the repository
+git clone [repository-url]
 cd ticketing-system
-```
 
-2. Set up the backend
-```bash
-cd backend
-npm install
-cp .env.example .env  # Update with your database credentials
+# Install all dependencies
+npm run install:all
+
+# Setup database with BSG data
+npm run setup:bsg
+
+# Start development servers
 npm run dev
 ```
 
-3. Set up the frontend (in a separate terminal)
+### Default Login Credentials
+
+| Role | Email | Password | Authority |
+|------|-------|----------|-----------|
+| Admin | admin@bsg.co.id | password123 | System administration |
+| Manager | utama.manager@bsg.co.id | password123 | Utama branch approval |
+| Manager | gorontalo.manager@bsg.co.id | password123 | Gorontalo branch approval |
+| Technician | it.technician@bsg.co.id | password123 | IT support |
+| Technician | banking.tech@bsg.co.id | password123 | Banking systems |
+| Requester | utama.user@bsg.co.id | password123 | General user |
+| KASDA User | kasda.user@bsg.co.id | password123 | Government services |
+
+## 📁 Project Structure
+
+```
+ticketing-system/
+├── frontend/                 # React TypeScript frontend
+│   ├── src/
+│   │   ├── components/       # Reusable components
+│   │   ├── pages/           # Route-based pages
+│   │   ├── services/        # API services
+│   │   └── types/           # TypeScript definitions
+├── backend/                 # Node.js TypeScript backend
+│   ├── src/
+│   │   ├── routes/          # API endpoints
+│   │   ├── services/        # Business logic
+│   │   ├── middleware/      # Auth & validation
+│   │   └── utils/           # Utilities
+│   ├── prisma/             # Database schema
+│   └── scripts/            # Database seed scripts
+├── docs/                   # Current documentation
+│   ├── current/            # Active project docs
+│   ├── guides/             # Setup and deployment guides
+│   └── specifications/     # Technical specifications
+├── archive/                # Legacy files and scripts
+│   ├── analysis-scripts/   # Analysis and debug scripts
+│   ├── migration-scripts/  # Data migration utilities
+│   ├── test-scripts/       # Test files and results
+│   ├── development-logs/   # Development log files
+│   ├── legacy-documentation/ # Outdated documentation
+│   └── csv-data/           # CSV import files
+└── e2e-tests/             # End-to-end test suite
+```
+
+## 🛠️ Development Commands
+
 ```bash
-cd frontend
-npm install
+# Development
+npm run dev                 # Start both frontend and backend
+npm run dev:frontend       # Frontend only
+npm run dev:backend        # Backend only
+
+# Database
+npm run db:migrate         # Run database migrations
+npm run db:seed:bsg        # Seed with BSG data
+npm run db:studio          # Open Prisma Studio
+npm run db:reset           # Reset database
+
+# Testing
+npm test                   # Run all tests
+npm run test:e2e          # E2E tests with Playwright
+
+# Building
+npm run build             # Build for production
+npm run lint              # Run linting
+```
+
+## 🏦 BSG Branch Network
+
+### CABANG Branches (27 Main Offices)
+- Kantor Cabang Utama (UTAMA)
+- Kantor Cabang Jakarta (JAKARTA)  
+- Kantor Cabang Gorontalo (GORONTALO)
+- Kantor Cabang Kotamobagu (KOTAMOBAGU)
+- [Additional 23 CABANG branches]
+
+### CAPEM Branches (24 Sub-Offices)
+- Kantor Cabang Pembantu Kelapa Gading
+- Kantor Cabang Pembantu Tuminting
+- Kantor Cabang Pembantu Wenang
+- [Additional 21 CAPEM branches]
+
+### Geographic Coverage
+- **Sulawesi Utara**: 34 branches
+- **Gorontalo**: 13 branches
+- **DKI Jakarta**: 4 branches
+- **Jawa Timur**: 2 branches
+
+## 📊 System Architecture
+
+### Technology Stack
+- **Frontend**: React 18, TypeScript, Tailwind CSS
+- **Backend**: Node.js, Express, TypeScript
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: JWT with role-based access
+- **Real-time**: WebSocket notifications
+- **Testing**: Playwright E2E, Jest unit tests
+
+### Key Design Patterns
+- Clean Architecture with service layers
+- CQRS for complex approval queries
+- Event-driven workflow transitions
+- Circuit breaker for resilience
+
+## 🔧 Configuration
+
+### Database Setup
+The system uses PostgreSQL with a comprehensive BSG banking schema. See [Database Setup Guide](docs/guides/DATABASE-SETUP.md) for detailed instructions.
+
+### Environment Variables
+```bash
+DATABASE_URL="postgresql://user:password@localhost:5432/bsg_helpdesk"
+JWT_SECRET="your-jwt-secret"
+PORT=5000
+NODE_ENV="development"
+```
+
+## 📈 Production Deployment
+
+### Docker Deployment
+```bash
+# Build and start with Docker Compose
+docker-compose up -d
+
+# For WSL/Windows environments
+npm run build:wsl
+```
+
+### Manual Deployment
+```bash
+# Build the application
+npm run build
+
+# Run database migrations
+npm run db:migrate
+
+# Seed production data
+npm run db:seed:bsg
+
+# Start production server
 npm start
 ```
 
-## Next Steps & Development Roadmap
+## 🧪 Testing
 
-The following is a phased plan for upcoming development, based on recent project analysis:
+### Unit Tests
+```bash
+npm run test:unit
+npm run test:coverage
+```
 
-### Phase 1: Frontend Template System Implementation (Priority High)
-- **Objective**: Enable users to select templates and fill out dynamically generated forms.
-- **Key Tasks**:
-    - Update `CreateTicketPage.tsx`:
-        - Implement template selection UI (e.g., `CategorySelector`, `TemplateSelector`).
-        - Integrate `DynamicForm.tsx` to render forms based on selected template.
-        - Develop `CustomFieldRenderer.tsx` and individual field components (text, number, date, dropdown, etc.).
-        - Add real-time frontend validation for custom fields.
-    - API Integration:
-        - Fetch available templates and their custom field definitions.
-        - Submit ticket data including `templateId` and `customFieldValues` (ensure API call uses `FormData` if handling file uploads alongside, or structured JSON as appropriate).
-    - **Quick Fix**: Remove current hardcoded/free-form ticket creation from frontend to enforce template usage.
+### E2E Tests
+```bash
+npm run test:e2e
+npm run test:e2e:ui        # Interactive mode
+npm run test:e2e:debug     # Debug mode
+```
 
-### Phase 2: Manager Dashboard & Features
-- **Objective**: Provide managers with tools to efficiently review and approve tickets.
-- **Key Tasks**:
-    - Develop `ManagerDashboard.tsx`:
-        - Display list of tickets pending approval.
-        - Implement quick actions (approve, reject, request changes).
-        - Add functionality for bulk selection and actions.
-        - Include filtering and search capabilities.
-    - Ensure mobile-responsive design for the manager interface.
-    - Add a route for the Manager Dashboard (e.g., `/manager/approvals` in `App.tsx`).
-    - **Quick Fix**: Add manager role check in frontend to display link to the dashboard (e.g., `{isManager && <Link to="/manager/approvals">Approvals</Link>}`).
+### Test Coverage
+- Business logic: 80%+ coverage target
+- API endpoints: Integration tested
+- Approval workflows: Complete E2E coverage
 
-### Phase 3: Backend Enhancements & Advanced Features
-- **Objective**: Strengthen backend logic and introduce advanced system capabilities.
-- **Key Tasks**:
-    - **Enforce Template Usage**: Modify database schema (`ALTER TABLE tickets ALTER COLUMN template_id SET NOT NULL;`) and backend logic to make `template_id` mandatory for ticket creation.
-    - Implement Auto-Approval: Develop a system for automatic approval of tickets after a configurable timeout.
-    - Implement Approval Delegation: Allow managers to delegate their approval responsibilities.
-    - Develop Template Usage Analytics: Create backend endpoints and data collection for tracking template usage and field completion metrics.
-    - Explore Template Versioning.
-    - Implement Template-Based SLA Rules.
-    - Design and implement an Approval Rules Engine.
-    - Support Multi-Level Approvals.
+## 📚 Documentation
 
-### Phase 4: System Polish, Testing & Comprehensive Documentation
-- **Objective**: Ensure system stability, reliability, and provide thorough documentation.
-- **Key Tasks**:
-    - **Testing**:
-        - Conduct extensive testing of the template system (frontend and backend validation).
-        - Perform thorough tests of the entire approval workflow.
-        - Execute end-to-end user journey tests.
-    - **Documentation**:
-        - Update API documentation for all new and modified endpoints.
-        - Create/update user guides for new frontend features (template creation, manager dashboard).
-        - Develop admin guides for system configuration and advanced features.
+- **[Project Guide](docs/current/CLAUDE.md)**: Complete development guide
+- **[Database Setup](docs/guides/DATABASE-SETUP.md)**: Database configuration
+- **[WSL Deployment](docs/guides/WSL-DEPLOYMENT.md)**: Windows deployment guide
+- **[API Documentation](docs/specifications/API-DOCUMENTATION.md)**: API reference
 
-### Ongoing Improvements
-- Implement more comprehensive error handling throughout the application.
-- Continuously add unit and integration tests, focusing on critical workflows like template management and approvals.
-- Enhance logging for improved debugging and system monitoring.
-- Regularly review and refactor code (e.g., `ticketRoutes.ts`, frontend components) for clarity, performance, and maintainability.
-- Refine email notification system, including settings for development/testing.
+## 🤝 Contributing
 
-## License
+1. Follow the established code patterns
+2. Maintain role-based security boundaries
+3. Test approval workflows thoroughly
+4. Update documentation as needed
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+## 📄 License
+
+ISC License - BSG IT Development Team
+
+## 🆘 Support
+
+For technical support or deployment assistance:
+- Check the documentation in `docs/`
+- Review archived scripts in `archive/`
+- Consult the database setup guide for common issues
+
+---
+
+**🌟 Ready for BSG Enterprise Operations!**
+
+This system provides a complete ticketing solution with BSG banking network integration, supporting unlimited technicians and comprehensive approval workflows across all 53 branch locations.

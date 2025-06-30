@@ -40,12 +40,12 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const isActive = (path: string) => {
-    if (path === '/technician/workspace') {
+    if (path === '/technician/tickets') {
       return location.pathname === path;
     }
-    if (path === '/tickets' && user?.role === 'technician') {
-      // Technicians should see workspace as active when on /tickets route
-      return location.pathname === '/technician/workspace';
+    if (path === '/tickets' && ['technician', 'manager', 'admin'].includes(user?.role || '')) {
+      // Redirect technicians, managers, and admins to the modern ticket management page
+      return location.pathname === '/technician/tickets';
     }
     return location.pathname === path;
   };
@@ -54,12 +54,19 @@ const Sidebar: React.FC<SidebarProps> = ({
     {
       title: 'Workspace',
       items: [
-        // Technician Workspace
+        // Technician Workspace (Inbox-style with view toggle)
         {
           name: 'Technician Workspace',
           href: '/technician/workspace',
           icon: InboxIcon,
-          roles: ['technician']
+          roles: ['technician', 'manager', 'admin']
+        },
+        // Technician Tickets (Modern Table/Kanban View)
+        {
+          name: 'Ticket Management',
+          href: '/technician/tickets',
+          icon: ClipboardDocumentListIcon,
+          roles: ['technician', 'manager', 'admin']
         },
         // My Tickets for non-technicians
         {
@@ -200,7 +207,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         } ${isCollapsed ? 'justify-center px-2' : ''}`}
                         title={isCollapsed ? item.name : undefined}
                       >
-                        <Icon className={`w-5 h-5 ${isCollapsed ? '' : 'flex-shrink-0'}`} />
+                        <Icon className={`${isCollapsed ? 'w-6 h-6' : 'w-5 h-5'} flex-shrink-0`} />
                         {!isCollapsed && <span>{item.name}</span>}
                       </Link>
                     </li>

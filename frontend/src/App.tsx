@@ -22,6 +22,7 @@ import ServiceCatalogPage from './pages/ServiceCatalogPage';
 import ServiceCatalogV2Page from './pages/ServiceCatalogV2Page';
 import ServiceCatalogAdminPage from './pages/ServiceCatalogAdminPage';
 import TechnicianWorkspace from './components/technician/TechnicianWorkspace';
+import TechnicianTicketsPage from './pages/TechnicianTicketsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
 
@@ -204,6 +205,7 @@ function App() {
             <Route path="/reporting" element={<ProtectedRoute roles={['admin', 'manager']}><div className="container mx-auto p-6 max-w-7xl"><ReportingPage /></div></ProtectedRoute>} />
             <Route path="/categorization/analytics" element={<ProtectedRoute roles={['admin', 'manager']}><div className="container mx-auto p-6 max-w-7xl"><CategorizationAnalyticsPage /></div></ProtectedRoute>} />
             <Route path="/categorization/queue" element={<ProtectedRoute roles={['admin', 'technician']}><div className="container mx-auto p-6 max-w-7xl"><UncategorizedTicketsPage /></div></ProtectedRoute>} />
+            <Route path="/technician/tickets" element={<ProtectedRoute roles={['technician', 'manager', 'admin']}><div className="container mx-auto p-6 max-w-7xl"><TechnicianTicketsPage /></div></ProtectedRoute>} />
             {/* Catch-all redirect to home for authenticated users */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

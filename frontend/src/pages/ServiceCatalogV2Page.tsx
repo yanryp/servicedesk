@@ -9,6 +9,7 @@ import {
   LifebuoyIcon,
   UsersIcon,
   ServerIcon,
+  ServerStackIcon,
   WifiIcon,
   CreditCardIcon,
   ReceiptPercentIcon,
@@ -48,12 +49,13 @@ const iconMap = {
   'banknotes': BanknotesIcon,
   'currency-dollar': CurrencyDollarIcon,
   'circle-stack': CircleStackIcon, // For actual cash stacks
-  'atm': BanknotesIcon, // ATM services
+  'atm': CreditCardIcon, // ATM services - better represents card operations
   
   // Technology & Hardware  
   'hard-drive': ServerIcon,
   'computer-desktop': ComputerDesktopIcon,
   'server': ServerIcon,
+  'server-stack': ServerStackIcon, // For banking systems/OLIB
   'wifi': WifiIcon,
   'globe-alt': GlobeAltIcon,
   
@@ -385,7 +387,26 @@ const ServiceCatalogV2Page: React.FC = () => {
         }
       });
     } else {
-      console.log('❌ Cannot auto-fill: User has no department assigned');
+      console.log('⚠️ Cannot auto-fill department fields: User has no department assigned');
+      // Try to auto-fill with user's unit if available
+      if (user?.unit?.name) {
+        const unitName = user.unit.name;
+        console.log(`🏢 Will auto-fill unit fields with: ${unitName}`);
+        
+        fields.forEach(field => {
+          const fieldName = field.fieldName.toLowerCase();
+          const fieldLabel = field.fieldLabel.toLowerCase();
+          
+          // Check if this is a unit field
+          if (fieldName.includes('unit') || fieldName.includes('cabang') || fieldName.includes('capem') ||
+              fieldLabel.includes('unit') || fieldLabel.includes('cabang') || fieldLabel.includes('capem')) {
+            console.log(`🎯 Auto-filling unit field: ${field.fieldLabel} with "${unitName}"`);
+            handleFieldChange(field.fieldName, unitName);
+          }
+        });
+      } else {
+        console.log('⚠️ User has no department or unit assigned - skipping auto-fill');
+      }
     }
     
     // Set issue classification defaults (same as before)
@@ -582,8 +603,32 @@ const ServiceCatalogV2Page: React.FC = () => {
       templateFields.forEach(field => {
         if (field.isRequired) {
           const value = fieldValues[field.fieldName];
+          
+          // Enhanced validation for different field types
           if (!value || (typeof value === 'string' && !value.trim())) {
+            // Special handling for dropdown fields with no options available
+            if (field.fieldType.includes('dropdown') && value === 'NO_OPTIONS_AVAILABLE') {
+              // Don't mark as error if no options are available
+              console.log(`⚠️ Skipping validation for ${field.fieldLabel} - no options available`);
+              return;
+            }
+            
             errors[field.fieldName] = `${field.fieldLabel} is required`;
+          }
+          
+          // Additional validation for specific field types
+          if (field.fieldType === 'email' && value) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(value)) {
+              errors[field.fieldName] = `${field.fieldLabel} must be a valid email address`;
+            }
+          }
+          
+          if (field.fieldType === 'phone' && value) {
+            const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+            if (!phoneRegex.test(value.replace(/[\s\-\(\)]/g, ''))) {
+              errors[field.fieldName] = `${field.fieldLabel} must be a valid phone number`;
+            }
           }
         }
       });
@@ -688,11 +733,11 @@ const ServiceCatalogV2Page: React.FC = () => {
         // Fallback to name-based detection
         const categoryName = category.name.toLowerCase();
         if (categoryName.includes('atm') || categoryName.includes('hardware')) {
-          return BanknotesIcon;
+          return CreditCardIcon; // Better representation for ATM services
         } else if (categoryName.includes('claims') || categoryName.includes('dispute')) {
           return ClipboardDocumentListIcon;
         } else if (categoryName.includes('core') || categoryName.includes('banking') || categoryName.includes('financial')) {
-          return CurrencyDollarIcon;
+          return ServerStackIcon; // Better for core banking systems/OLIB
         } else if (categoryName.includes('corporate') || categoryName.includes('employee') || categoryName.includes('support')) {
           return UsersIcon;
         } else if (categoryName.includes('digital') || categoryName.includes('channel')) {
@@ -780,7 +825,7 @@ const ServiceCatalogV2Page: React.FC = () => {
         
         // ATM & Cash Services
         if (serviceName.includes('atm') || serviceName.includes('cash') || serviceName.includes('tunai')) {
-          return BanknotesIcon;
+          return CreditCardIcon; // Better representation for ATM card operations
         }
         // EDC & Payment Terminals
         else if (serviceName.includes('edc') || serviceName.includes('terminal') || serviceName.includes('pos')) {
@@ -790,9 +835,9 @@ const ServiceCatalogV2Page: React.FC = () => {
         else if (serviceName.includes('kasda') || serviceName.includes('treasury') || serviceName.includes('bendahara')) {
           return BanknotesIcon;
         }
-        // Core Banking & Financial Systems
-        else if (serviceName.includes('core') || serviceName.includes('banking') || serviceName.includes('financial') || serviceName.includes('keuangan')) {
-          return CurrencyDollarIcon;
+        // Core Banking & Financial Systems (OLIB)
+        else if (serviceName.includes('core') || serviceName.includes('banking') || serviceName.includes('financial') || serviceName.includes('keuangan') || serviceName.includes('olib')) {
+          return ServerStackIcon; // Better for core banking systems/OLIB
         }
         // QRIS & Digital Payments
         else if (serviceName.includes('qris') || serviceName.includes('digital') || serviceName.includes('payment') || serviceName.includes('pembayaran')) {

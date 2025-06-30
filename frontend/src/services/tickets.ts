@@ -143,6 +143,20 @@ export const ticketsService = {
     return response;
   },
 
+  // Update ticket status and assign to user (for auto-assignment when starting work)
+  startWorkAndAssign: async (ticketId: number, comments?: string): Promise<Ticket> => {
+    console.log('ticketsService: Starting work and auto-assigning ticket');
+    const response = await api.patch<any>(`/v2/tickets/${ticketId}/start-work`, { 
+      comments: comments || undefined
+    });
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    
+    return response;
+  },
+
   // Approve ticket (Manager only) - Stage 3 Migration: Using Enhanced Endpoints
   approveTicket: async (ticketId: number, comments?: string): Promise<Ticket> => {
     console.log('ticketsService: Using enhanced approval endpoint');

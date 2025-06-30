@@ -75,7 +75,19 @@ export const categorizationService = {
     };
   }> {
     const response = await api.get('/categorization/uncategorized', { params });
-    return response.data.data;
+    
+    // The api.get() method already extracts response.data, so we need to check if it contains the actual data
+    // or if it has a nested data property
+    if (response.data && response.data.tickets) {
+      // Direct data structure - response already contains the data we need
+      return response.data;
+    } else if (response.data && response.data.data) {
+      // Nested data structure - extract the inner data
+      return response.data.data;
+    } else {
+      // Fallback to response directly
+      return response;
+    }
   },
 
   // Lock/unlock ticket classification

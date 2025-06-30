@@ -22,6 +22,7 @@ const auth_1 = __importDefault(require("./routes/auth")); // Import the auth rou
 const ticketRoutes_1 = __importDefault(require("./routes/ticketRoutes")); // Import ticket router (legacy)
 const enhancedTicketRoutes_1 = __importDefault(require("./routes/enhancedTicketRoutes")); // Import enhanced ticket router
 const serviceCatalogRoutes_1 = __importDefault(require("./routes/serviceCatalogRoutes")); // Import service catalog router
+const serviceCatalogAdminRoutes_1 = __importDefault(require("./routes/serviceCatalogAdminRoutes")); // Import service catalog admin router
 const categorizationRoutes_1 = __importDefault(require("./routes/categorizationRoutes")); // Import categorization router
 const categorizationAnalyticsRoutes_1 = __importDefault(require("./routes/categorizationAnalyticsRoutes")); // Import analytics router
 const reportingRoutes_1 = __importDefault(require("./routes/reportingRoutes")); // Import reporting router
@@ -87,6 +88,7 @@ app.use('/api/auth', auth_1.default);
 // ITIL-enhanced routes (new)
 app.use('/api/v2/tickets', enhancedTicketRoutes_1.default); // Enhanced ticket router with ITIL support
 app.use('/api/service-catalog', serviceCatalogRoutes_1.default); // Service catalog router
+app.use('/api/service-catalog-admin', serviceCatalogAdminRoutes_1.default); // Service catalog admin router
 app.use('/api/categorization', categorizationRoutes_1.default); // Ticket categorization routes
 app.use('/api/analytics/categorization', categorizationAnalyticsRoutes_1.default); // Categorization analytics
 // BSG Template System routes (new scalable system)

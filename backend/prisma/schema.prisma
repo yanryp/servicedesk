@@ -10,6 +10,7 @@ datasource db {
 model User {
   id                       Int                         @id @default(autoincrement())
   username                 String                      @unique @db.VarChar(255)
+  name                     String?                     @db.VarChar(255)
   passwordHash             String                      @map("password_hash") @db.VarChar(255)
   email                    String                      @unique @db.VarChar(255)
   role                     String                      @db.VarChar(50)
@@ -87,6 +88,11 @@ model Unit {
   isActive     Boolean     @default(true) @map("is_active")
   sortOrder    Int         @default(0) @map("sort_order")
   metadata     Json?
+  address      String?
+  phone        String?     @db.VarChar(100)
+  fax          String?     @db.VarChar(100)
+  region       String?     @db.VarChar(100)
+  province     String?     @db.VarChar(100)
   createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   department   Department? @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)

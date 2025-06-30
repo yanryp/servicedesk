@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { EyeIcon, EyeSlashIcon, UserPlusIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 import { RegisterRequest } from '../types';
-import { departmentService } from '../services';
+import { departmentService, authService } from '../services';
 import toast from 'react-hot-toast';
 
 const RegisterPage: React.FC = () => {
@@ -13,6 +13,8 @@ const RegisterPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [departments, setDepartments] = useState<any[]>([]);
   const [loadingDepartments, setLoadingDepartments] = useState(true);
+  const [branches, setBranches] = useState<any[]>([]);
+  const [loadingBranches, setLoadingBranches] = useState(false);
   const navigate = useNavigate();
   const { register: registerUser, isAuthenticated, user } = useAuth();
 
@@ -48,6 +50,30 @@ const RegisterPage: React.FC = () => {
     loadDepartments();
   }, []);
 
+  // Load branches when needed (for branch-assigned roles)
+  useEffect(() => {
+    const loadBranches = async () => {
+      if (selectedRole !== 'requester' && selectedRole !== 'manager' && selectedRole !== 'technician') {
+        setBranches([]);
+        return;
+      }
+
+      setLoadingBranches(true);
+      try {
+        const branches = await authService.getAllBranches();
+        setBranches(branches || []);
+      } catch (error) {
+        console.error('Failed to load branches:', error);
+        toast.error('Failed to load branches');
+        setBranches([]);
+      } finally {
+        setLoadingBranches(false);
+      }
+    };
+
+    loadBranches();
+  }, [selectedRole]);
+
   // Redirect if not admin or not authenticated
   if (!isAuthenticated || user?.role !== 'admin') {
     navigate('/');
@@ -59,18 +85,12 @@ const RegisterPage: React.FC = () => {
     try {
       const { confirmPassword, ...registerData } = data;
       
-      // Convert departmentId to number and handle technician specialization
+      // Convert numeric fields
       const enhancedData = {
         ...registerData,
         departmentId: registerData.departmentId ? parseInt(registerData.departmentId.toString()) : undefined,
-        // Add technician specialization if role is technician
-        ...(registerData.role === 'technician' && {
-          specialization: {
-            primarySkill: registerData.primarySkill,
-            experienceLevel: registerData.experienceLevel,
-            secondarySkills: registerData.secondarySkills
-          }
-        })
+        unitId: registerData.unitId ? parseInt(registerData.unitId.toString()) : undefined,
+        managerId: registerData.managerId ? parseInt(registerData.managerId.toString()) : undefined,
       };
 
       await registerUser(enhancedData);
@@ -85,9 +105,41 @@ const RegisterPage: React.FC = () => {
     }
   };
 
+  // Determine what assignment fields to show based on role
+  const getAssignmentHelperText = (role: string) => {
+    switch (role) {
+      case 'requester':
+        return 'Requesters must be assigned to a specific branch where they work.';
+      case 'manager':
+        return 'Managers must be assigned to a specific branch they oversee and will automatically get approval authority.';
+      case 'technician':
+        return 'Technicians can be assigned to a department (serve all branches) or a specific branch.';
+      case 'admin':
+        return 'Admins are typically assigned to IT Operations department with system-wide access.';
+      default:
+        return '';
+    }
+  };
+
+  const shouldShowBranchField = (role: string) => {
+    return role === 'requester' || role === 'manager' || role === 'technician';
+  };
+
+  const shouldShowDepartmentField = (role: string) => {
+    return role === 'technician' || role === 'admin';
+  };
+
+  const isBranchRequired = (role: string) => {
+    return role === 'requester' || role === 'manager';
+  };
+
+  const isDepartmentRequired = (role: string) => {
+    return role === 'admin';
+  };
+
   return (
-    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-8">
+      <div className="max-w-2xl w-full space-y-8">
         <div className="text-center">
           <div className="flex justify-center mb-6">
             <div className="w-16 h-16 bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl flex items-center justify-center shadow-xl">
@@ -102,56 +154,35 @@ const RegisterPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-sm py-8 px-6 shadow-xl rounded-2xl border border-slate-200/50">
+        <div className="bg-white/80 backdrop-blur-sm py-8 px-8 shadow-xl rounded-2xl border border-slate-200/50">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-slate-700">
-                  First Name
-                </label>
-                <input
-                  id="firstName"
-                  type="text"
-                  autoComplete="given-name"
-                  {...register('firstName', {
-                    required: 'First name is required',
-                    minLength: {
-                      value: 2,
-                      message: 'First name must be at least 2 characters',
-                    },
-                  })}
-                  disabled={isSubmitting}
-                  className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
-                  placeholder="John"
-                />
-                {errors.firstName && (
-                  <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-slate-700">
-                  Last Name
-                </label>
-                <input
-                  id="lastName"
-                  type="text"
-                  autoComplete="family-name"
-                  {...register('lastName', {
-                    required: 'Last name is required',
-                    minLength: {
-                      value: 2,
-                      message: 'Last name must be at least 2 characters',
-                    },
-                  })}
-                  disabled={isSubmitting}
-                  className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
-                  placeholder="Doe"
-                />
-                {errors.lastName && (
-                  <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
-                )}
-              </div>
+            {/* Basic Information */}
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-slate-700">
+                Full Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                autoComplete="name"
+                {...register('name', {
+                  required: 'Full name is required',
+                  minLength: {
+                    value: 3,
+                    message: 'Full name must be at least 3 characters',
+                  },
+                  pattern: {
+                    value: /^[a-zA-Z\s.]+$/,
+                    message: 'Name can only contain letters, spaces, and dots',
+                  },
+                })}
+                disabled={isSubmitting}
+                className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
+                placeholder="Ahmad Budi Santoso"
+              />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+              )}
             </div>
 
             <div>
@@ -169,13 +200,13 @@ const RegisterPage: React.FC = () => {
                     message: 'Username must be at least 3 characters',
                   },
                   pattern: {
-                    value: /^[a-zA-Z0-9_]+$/,
-                    message: 'Username can only contain letters, numbers, and underscores',
+                    value: /^[a-zA-Z0-9_.]+$/,
+                    message: 'Username can only contain letters, numbers, dots, and underscores',
                   },
                 })}
                 disabled={isSubmitting}
                 className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
-                placeholder="johndoe"
+                placeholder="budi.manager.kotamobagu"
               />
               {errors.username && (
                 <p className="mt-1 text-sm text-red-600">{errors.username.message}</p>
@@ -199,133 +230,148 @@ const RegisterPage: React.FC = () => {
                 })}
                 disabled={isSubmitting}
                 className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
-                placeholder="john.doe@company.com"
+                placeholder="budi.manager@bsg.co.id"
               />
               {errors.email && (
                 <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="role" className="block text-sm font-medium text-slate-700">
-                  Role
-                </label>
-                <select
-                  id="role"
-                  {...register('role', { required: 'Role is required' })}
-                  disabled={isSubmitting}
-                  className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
-                >
-                  <option value="requester">Requester - Submit and track support tickets</option>
-                  <option value="technician">Technician - Resolve and manage tickets</option>
-                  <option value="manager">Manager - Approve tickets and oversee team</option>
-                  <option value="admin">Admin - Full system access and management</option>
-                </select>
-                {errors.role && (
-                  <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
+            {/* Role Selection */}
+            <div>
+              <label htmlFor="role" className="block text-sm font-medium text-slate-700">
+                Role
+              </label>
+              <select
+                id="role"
+                {...register('role', { required: 'Role is required' })}
+                disabled={isSubmitting}
+                className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
+              >
+                <option value="requester">Requester - Submit and track support tickets</option>
+                <option value="manager">Manager - Approve tickets and oversee team</option>
+                <option value="technician">Technician - Resolve and manage tickets</option>
+                <option value="admin">Admin - Full system access and management</option>
+              </select>
+              {errors.role && (
+                <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
+              )}
+            </div>
+
+            {/* Assignment Section */}
+            <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h3 className="text-lg font-medium text-blue-900 flex items-center">
+                <BuildingOfficeIcon className="w-5 h-5 mr-2" />
+                Assignment
+              </h3>
+              <p className="text-sm text-blue-700">
+                {getAssignmentHelperText(selectedRole)}
+              </p>
+
+              <div className="grid grid-cols-1 gap-4">
+                {/* Branch Assignment */}
+                {shouldShowBranchField(selectedRole) && (
+                  <div>
+                    <label htmlFor="unitId" className="block text-sm font-medium text-slate-700">
+                      Branch {isBranchRequired(selectedRole) ? '*' : '(Optional)'}
+                    </label>
+                    <select
+                      id="unitId"
+                      {...register('unitId', { 
+                        required: isBranchRequired(selectedRole) ? 'Branch selection is required for this role' : false 
+                      })}
+                      disabled={isSubmitting || loadingBranches}
+                      className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
+                    >
+                      <option value="">Select Branch</option>
+                      {branches.map((branch) => {
+                        // Remove "Kantor" prefix and simplify branch display name
+                        let simpleName = branch.displayName || branch.name;
+                        // Remove "Kantor Cabang" and "Kantor Cabang Pembantu" prefixes
+                        simpleName = simpleName.replace(/^Kantor Cabang Pembantu\s+/, '');
+                        simpleName = simpleName.replace(/^Kantor Cabang\s+/, '');
+                        return (
+                          <option key={branch.id} value={branch.id}>
+                            {simpleName}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    {errors.unitId && (
+                      <p className="mt-1 text-sm text-red-600">{errors.unitId.message}</p>
+                    )}
+                    {loadingBranches && (
+                      <p className="mt-1 text-xs text-blue-600">Loading BSG branches...</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Department Assignment */}
+                {shouldShowDepartmentField(selectedRole) && (
+                  <div>
+                    <label htmlFor="departmentId" className="block text-sm font-medium text-slate-700">
+                      Department {isDepartmentRequired(selectedRole) ? '*' : '(Optional)'}
+                    </label>
+                    <select
+                      id="departmentId"
+                      {...register('departmentId', { 
+                        required: isDepartmentRequired(selectedRole) ? 'Department selection is required for this role' : false 
+                      })}
+                      disabled={isSubmitting || loadingDepartments}
+                      className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
+                    >
+                      <option value="">Select Department</option>
+                      {departments.map((dept) => (
+                        <option key={dept.id} value={dept.id}>
+                          {dept.name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.departmentId && (
+                      <p className="mt-1 text-sm text-red-600">{errors.departmentId.message}</p>
+                    )}
+                    {loadingDepartments && (
+                      <p className="mt-1 text-xs text-blue-600">Loading departments...</p>
+                    )}
+                  </div>
                 )}
               </div>
 
-              <div>
-                <label htmlFor="departmentId" className="block text-sm font-medium text-slate-700">
-                  Department *
-                </label>
-                <select
-                  id="departmentId"
-                  {...register('departmentId', { required: 'Department is required' })}
-                  disabled={isSubmitting || loadingDepartments}
-                  className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
-                >
-                  <option value="">Select Department</option>
-                  {departments.map((dept) => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.departmentId && (
-                  <p className="mt-1 text-sm text-red-600">{errors.departmentId.message}</p>
+              {/* Auto-Applied Settings Info */}
+              <div className="text-xs text-slate-600 bg-slate-50 p-3 rounded-lg">
+                <p className="font-medium mb-1">Automatically applied settings:</p>
+                {selectedRole === 'manager' && (
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Business Reviewer privileges (can approve tickets)</li>
+                    <li>Default workload capacity: 20 tickets</li>
+                    <li>KASDA access (if assigned to branch)</li>
+                  </ul>
                 )}
-                {loadingDepartments && (
-                  <p className="mt-1 text-xs text-blue-600">Loading departments...</p>
+                {selectedRole === 'technician' && (
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Default workload capacity: 10 tickets</li>
+                    <li>Skills based on department assignment</li>
+                    <li>Intermediate experience level</li>
+                    <li>KASDA access (if assigned to branch)</li>
+                  </ul>
+                )}
+                {selectedRole === 'admin' && (
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Full business reviewer privileges</li>
+                    <li>System administration skills</li>
+                    <li>High workload capacity: 50 tickets</li>
+                  </ul>
+                )}
+                {selectedRole === 'requester' && (
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>KASDA access (based on branch assignment)</li>
+                    <li>Ticket submission and tracking privileges</li>
+                  </ul>
                 )}
               </div>
             </div>
 
-            {/* Technician Specialization Fields */}
-            {selectedRole === 'technician' && (
-              <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h3 className="text-lg font-medium text-blue-900 flex items-center">
-                  <BuildingOfficeIcon className="w-5 h-5 mr-2" />
-                  Technician Specialization
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="primarySkill" className="block text-sm font-medium text-slate-700">
-                      Primary Skill Area *
-                    </label>
-                    <select
-                      id="primarySkill"
-                      {...register('primarySkill', { 
-                        required: selectedRole === 'technician' ? 'Primary skill is required for technicians' : false 
-                      })}
-                      disabled={isSubmitting}
-                      className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
-                    >
-                      <option value="">Select Primary Skill</option>
-                      <option value="banking_systems">Banking Systems (Core Banking, OLIBS)</option>
-                      <option value="network_infrastructure">Network & Infrastructure</option>
-                      <option value="hardware_support">Hardware Support</option>
-                      <option value="software_applications">Software Applications</option>
-                      <option value="security_compliance">Security & Compliance</option>
-                      <option value="database_administration">Database Administration</option>
-                    </select>
-                    {errors.primarySkill && (
-                      <p className="mt-1 text-sm text-red-600">{errors.primarySkill.message}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label htmlFor="experienceLevel" className="block text-sm font-medium text-slate-700">
-                      Experience Level *
-                    </label>
-                    <select
-                      id="experienceLevel"
-                      {...register('experienceLevel', { 
-                        required: selectedRole === 'technician' ? 'Experience level is required for technicians' : false 
-                      })}
-                      disabled={isSubmitting}
-                      className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
-                    >
-                      <option value="">Select Experience Level</option>
-                      <option value="junior">Junior (0-2 years)</option>
-                      <option value="intermediate">Intermediate (2-5 years)</option>
-                      <option value="senior">Senior (5+ years)</option>
-                      <option value="expert">Expert/Lead (10+ years)</option>
-                    </select>
-                    {errors.experienceLevel && (
-                      <p className="mt-1 text-sm text-red-600">{errors.experienceLevel.message}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="secondarySkills" className="block text-sm font-medium text-slate-700">
-                    Secondary Skills (Optional)
-                  </label>
-                  <textarea
-                    id="secondarySkills"
-                    rows={2}
-                    {...register('secondarySkills')}
-                    disabled={isSubmitting}
-                    className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
-                    placeholder="Additional skills or certifications (e.g., AWS, Cisco, Microsoft, etc.)"
-                  />
-                </div>
-              </div>
-            )}
-
+            {/* Password Fields */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-slate-700">
                 Password

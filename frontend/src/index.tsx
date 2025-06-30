@@ -4,6 +4,7 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { BrowserRouter as Router } from 'react-router-dom';
 
 const root = ReactDOM.createRoot(
@@ -17,9 +18,11 @@ root.render(
         v7_relativeSplatPath: true
       }}
     >
-      <AuthProvider>
-        <App />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </ThemeProvider>
     </Router>
   </React.StrictMode>
 );

@@ -54,7 +54,7 @@ router.get('/catalogs', protect, requireAdminAccess, asyncHandler(async (req: Au
         },
         serviceItems: {
           include: {
-            customFieldDefinitions: true,
+            service_field_definitions: true,
             templates: {
               include: {
                 customFieldDefinitions: true
@@ -132,7 +132,7 @@ router.get('/catalogs/:catalogId/items', protect, requireAdminAccess, asyncHandl
         serviceCatalog: {
           select: { id: true, name: true }
         },
-        customFieldDefinitions: true,
+        service_field_definitions: true,
         templates: true // Keep for backward compatibility
       },
       orderBy: [
@@ -145,10 +145,10 @@ router.get('/catalogs/:catalogId/items', protect, requireAdminAccess, asyncHandl
     const itemsWithStats = serviceItems.map(item => ({
       ...item,
       statistics: {
-        customFieldCount: item.customFieldDefinitions.length,
-        hasCustomFields: item.customFieldDefinitions.length > 0,
+        customFieldCount: item.service_field_definitions.length,
+        hasCustomFields: item.service_field_definitions.length > 0,
         templateCount: item.templates.length, // Legacy data for reference
-        totalFields: item.customFieldDefinitions.length
+        totalFields: item.service_field_definitions.length
       }
     }));
 
@@ -1383,7 +1383,7 @@ router.get('/items/:itemId/custom-fields', protect, requireAdminAccess, asyncHan
     }
 
     const fields = await prisma.serviceFieldDefinition.findMany({
-      where: { serviceItemId: parseInt(itemId) },
+      where: { service_item_id: parseInt(itemId) },
       orderBy: [
         { sortOrder: 'asc' },
         { fieldName: 'asc' }
@@ -1472,7 +1472,7 @@ router.post('/items/:itemId/custom-fields', protect, requireAdminAccess, asyncHa
     // Check for duplicate field names within the service item
     const existingField = await prisma.serviceFieldDefinition.findFirst({
       where: { 
-        serviceItemId: parseInt(itemId),
+        service_item_id: parseInt(itemId),
         fieldName: fieldName.trim()
       }
     });
@@ -1487,7 +1487,7 @@ router.post('/items/:itemId/custom-fields', protect, requireAdminAccess, asyncHa
 
     const newField = await prisma.serviceFieldDefinition.create({
       data: {
-        serviceItemId: parseInt(itemId),
+        service_item_id: parseInt(itemId),
         fieldName: fieldName.trim(),
         fieldLabel: fieldLabel.trim(),
         fieldType: fieldType,
@@ -1543,7 +1543,7 @@ router.put('/items/custom-fields/:fieldId', protect, requireAdminAccess, asyncHa
       where: { id: parseInt(fieldId) }
     });
 
-    if (!existingField || !existingField.serviceItemId) {
+    if (!existingField || !existingField.service_item_id) {
       res.status(404).json({
         success: false,
         message: 'Custom field not found or not attached to a service item'
@@ -1580,7 +1580,7 @@ router.put('/items/custom-fields/:fieldId', protect, requireAdminAccess, asyncHa
     if (fieldName !== undefined) {
       const duplicateField = await prisma.serviceFieldDefinition.findFirst({
         where: { 
-          serviceItemId: existingField.serviceItemId,
+          service_item_id: existingField.service_item_id,
           fieldName: fieldName.trim(),
           id: { not: parseInt(fieldId) }
         }
@@ -1643,7 +1643,7 @@ router.delete('/items/custom-fields/:fieldId', protect, requireAdminAccess, asyn
       where: { id: parseInt(fieldId) }
     });
 
-    if (!existingField || !existingField.serviceItemId) {
+    if (!existingField || !existingField.service_item_id) {
       res.status(404).json({
         success: false,
         message: 'Custom field not found or not attached to a service item'

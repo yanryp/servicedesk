@@ -145,6 +145,11 @@ const TicketTimeline: React.FC<TicketTimelineProps> = ({ ticket, showAllSteps = 
     return statusMap[ticket.status] || 0;
   };
 
+  // Check if ticket was closed directly without going through resolved status
+  const isDirectClose = () => {
+    return ticket.status === 'closed' && !ticket.resolvedAt;
+  };
+
   const currentStatusIndex = getCurrentStatusIndex();
   const isRejectedOrCancelled = ['rejected', 'cancelled'].includes(ticket.status);
 
@@ -157,6 +162,19 @@ const TicketTimeline: React.FC<TicketTimelineProps> = ({ ticket, showAllSteps = 
     let actor = '';
     let details = '';
 
+    // Handle direct close: skip resolved step if ticket was closed directly
+    if (isDirectClose() && step.key === 'resolved') {
+      // Skip resolved step for direct close
+      return {
+        ...step,
+        completed: false,
+        current: false,
+        timestamp: '',
+        actor: '',
+        details: ''
+      };
+    }
+
     if (stepIndex === 1) {
       // Always completed (ticket submitted)
       completed = true;
@@ -164,9 +182,14 @@ const TicketTimeline: React.FC<TicketTimelineProps> = ({ ticket, showAllSteps = 
       actor = ticket.createdBy?.name || ticket.createdBy?.username || 'You';
       details = 'Support request submitted';
     } else if (stepIndex <= currentStatusIndex) {
-      completed = true;
-      if (stepIndex === currentStatusIndex) {
-        current = true;
+      // For direct close, don't mark resolved as completed
+      if (isDirectClose() && step.key === 'resolved') {
+        completed = false;
+      } else {
+        completed = true;
+        if (stepIndex === currentStatusIndex && !isDirectClose()) {
+          current = true;
+        }
       }
       
       // Add specific timestamps and actors if available
@@ -195,11 +218,20 @@ const TicketTimeline: React.FC<TicketTimelineProps> = ({ ticket, showAllSteps = 
           break;
         case 'closed':
           timestamp = ticket.updatedAt;
-          actor = 'System';
-          details = 'Ticket marked as completed';
+          if (isDirectClose()) {
+            actor = ticket.assignedTo?.name || 'Technician';
+            details = 'Work completed and ticket closed by technician';
+            completed = true;
+            current = false; // Closed is final, not current
+          } else {
+            actor = 'System';
+            details = 'Ticket marked as completed';
+            completed = true;
+            current = false; // Closed is final, not current
+          }
           break;
       }
-    } else if (stepIndex === currentStatusIndex + 1 && !isRejectedOrCancelled) {
+    } else if (stepIndex === currentStatusIndex + 1 && !isRejectedOrCancelled && !isDirectClose()) {
       current = true;
     }
 
@@ -239,7 +271,13 @@ const TicketTimeline: React.FC<TicketTimelineProps> = ({ ticket, showAllSteps = 
   // Filter steps if not showing all
   const visibleSteps = showAllSteps 
     ? timelineSteps 
-    : timelineSteps.filter(step => step.completed || step.current);
+    : timelineSteps.filter(step => {
+        // For direct close, exclude resolved step that wasn't completed
+        if (isDirectClose() && step.key === 'resolved' && !step.completed) {
+          return false;
+        }
+        return step.completed || step.current;
+      });
 
   const formatTimestamp = (timestamp: string) => {
     if (!timestamp) return '';
@@ -277,6 +315,12 @@ const TicketTimeline: React.FC<TicketTimelineProps> = ({ ticket, showAllSteps = 
         return 'Please check your email and respond to the technician\'s questions';
       case 'resolved':
         return 'Please review the solution and confirm if your issue is resolved';
+      case 'closed':
+        if (isDirectClose()) {
+          return 'Your ticket has been completed by the technician. No further action is required.';
+        } else {
+          return 'Your ticket has been completed and closed. No further action is required.';
+        }
       case 'rejected':
         return 'You can create a new ticket with additional information';
       case 'cancelled':
@@ -295,7 +339,10 @@ const TicketTimeline: React.FC<TicketTimelineProps> = ({ ticket, showAllSteps = 
             <span>Ticket Progress</span>
           </h3>
           <span className="text-sm text-gray-500">
-            Step {Math.max(1, currentStatusIndex)} of {workflowSteps.length}
+            {ticket.status === 'closed' ? 
+              'Completed' : 
+              `Step ${Math.max(1, currentStatusIndex)} of ${isDirectClose() ? workflowSteps.length - 1 : workflowSteps.length}`
+            }
           </span>
         </div>
       </div>

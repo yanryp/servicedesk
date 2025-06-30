@@ -14,9 +14,9 @@ import { ServiceCatalog } from '../../types/serviceCatalog';
 interface SystemStats {
   totalCatalogs: number;
   totalServiceItems: number;
-  totalCustomFields: number; // Changed from totalTemplates to reflect custom fields
-  serviceItemsWithFields: number; // Changed from visibleTemplates
-  totalFields: number;
+  totalCustomFields: number; // Total number of service templates that have custom fields
+  serviceItemsWithFields: number; // Number of templates that contain custom fields
+  totalFields: number; // Total count of individual field definitions
 }
 
 interface AdminOverviewProps {
@@ -29,7 +29,7 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({ systemStats, catalogs, on
   // Calculate additional statistics
   const activeServiceCatalogs = catalogs.filter(c => c.isActive).length;
   const inactiveServiceCatalogs = catalogs.length - activeServiceCatalogs;
-  const itemsWithoutFields = systemStats ? systemStats.totalServiceItems - systemStats.serviceItemsWithFields : 0;
+  const templatesWithoutFields = systemStats ? systemStats.totalCustomFields - systemStats.serviceItemsWithFields : 0;
 
   // Get top service catalogs by template count
   const topCatalogs = catalogs
@@ -91,33 +91,33 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({ systemStats, catalogs, on
               </div>
             </div>
 
-            {/* Templates */}
+            {/* Service Templates */}
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-purple-100 rounded-lg">
                   <DocumentTextIcon className="w-6 h-6 text-purple-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-purple-600">Custom Fields</p>
+                  <p className="text-sm font-medium text-purple-600">Service Templates</p>
                   <p className="text-2xl font-bold text-purple-900">{systemStats.totalCustomFields}</p>
                   <p className="text-xs text-purple-700">
-                    {systemStats.serviceItemsWithFields} services have fields, {itemsWithoutFields} without
+                    {systemStats.serviceItemsWithFields} templates with fields, {templatesWithoutFields} without
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Custom Fields */}
+            {/* Field Definitions */}
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-orange-100 rounded-lg">
                   <ChartBarIcon className="w-6 h-6 text-orange-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-orange-600">Custom Fields</p>
-                  <p className="text-2xl font-bold text-orange-900">{systemStats.totalFields || 'N/A'}</p>
+                  <p className="text-sm font-medium text-orange-600">Field Definitions</p>
+                  <p className="text-2xl font-bold text-orange-900">{systemStats.totalFields || systemStats.totalCustomFields}</p>
                   <p className="text-xs text-orange-700">
-                    Total field definitions
+                    Individual custom fields
                   </p>
                 </div>
               </div>
@@ -219,11 +219,11 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({ systemStats, catalogs, on
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="text-center p-4 bg-green-50 rounded-lg">
             <div className="text-2xl font-bold text-green-600 mb-1">
-              {systemStats ? Math.round((systemStats.serviceItemsWithFields / systemStats.totalServiceItems) * 100) : 0}%
+              {systemStats ? Math.round((systemStats.serviceItemsWithFields / systemStats.totalCustomFields) * 100) : 0}%
             </div>
-            <div className="text-sm text-green-700">Services with Custom Fields</div>
+            <div className="text-sm text-green-700">Templates with Custom Fields</div>
             <div className="text-xs text-gray-600 mt-1">
-              {systemStats?.serviceItemsWithFields} of {systemStats?.totalServiceItems} services have fields
+              {systemStats?.serviceItemsWithFields} of {systemStats?.totalCustomFields} templates have fields
             </div>
           </div>
           

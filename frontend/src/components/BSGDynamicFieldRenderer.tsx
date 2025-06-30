@@ -104,6 +104,7 @@ const BSGDynamicFieldRenderer: React.FC<BSGDynamicFieldRendererProps> = ({
         });
         
         const dropdownFields = fields.filter(field => 
+          field.fieldType === 'dropdown' ||
           field.fieldType.startsWith('dropdown_') || 
           field.fieldType === 'searchable_dropdown' ||
           field.fieldType === 'autocomplete'
@@ -118,11 +119,11 @@ const BSGDynamicFieldRenderer: React.FC<BSGDynamicFieldRendererProps> = ({
           // Determine the data type for API call
           let dataType = field.fieldType.replace('dropdown_', '');
           
+          const fieldName = field.fieldName.toLowerCase();
+          const fieldLabel = field.fieldLabel.toLowerCase();
+          
           // Special mapping for Unit fields (converted from Cabang/Capem)
           if (field.fieldType === 'searchable_dropdown' || field.fieldType === 'autocomplete') {
-            const fieldName = field.fieldName.toLowerCase();
-            const fieldLabel = field.fieldLabel.toLowerCase();
-            
             // If this is a Unit field (converted from Cabang/Capem), use 'unit' data type
             if (fieldLabel === 'unit' || fieldName.includes('unit') ||
                 fieldName.includes('cabang') || fieldName.includes('capem') ||
@@ -133,6 +134,40 @@ const BSGDynamicFieldRenderer: React.FC<BSGDynamicFieldRendererProps> = ({
               // For other searchable dropdown fields, try to infer from field name
               dataType = fieldName.replace(/[^a-z]/g, '') || 'generic';
             }
+          } else if (field.fieldType === 'dropdown') {
+            // Handle basic dropdown fields - comprehensive field type mapping
+            if (fieldLabel.includes('olibs') || fieldLabel.includes('olib') || fieldName.includes('olibs') || fieldName.includes('olib')) {
+              dataType = 'olibs';
+              console.log(`🏛️ Detected OLIBS field: ${field.fieldLabel}, using 'olibs' data type`);
+            } else if (fieldLabel.includes('program') && fieldLabel.includes('fasilitas')) {
+              dataType = 'olibs'; // Program Fasilitas OLIBS should use olibs data type
+              console.log(`🏛️ Detected Program Fasilitas field: ${field.fieldLabel}, using 'olibs' data type`);
+            } else if (fieldLabel.includes('government') || fieldLabel.includes('pemerintah') || fieldName.includes('government')) {
+              dataType = 'government_entity';
+              console.log(`🏛️ Detected Government field: ${field.fieldLabel}, using 'government_entity' data type`);
+            } else if (fieldLabel.includes('access') && fieldLabel.includes('level')) {
+              dataType = 'access_level';
+              console.log(`🔑 Detected Access Level field: ${field.fieldLabel}, using 'access_level' data type`);
+            } else if (fieldLabel.includes('request') && fieldLabel.includes('type')) {
+              dataType = 'request_type';
+              console.log(`📝 Detected Request Type field: ${field.fieldLabel}, using 'request_type' data type`);
+            } else if (fieldLabel.includes('menu') || fieldName.includes('menu')) {
+              dataType = 'olibs'; // Menu fields typically relate to OLIBS
+              console.log(`📋 Detected Menu field: ${field.fieldLabel}, using 'olibs' data type`);
+            } else if (fieldLabel.includes('authority') || fieldLabel.includes('wewenang')) {
+              dataType = 'authority_level';
+              console.log(`👤 Detected Authority field: ${field.fieldLabel}, using 'authority_level' data type`);
+            } else if (fieldLabel.includes('treasury') || fieldLabel.includes('kas')) {
+              dataType = 'treasury_account';
+              console.log(`💰 Detected Treasury field: ${field.fieldLabel}, using 'treasury_account' data type`);
+            } else if (fieldLabel.includes('budget') || fieldLabel.includes('anggaran')) {
+              dataType = 'budget_code';
+              console.log(`💼 Detected Budget field: ${field.fieldLabel}, using 'budget_code' data type`);
+            } else {
+              // For other basic dropdown fields, try to infer from field name
+              dataType = fieldName.replace(/[^a-z]/g, '') || 'generic';
+              console.log(`🔽 Generic dropdown field: ${field.fieldLabel}, using '${dataType}' data type`);
+            }
           }
           
           try {
@@ -142,9 +177,20 @@ const BSGDynamicFieldRenderer: React.FC<BSGDynamicFieldRendererProps> = ({
             const options = Array.isArray(response?.data) ? response.data : [];
             console.log(`✅ Loaded ${options.length} options for ${field.fieldLabel}`, options.slice(0, 2));
             return { fieldName: field.fieldName, options: options };
-          } catch (error) {
+          } catch (error: any) {
             console.error(`❌ Failed to load master data for ${field.fieldLabel}:`, error);
-            return { fieldName: field.fieldName, options: [] };
+            
+            // Handle specific error cases
+            if (error?.response?.status === 404) {
+              console.warn(`⚠️ Master data endpoint not found for type '${dataType}'. Field: ${field.fieldLabel}`);
+            } else if (error?.response?.status === 403) {
+              console.warn(`🔒 Access denied to master data for type '${dataType}'. User may not have permissions.`);
+            } else {
+              console.warn(`🌐 Network or server error loading master data for type '${dataType}':`, error.message);
+            }
+            
+            // Return empty options but log the issue for debugging
+            return { fieldName: field.fieldName, options: [], error: error.message };
           }
         });
 

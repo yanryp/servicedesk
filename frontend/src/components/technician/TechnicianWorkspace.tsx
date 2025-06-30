@@ -3,11 +3,15 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { themeClasses } from '../../context/ThemeContext';
 import { ticketsService, categoriesService, serviceCatalogService } from '../../services';
 import { Ticket as TicketType, Category } from '../../types';
 import { ServiceCategory } from '../../services/serviceCatalog';
 import ThemeToggle from '../common/ThemeToggle';
+import ViewToggle, { ViewMode } from '../ui/ViewToggle';
+import TicketTableView from '../tickets/TicketTableView';
+import TicketKanbanView from '../tickets/TicketKanbanView';
+import { ColumnConfig } from '../ui/ColumnVisibilityControl';
+import ColumnVisibilityControl from '../ui/ColumnVisibilityControl';
 import { 
   InboxIcon,
   MagnifyingGlassIcon,
@@ -26,7 +30,9 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   FolderIcon,
-  ArchiveBoxIcon
+  ArchiveBoxIcon,
+  RectangleStackIcon,
+  ListBulletIcon
 } from '@heroicons/react/24/outline';
 import { 
   ExclamationTriangleIcon as ExclamationTriangleIconSolid,
@@ -60,6 +66,24 @@ const TechnicianWorkspace: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<'assigned' | 'inProgress' | 'pending' | 'departmentQueue' | 'resolved' | 'closed' | 'allDepartment'>('assigned');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  
+  // View mode state
+  const [viewMode, setViewMode] = useState<ViewMode>('inbox');
+  const [columns, setColumns] = useState<ColumnConfig[]>([
+    { key: 'checkbox', label: '', width: 50, visible: true, sortable: false, filterable: false, required: true, group: 'core' },
+    { key: 'id', label: 'ID', width: 80, visible: true, sortable: true, filterable: true, required: true, group: 'core' },
+    { key: 'title', label: 'Title', width: 300, visible: true, sortable: true, filterable: true, required: true, group: 'core' },
+    { key: 'requester', label: 'Requester', width: 150, visible: true, sortable: true, filterable: true, group: 'user' },
+    { key: 'status', label: 'Status', width: 120, visible: true, sortable: true, filterable: true, group: 'status' },
+    { key: 'priority', label: 'Priority', width: 100, visible: true, sortable: true, filterable: true, group: 'status' },
+    { key: 'service', label: 'Service', width: 200, visible: true, sortable: true, filterable: true, group: 'meta' },
+    { key: 'assignedTo', label: 'Assigned To', width: 150, visible: true, sortable: true, filterable: true, group: 'user' },
+    { key: 'createdDate', label: 'Created', width: 130, visible: true, sortable: true, filterable: false, group: 'dates' },
+    { key: 'dueDate', label: 'Due Date', width: 130, visible: true, sortable: true, filterable: false, group: 'dates' },
+    { key: 'branch', label: 'Branch', width: 120, visible: false, sortable: true, filterable: true, group: 'meta' },
+    { key: 'department', label: 'Department', width: 130, visible: false, sortable: true, filterable: true, group: 'meta' },
+    { key: 'attachments', label: 'Files', width: 80, visible: false, sortable: false, filterable: false, group: 'meta' }
+  ]);
   
   // Category filtering state - now for sidebar sections
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['status']));
@@ -464,6 +488,63 @@ const TechnicianWorkspace: React.FC = () => {
     // Implement bulk actions here
   };
 
+  // View mode handlers
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    localStorage.setItem('technician_workspace_view_mode', mode);
+  };
+
+  const handleTicketSelect = (ticketId: number) => {
+    toggleTicketSelection(ticketId);
+  };
+
+  const handleSelectAll = () => {
+    toggleSelectAll();
+  };
+
+  const handleSort = (field: string) => {
+    // Implement sorting logic here
+    console.log('Sort by:', field);
+  };
+
+  const handleFilterChange = (filters: any) => {
+    // Implement filter change logic here
+    console.log('Filter change:', filters);
+  };
+
+  const handleTicketStatusUpdate = (ticketId: number, newStatus: any) => {
+    // Implement status update logic here
+    console.log('Update ticket status:', ticketId, newStatus);
+  };
+
+  const handleColumnVisibilityChange = (newColumns: ColumnConfig[]) => {
+    setColumns(newColumns);
+    localStorage.setItem('technician_workspace_columns', JSON.stringify(newColumns));
+  };
+
+  // Load saved view mode and columns from localStorage
+  React.useEffect(() => {
+    const savedViewMode = localStorage.getItem('technician_workspace_view_mode') as ViewMode;
+    // Only load saved view mode if it's explicitly set, otherwise default to inbox
+    if (savedViewMode && ['inbox', 'table', 'kanban'].includes(savedViewMode)) {
+      setViewMode(savedViewMode);
+    } else {
+      // Ensure inbox is the default and save it
+      setViewMode('inbox');
+      localStorage.setItem('technician_workspace_view_mode', 'inbox');
+    }
+
+    const savedColumns = localStorage.getItem('technician_workspace_columns');
+    if (savedColumns) {
+      try {
+        const parsedColumns = JSON.parse(savedColumns);
+        setColumns(parsedColumns);
+      } catch (error) {
+        console.error('Error parsing saved columns:', error);
+      }
+    }
+  }, []);
+
   if (authIsLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -484,21 +565,21 @@ const TechnicianWorkspace: React.FC = () => {
   }
 
   return (
-    <div className={`min-h-screen flex ${themeClasses.background.primary}`}>
+    <div className="min-h-screen flex bg-gray-50">
       {/* Sidebar */}
-      <div className={`${sidebarCollapsed ? 'w-16' : 'w-80'} ${themeClasses.background.secondary} border-r ${themeClasses.border.primary} transition-all duration-300 flex flex-col`}>
+      <div className={`${sidebarCollapsed ? 'w-16' : 'w-80'} bg-white border-r border-gray-200 transition-all duration-300 flex flex-col shadow-lg`}>
         {/* Sidebar Header */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             {!sidebarCollapsed && (
               <div>
-                <h2 className={`text-lg font-semibold ${themeClasses.text.primary}`}>BSG Helpdesk</h2>
-                <p className={`text-sm ${themeClasses.text.secondary}`}>Support Portal</p>
+                <h2 className="text-lg font-semibold text-gray-900">BSG Helpdesk</h2>
+                <p className="text-sm text-gray-600">Support Portal</p>
               </div>
             )}
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className={`p-2 rounded-lg ${themeClasses.interactive.hover} ${themeClasses.text.secondary} hover:${themeClasses.text.primary} transition-colors`}
+              className={`p-2 rounded-lg hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition-colors`}
               title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
               {sidebarCollapsed ? (
@@ -531,15 +612,15 @@ const TechnicianWorkspace: React.FC = () => {
               {/* Status Queue Views */}
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className={`text-sm font-semibold ${themeClasses.text.primary}`}>My Queues</h3>
+                  <h3 className={`text-sm font-semibold text-gray-900`}>My Queues</h3>
                   <button
                     onClick={() => toggleCategorySection('status')}
-                    className={`p-1 rounded ${themeClasses.interactive.hover}`}
+                    className={`p-1 rounded hover:bg-gray-100`}
                   >
                     {expandedCategories.has('status') ? (
-                      <ChevronDownIcon className={`w-4 h-4 ${themeClasses.text.secondary}`} />
+                      <ChevronDownIcon className={`w-4 h-4 text-gray-600`} />
                     ) : (
-                      <ChevronRightIcon className={`w-4 h-4 ${themeClasses.text.secondary}`} />
+                      <ChevronRightIcon className={`w-4 h-4 text-gray-600`} />
                     )}
                   </button>
                 </div>
@@ -554,7 +635,7 @@ const TechnicianWorkspace: React.FC = () => {
                           w-full flex items-center justify-between p-3 rounded-lg text-left transition-all duration-200
                           ${activeFilter === queue.key
                             ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
-                            : `${themeClasses.background.primary} ${themeClasses.text.primary} ${themeClasses.interactive.hover} border border-transparent`
+                            : `bg-white text-gray-900 hover:bg-gray-100 border border-transparent`
                           }
                         `}
                         title={queue.description}
@@ -568,7 +649,7 @@ const TechnicianWorkspace: React.FC = () => {
                             px-2 py-0.5 text-xs rounded-full
                             ${activeFilter === queue.key 
                               ? 'bg-blue-200 dark:bg-blue-800/50 text-blue-800 dark:text-blue-200' 
-                              : `${themeClasses.background.tertiary} ${themeClasses.text.secondary}`
+                              : `bg-gray-100 text-gray-600`
                             }
                           `}>
                             {queue.count}
@@ -584,24 +665,24 @@ const TechnicianWorkspace: React.FC = () => {
               {Object.keys(categoryTagCounts).length > 0 && (
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className={`text-sm font-semibold ${themeClasses.text.primary}`}>Categories</h3>
+                    <h3 className={`text-sm font-semibold text-gray-900`}>Categories</h3>
                     <div className="flex items-center space-x-2">
                       {activeCategoryTags.size > 0 && (
                         <button
                           onClick={clearAllCategoryTags}
-                          className={`text-xs ${themeClasses.text.secondary} hover:${themeClasses.text.primary} transition-colors`}
+                          className={`text-xs text-gray-600 hover:text-gray-900 transition-colors`}
                         >
                           Clear
                         </button>
                       )}
                       <button
                         onClick={() => toggleCategorySection('categories')}
-                        className={`p-1 rounded ${themeClasses.interactive.hover}`}
+                        className={`p-1 rounded hover:bg-gray-100`}
                       >
                         {expandedCategories.has('categories') ? (
-                          <ChevronDownIcon className={`w-4 h-4 ${themeClasses.text.secondary}`} />
+                          <ChevronDownIcon className={`w-4 h-4 text-gray-600`} />
                         ) : (
-                          <ChevronRightIcon className={`w-4 h-4 ${themeClasses.text.secondary}`} />
+                          <ChevronRightIcon className={`w-4 h-4 text-gray-600`} />
                         )}
                       </button>
                     </div>
@@ -621,7 +702,7 @@ const TechnicianWorkspace: React.FC = () => {
                                 w-full flex items-center justify-between p-2 rounded-lg text-left transition-all duration-200
                                 ${isActive
                                   ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
-                                  : `${themeClasses.background.primary} ${themeClasses.text.secondary} ${themeClasses.interactive.hover} border border-transparent hover:${themeClasses.text.primary}`
+                                  : `bg-white text-gray-600 hover:bg-gray-100 border border-transparent hover:text-gray-900`
                                 }
                               `}
                             >
@@ -633,7 +714,7 @@ const TechnicianWorkspace: React.FC = () => {
                                 px-1.5 py-0.5 text-xs rounded-full
                                 ${isActive 
                                   ? 'bg-blue-200 dark:bg-blue-800/50 text-blue-800 dark:text-blue-200' 
-                                  : `${themeClasses.background.tertiary} ${themeClasses.text.tertiary}`
+                                  : `bg-gray-100 text-gray-500`
                                 }
                               `}>
                                 {count}
@@ -659,7 +740,7 @@ const TechnicianWorkspace: React.FC = () => {
                     w-full p-3 rounded-lg transition-all duration-200 relative
                     ${activeFilter === queue.key
                       ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                      : `${themeClasses.text.secondary} ${themeClasses.interactive.hover}`
+                      : `text-gray-600 hover:bg-gray-100`
                     }
                   `}
                   title={`${queue.label} (${queue.count})`}
@@ -680,21 +761,21 @@ const TechnicianWorkspace: React.FC = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navigation */}
-        <div className={`px-6 py-4 border-b ${themeClasses.border.primary} ${themeClasses.background.secondary}`}>
+        <div className="px-6 py-4 border-b border-gray-200 bg-white shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4 flex-1">
               <div>
-                <h1 className={`text-xl font-semibold ${themeClasses.text.primary}`}>
+                <h1 className="text-xl font-semibold text-gray-900">
                   {queueViews.find(q => q.key === activeFilter)?.label || 'Technician Workspace'}
                 </h1>
-                <p className={`text-sm ${themeClasses.text.secondary}`}>
-                  {user?.department?.name || 'Information Technology'} Department
+                <p className="text-sm text-gray-600">
+                  {user?.department?.name || 'Information Technology'} Department • {viewMode.charAt(0).toUpperCase() + viewMode.slice(1)} View
                 </p>
               </div>
               
               {/* Search Bar */}
               <div className="relative max-w-md flex-1">
-                <MagnifyingGlassIcon className={`w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 ${themeClasses.text.tertiary}`} />
+                <MagnifyingGlassIcon className={`w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500`} />
                 <input
                   type="text"
                   placeholder="Search tickets..."
@@ -702,23 +783,39 @@ const TechnicianWorkspace: React.FC = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className={`
                     pl-10 pr-4 py-2 rounded-lg w-full transition-all duration-200
-                    ${themeClasses.background.primary} ${themeClasses.border.primary} ${themeClasses.text.primary}
+                    bg-white border-gray-200 text-gray-900
                     border focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 
                     focus:border-transparent
-                    placeholder:${themeClasses.text.tertiary}
+                    placeholder:text-gray-500
                   `}
                 />
               </div>
             </div>
             
             <div className="flex items-center space-x-3">
+              {/* Column Visibility Control for Table View */}
+              {viewMode === 'table' && (
+                <ColumnVisibilityControl
+                  columns={columns}
+                  onColumnVisibilityChange={handleColumnVisibilityChange}
+                />
+              )}
+              
+              {/* View Toggle */}
+              <ViewToggle 
+                currentView={viewMode}
+                onViewChange={handleViewModeChange}
+                showInbox={true}
+                size="sm"
+              />
+              
               <ThemeToggle compact />
               <button
                 onClick={() => fetchTickets(true)}
                 disabled={refreshing}
                 className={`
                   p-2 rounded-lg transition-all duration-200
-                  ${themeClasses.text.secondary} hover:${themeClasses.text.primary} ${themeClasses.interactive.hover}
+                  text-gray-600 hover:text-gray-900 hover:bg-gray-100
                   disabled:opacity-50 disabled:cursor-not-allowed
                 `}
                 title="Refresh tickets"
@@ -729,7 +826,7 @@ const TechnicianWorkspace: React.FC = () => {
           </div>
         </div>
 
-        {/* Ticket List */}
+        {/* Ticket Content */}
         <div className="flex-1 overflow-hidden">
           {error ? (
             <div className="p-6 text-center">
@@ -749,41 +846,44 @@ const TechnicianWorkspace: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="h-full overflow-y-auto">
-              {/* Ticket Actions Bar */}
-              <div className={`bg-gray-50 dark:bg-gray-800 border-b ${themeClasses.border.primary} px-6 py-3 flex items-center justify-between`}>
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={selectAll}
-                    onChange={toggleSelectAll}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className={`text-sm ${themeClasses.text.secondary}`}>
-                    {selectedTickets.size > 0 ? `${selectedTickets.size} selected` : 'Select all'}
-                  </span>
-                </label>
-                
-                {selectedTickets.size > 0 && (
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => handleBulkAction('markRead')}
-                      className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 ${themeClasses.background.tertiary} ${themeClasses.text.primary}`}
-                    >
-                      Mark Read
-                    </button>
+            <>
+              {/* Render based on view mode */}
+              {viewMode === 'inbox' && (
+                <div className="h-full overflow-y-auto">
+                  {/* Ticket Actions Bar for Inbox View */}
+                  <div className={`bg-gray-50 dark:bg-gray-800 border-b border-gray-200 px-6 py-3 flex items-center justify-between`}>
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={selectAll}
+                        onChange={toggleSelectAll}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className={`text-sm text-gray-600`}>
+                        {selectedTickets.size > 0 ? `${selectedTickets.size} selected` : 'Select all'}
+                      </span>
+                    </label>
                     
-                    {activeFilter === 'departmentQueue' && (
-                      <button
-                        onClick={() => handleBulkAction('pickup')}
-                        className="px-3 py-1.5 text-sm bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md"
-                      >
-                        Pick Up
-                      </button>
+                    {selectedTickets.size > 0 && (
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleBulkAction('markRead')}
+                          className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 bg-gray-100 text-gray-900`}
+                        >
+                          Mark Read
+                        </button>
+                        
+                        {activeFilter === 'departmentQueue' && (
+                          <button
+                            onClick={() => handleBulkAction('pickup')}
+                            className="px-3 py-1.5 text-sm bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md"
+                          >
+                            Pick Up
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
-              </div>
 
               {/* Ticket List */}
               <div className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -817,14 +917,14 @@ const TechnicianWorkspace: React.FC = () => {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-2 mb-1">
                               <h3 className={`text-sm truncate ${
-                                !ticket.read ? `font-semibold ${themeClasses.text.primary}` : `font-medium ${themeClasses.text.secondary}`
+                                !ticket.read ? `font-semibold text-gray-900` : `font-medium text-gray-600`
                               }`}>
                                 {ticket.title}
                               </h3>
-                              <span className={`text-xs ${themeClasses.text.tertiary} flex-shrink-0`}>#{ticket.id}</span>
+                              <span className={`text-xs text-gray-500 flex-shrink-0`}>#{ticket.id}</span>
                             </div>
                             
-                            <div className={`flex items-center space-x-4 text-xs ${themeClasses.text.tertiary}`}>
+                            <div className={`flex items-center space-x-4 text-xs text-gray-500`}>
                               <div className="flex items-center space-x-1">
                                 <UserCircleIcon className="w-3 h-3" />
                                 <span>{ticket.createdBy?.name || ticket.createdBy?.username || 'Unknown'}</span>
@@ -853,13 +953,13 @@ const TechnicianWorkspace: React.FC = () => {
                               )}
                             </div>
                             
-                            <p className={`text-xs ${themeClasses.text.secondary} truncate mt-1`}>
+                            <p className={`text-xs text-gray-600 truncate mt-1`}>
                               {ticket.description}
                             </p>
                           </div>
                           
                           <div className="flex-shrink-0 ml-4 text-right">
-                            <div className={`text-xs ${themeClasses.text.tertiary} mb-1`}>
+                            <div className={`text-xs text-gray-500 mb-1`}>
                               {formatTimeAgo(ticket.createdAt)}
                             </div>
                             <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
@@ -877,7 +977,39 @@ const TechnicianWorkspace: React.FC = () => {
                   </div>
                 ))}
               </div>
-            </div>
+                </div>
+              )}
+
+              {/* Table View */}
+              {viewMode === 'table' && (
+                <div className="h-full">
+                  <TicketTableView
+                    tickets={tickets}
+                    loading={loading}
+                    columns={columns}
+                    selectedTickets={selectedTickets}
+                    onTicketSelect={handleTicketSelect}
+                    onSelectAll={handleSelectAll}
+                    onSort={handleSort}
+                    onFilterChange={handleFilterChange}
+                    onBulkAction={handleBulkAction}
+                    className="h-full"
+                  />
+                </div>
+              )}
+
+              {/* Kanban View */}
+              {viewMode === 'kanban' && (
+                <div className="h-full p-6">
+                  <TicketKanbanView
+                    tickets={tickets}
+                    loading={loading}
+                    onTicketStatusUpdate={handleTicketStatusUpdate}
+                    className="h-full"
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

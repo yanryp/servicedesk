@@ -81,7 +81,15 @@
       "Bash(open http://localhost:3000)",
       "Bash(npx tsx:*)",
       "Bash(git rm:*)",
-      "mcp__playwright__browser_take_screenshot"
+      "mcp__playwright__browser_take_screenshot",
+      "Bash(git pull:*)",
+      "Bash(PORT=5173 npm start)",
+      "Bash(./run-enhanced-tests.sh:*)",
+      "WebFetch(domain:heroicons.com)",
+      "Bash(cp:*)",
+      "Bash(./create-wsl-deployment.sh:*)",
+      "mcp__playwright__browser_resize",
+      "Bash(npm ls:*)"
     ],
     "deny": []
   }

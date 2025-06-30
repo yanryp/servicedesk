@@ -1,0 +1,980 @@
+{
+  "users": [
+    {
+      "id": 177,
+      "username": "sari.it.test.-26-27",
+      "name": "Sari Dewi IT",
+      "email": "sari.it.test.1751185587678@bsg.co.id",
+      "role": "technician",
+      "departmentId": null,
+      "unitId": 10,
+      "isBusinessReviewer": false,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": "intermediate",
+      "secondarySkills": null,
+      "workloadCapacity": 10,
+      "createdAt": "2025-06-29T08:26:27.736Z",
+      "department": null,
+      "unit": {
+        "id": 10,
+        "name": "Branch TONDANO",
+        "displayName": "Kantor Cabang TONDANO",
+        "unitType": "branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "it",
+        "timestamp": "2025-06-29T08:26:27.678Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 178,
+      "username": "budi.it.test.-26-27",
+      "name": "Budi Santoso IT",
+      "email": "budi.it.test.1751185587744@bsg.co.id",
+      "role": "technician",
+      "departmentId": null,
+      "unitId": 18,
+      "isBusinessReviewer": false,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": "intermediate",
+      "secondarySkills": null,
+      "workloadCapacity": 10,
+      "createdAt": "2025-06-29T08:26:27.802Z",
+      "department": null,
+      "unit": {
+        "id": 18,
+        "name": "Branch AIRMADIDI",
+        "displayName": "Kantor Cabang AIRMADIDI",
+        "unitType": "branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "it",
+        "timestamp": "2025-06-29T08:26:27.744Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 179,
+      "username": "indah.it.test.-26-27",
+      "name": "Indah Permata IT",
+      "email": "indah.it.test.1751185587806@bsg.co.id",
+      "role": "technician",
+      "departmentId": null,
+      "unitId": 8,
+      "isBusinessReviewer": false,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": "intermediate",
+      "secondarySkills": null,
+      "workloadCapacity": 10,
+      "createdAt": "2025-06-29T08:26:27.863Z",
+      "department": null,
+      "unit": {
+        "id": 8,
+        "name": "Branch KAWANGKOAN",
+        "displayName": "Kantor Cabang KAWANGKOAN",
+        "unitType": "branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "it",
+        "timestamp": "2025-06-29T08:26:27.806Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 180,
+      "username": "sari.kasda.test.-26-27",
+      "name": "Sari Dewi KASDA",
+      "email": "sari.kasda.test.1751185587868@bsg.co.id",
+      "role": "requester",
+      "departmentId": null,
+      "unitId": 21,
+      "isBusinessReviewer": false,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": null,
+      "secondarySkills": null,
+      "workloadCapacity": 10,
+      "createdAt": "2025-06-29T08:26:27.924Z",
+      "department": null,
+      "unit": {
+        "id": 21,
+        "name": "Branch BOROKO",
+        "displayName": "Kantor Cabang BOROKO",
+        "unitType": "branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "kasda",
+        "timestamp": "2025-06-29T08:26:27.868Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 181,
+      "username": "budi.kasda.test.-26-27",
+      "name": "Budi Santoso KASDA",
+      "email": "budi.kasda.test.1751185587930@bsg.co.id",
+      "role": "requester",
+      "departmentId": null,
+      "unitId": 53,
+      "isBusinessReviewer": false,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": null,
+      "secondarySkills": null,
+      "workloadCapacity": 10,
+      "createdAt": "2025-06-29T08:26:27.988Z",
+      "department": null,
+      "unit": {
+        "id": 53,
+        "name": "CAPEM MODOINDING",
+        "displayName": "Kantor Cabang Pembantu MODOINDING",
+        "unitType": "sub_branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "kasda",
+        "timestamp": "2025-06-29T08:26:27.930Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 182,
+      "username": "indah.kasda.test.-26-27",
+      "name": "Indah Permata KASDA",
+      "email": "indah.kasda.test.1751185587992@bsg.co.id",
+      "role": "requester",
+      "departmentId": null,
+      "unitId": 35,
+      "isBusinessReviewer": false,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": null,
+      "secondarySkills": null,
+      "workloadCapacity": 10,
+      "createdAt": "2025-06-29T08:26:28.050Z",
+      "department": null,
+      "unit": {
+        "id": 35,
+        "name": "CAPEM TAGULANDANG",
+        "displayName": "Kantor Cabang Pembantu TAGULANDANG",
+        "unitType": "sub_branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "kasda",
+        "timestamp": "2025-06-29T08:26:27.992Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 183,
+      "username": "sari.manager.test.-26-28",
+      "name": "Sari Dewi MANAGER",
+      "email": "sari.manager.test.1751185588054@bsg.co.id",
+      "role": "manager",
+      "departmentId": null,
+      "unitId": 31,
+      "isBusinessReviewer": true,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": null,
+      "secondarySkills": null,
+      "workloadCapacity": 20,
+      "createdAt": "2025-06-29T08:26:28.110Z",
+      "department": null,
+      "unit": {
+        "id": 31,
+        "name": "CAPEM CEMPAKA PUTIH",
+        "displayName": "Kantor Cabang Pembantu CEMPAKA PUTIH",
+        "unitType": "sub_branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "manager",
+        "timestamp": "2025-06-29T08:26:28.054Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 184,
+      "username": "budi.manager.test.-26-28",
+      "name": "Budi Santoso MANAGER",
+      "email": "budi.manager.test.1751185588115@bsg.co.id",
+      "role": "manager",
+      "departmentId": null,
+      "unitId": 45,
+      "isBusinessReviewer": true,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": null,
+      "secondarySkills": null,
+      "workloadCapacity": 20,
+      "createdAt": "2025-06-29T08:26:28.172Z",
+      "department": null,
+      "unit": {
+        "id": 45,
+        "name": "CAPEM RANOTANA",
+        "displayName": "Kantor Cabang Pembantu RANOTANA",
+        "unitType": "sub_branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "manager",
+        "timestamp": "2025-06-29T08:26:28.115Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 185,
+      "username": "sari.requester.test.-26-28",
+      "name": "Sari Dewi REQUESTER",
+      "email": "sari.requester.test.1751185588177@bsg.co.id",
+      "role": "requester",
+      "departmentId": null,
+      "unitId": 12,
+      "isBusinessReviewer": false,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": null,
+      "secondarySkills": null,
+      "workloadCapacity": 10,
+      "createdAt": "2025-06-29T08:26:28.234Z",
+      "department": null,
+      "unit": {
+        "id": 12,
+        "name": "Branch MARISA",
+        "displayName": "Kantor Cabang MARISA",
+        "unitType": "branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "requester",
+        "timestamp": "2025-06-29T08:26:28.177Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 186,
+      "username": "budi.requester.test.-26-28",
+      "name": "Budi Santoso REQUESTER",
+      "email": "budi.requester.test.1751185588237@bsg.co.id",
+      "role": "requester",
+      "departmentId": null,
+      "unitId": 16,
+      "isBusinessReviewer": false,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": null,
+      "secondarySkills": null,
+      "workloadCapacity": 10,
+      "createdAt": "2025-06-29T08:26:28.293Z",
+      "department": null,
+      "unit": {
+        "id": 16,
+        "name": "Branch TILAMUTA",
+        "displayName": "Kantor Cabang TILAMUTA",
+        "unitType": "branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "requester",
+        "timestamp": "2025-06-29T08:26:28.237Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 188,
+      "username": "sari.it.test.-29-26",
+      "name": "Sari Dewi IT",
+      "email": "sari.it.test.1751185766102@bsg.co.id",
+      "role": "technician",
+      "departmentId": null,
+      "unitId": 40,
+      "isBusinessReviewer": false,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": "intermediate",
+      "secondarySkills": null,
+      "workloadCapacity": 10,
+      "createdAt": "2025-06-29T08:29:26.159Z",
+      "department": null,
+      "unit": {
+        "id": 40,
+        "name": "CAPEM MOTOLING",
+        "displayName": "Kantor Cabang Pembantu MOTOLING",
+        "unitType": "sub_branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "it",
+        "timestamp": "2025-06-29T08:29:26.102Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 189,
+      "username": "budi.it.test.-29-26",
+      "name": "Budi Santoso IT",
+      "email": "budi.it.test.1751185766162@bsg.co.id",
+      "role": "technician",
+      "departmentId": null,
+      "unitId": 22,
+      "isBusinessReviewer": false,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": "intermediate",
+      "secondarySkills": null,
+      "workloadCapacity": 10,
+      "createdAt": "2025-06-29T08:29:26.219Z",
+      "department": null,
+      "unit": {
+        "id": 22,
+        "name": "Branch RATAHAN",
+        "displayName": "Kantor Cabang RATAHAN",
+        "unitType": "branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "it",
+        "timestamp": "2025-06-29T08:29:26.162Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 190,
+      "username": "indah.it.test.-29-26",
+      "name": "Indah Permata IT",
+      "email": "indah.it.test.1751185766222@bsg.co.id",
+      "role": "technician",
+      "departmentId": null,
+      "unitId": 53,
+      "isBusinessReviewer": false,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": "intermediate",
+      "secondarySkills": null,
+      "workloadCapacity": 10,
+      "createdAt": "2025-06-29T08:29:26.278Z",
+      "department": null,
+      "unit": {
+        "id": 53,
+        "name": "CAPEM MODOINDING",
+        "displayName": "Kantor Cabang Pembantu MODOINDING",
+        "unitType": "sub_branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "it",
+        "timestamp": "2025-06-29T08:29:26.222Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 191,
+      "username": "sari.kasda.test.-29-26",
+      "name": "Sari Dewi KASDA",
+      "email": "sari.kasda.test.1751185766281@bsg.co.id",
+      "role": "requester",
+      "departmentId": null,
+      "unitId": 45,
+      "isBusinessReviewer": false,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": null,
+      "secondarySkills": null,
+      "workloadCapacity": 10,
+      "createdAt": "2025-06-29T08:29:26.337Z",
+      "department": null,
+      "unit": {
+        "id": 45,
+        "name": "CAPEM RANOTANA",
+        "displayName": "Kantor Cabang Pembantu RANOTANA",
+        "unitType": "sub_branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "kasda",
+        "timestamp": "2025-06-29T08:29:26.281Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 192,
+      "username": "budi.kasda.test.-29-26",
+      "name": "Budi Santoso KASDA",
+      "email": "budi.kasda.test.1751185766340@bsg.co.id",
+      "role": "requester",
+      "departmentId": null,
+      "unitId": 27,
+      "isBusinessReviewer": false,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": null,
+      "secondarySkills": null,
+      "workloadCapacity": 10,
+      "createdAt": "2025-06-29T08:29:26.396Z",
+      "department": null,
+      "unit": {
+        "id": 27,
+        "name": "Branch LOLAK",
+        "displayName": "Kantor Cabang LOLAK",
+        "unitType": "branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "kasda",
+        "timestamp": "2025-06-29T08:29:26.340Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 193,
+      "username": "indah.kasda.test.-29-26",
+      "name": "Indah Permata KASDA",
+      "email": "indah.kasda.test.1751185766400@bsg.co.id",
+      "role": "requester",
+      "departmentId": null,
+      "unitId": 34,
+      "isBusinessReviewer": false,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": null,
+      "secondarySkills": null,
+      "workloadCapacity": 10,
+      "createdAt": "2025-06-29T08:29:26.456Z",
+      "department": null,
+      "unit": {
+        "id": 34,
+        "name": "CAPEM PASAR SENTRAL",
+        "displayName": "Kantor Cabang Pembantu PASAR SENTRAL",
+        "unitType": "sub_branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "kasda",
+        "timestamp": "2025-06-29T08:29:26.400Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 194,
+      "username": "sari.manager.test.-29-26",
+      "name": "Sari Dewi MANAGER",
+      "email": "sari.manager.test.1751185766459@bsg.co.id",
+      "role": "manager",
+      "departmentId": null,
+      "unitId": 4,
+      "isBusinessReviewer": true,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": null,
+      "secondarySkills": null,
+      "workloadCapacity": 20,
+      "createdAt": "2025-06-29T08:29:26.515Z",
+      "department": null,
+      "unit": {
+        "id": 4,
+        "name": "Branch KOTAMOBAGU",
+        "displayName": "Kantor Cabang KOTAMOBAGU",
+        "unitType": "branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "manager",
+        "timestamp": "2025-06-29T08:29:26.459Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 195,
+      "username": "budi.manager.test.-29-26",
+      "name": "Budi Santoso MANAGER",
+      "email": "budi.manager.test.1751185766519@bsg.co.id",
+      "role": "manager",
+      "departmentId": null,
+      "unitId": 15,
+      "isBusinessReviewer": true,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": null,
+      "secondarySkills": null,
+      "workloadCapacity": 20,
+      "createdAt": "2025-06-29T08:29:26.575Z",
+      "department": null,
+      "unit": {
+        "id": 15,
+        "name": "Branch SIAU",
+        "displayName": "Kantor Cabang SIAU",
+        "unitType": "branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "manager",
+        "timestamp": "2025-06-29T08:29:26.519Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 196,
+      "username": "sari.requester.test.-29-26",
+      "name": "Sari Dewi REQUESTER",
+      "email": "sari.requester.test.1751185766580@bsg.co.id",
+      "role": "requester",
+      "departmentId": null,
+      "unitId": 42,
+      "isBusinessReviewer": false,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": null,
+      "secondarySkills": null,
+      "workloadCapacity": 10,
+      "createdAt": "2025-06-29T08:29:26.636Z",
+      "department": null,
+      "unit": {
+        "id": 42,
+        "name": "CAPEM RANDANGAN",
+        "displayName": "Kantor Cabang Pembantu RANDANGAN",
+        "unitType": "sub_branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "requester",
+        "timestamp": "2025-06-29T08:29:26.580Z",
+        "nameFieldTest": true
+      }
+    },
+    {
+      "id": 197,
+      "username": "budi.requester.test.-29-26",
+      "name": "Budi Santoso REQUESTER",
+      "email": "budi.requester.test.1751185766639@bsg.co.id",
+      "role": "requester",
+      "departmentId": null,
+      "unitId": 18,
+      "isBusinessReviewer": false,
+      "isKasdaUser": true,
+      "primarySkill": null,
+      "experienceLevel": null,
+      "secondarySkills": null,
+      "workloadCapacity": 10,
+      "createdAt": "2025-06-29T08:29:26.695Z",
+      "department": null,
+      "unit": {
+        "id": 18,
+        "name": "Branch AIRMADIDI",
+        "displayName": "Kantor Cabang AIRMADIDI",
+        "unitType": "branch"
+      },
+      "password": "TestPassword123!",
+      "testMetadata": {
+        "testGenerated": true,
+        "userType": "requester",
+        "timestamp": "2025-06-29T08:29:26.639Z",
+        "nameFieldTest": true
+      }
+    }
+  ],
+  "tickets": [],
+  "branches": [
+    {
+      "id": 1,
+      "name": "Branch Utama",
+      "displayName": "Kantor Cabang Utama",
+      "unitType": "branch",
+      "code": "UTAMA"
+    },
+    {
+      "id": 2,
+      "name": "Branch Kotamobagu",
+      "displayName": "Kantor Cabang Kotamobagu",
+      "unitType": "branch",
+      "code": "KOTAMOBAGU"
+    },
+    {
+      "id": 3,
+      "name": "Branch UTAMA",
+      "displayName": "Kantor Cabang UTAMA",
+      "unitType": "branch",
+      "code": "001"
+    },
+    {
+      "id": 4,
+      "name": "Branch KOTAMOBAGU",
+      "displayName": "Kantor Cabang KOTAMOBAGU",
+      "unitType": "branch",
+      "code": "002"
+    },
+    {
+      "id": 5,
+      "name": "Branch GORONTALO",
+      "displayName": "Kantor Cabang GORONTALO",
+      "unitType": "branch",
+      "code": "003"
+    },
+    {
+      "id": 6,
+      "name": "Branch TAHUNA",
+      "displayName": "Kantor Cabang TAHUNA",
+      "unitType": "branch",
+      "code": "004"
+    },
+    {
+      "id": 7,
+      "name": "Branch BITUNG",
+      "displayName": "Kantor Cabang BITUNG",
+      "unitType": "branch",
+      "code": "005"
+    },
+    {
+      "id": 8,
+      "name": "Branch KAWANGKOAN",
+      "displayName": "Kantor Cabang KAWANGKOAN",
+      "unitType": "branch",
+      "code": "006"
+    },
+    {
+      "id": 9,
+      "name": "Branch LIMBOTO",
+      "displayName": "Kantor Cabang LIMBOTO",
+      "unitType": "branch",
+      "code": "007"
+    },
+    {
+      "id": 10,
+      "name": "Branch TONDANO",
+      "displayName": "Kantor Cabang TONDANO",
+      "unitType": "branch",
+      "code": "008"
+    },
+    {
+      "id": 11,
+      "name": "Branch TOMOHON",
+      "displayName": "Kantor Cabang TOMOHON",
+      "unitType": "branch",
+      "code": "009"
+    },
+    {
+      "id": 12,
+      "name": "Branch MARISA",
+      "displayName": "Kantor Cabang MARISA",
+      "unitType": "branch",
+      "code": "010"
+    },
+    {
+      "id": 13,
+      "name": "Branch CALACA",
+      "displayName": "Kantor Cabang CALACA",
+      "unitType": "branch",
+      "code": "011"
+    },
+    {
+      "id": 14,
+      "name": "Branch AMURANG",
+      "displayName": "Kantor Cabang AMURANG",
+      "unitType": "branch",
+      "code": "012"
+    },
+    {
+      "id": 15,
+      "name": "Branch SIAU",
+      "displayName": "Kantor Cabang SIAU",
+      "unitType": "branch",
+      "code": "013"
+    },
+    {
+      "id": 16,
+      "name": "Branch TILAMUTA",
+      "displayName": "Kantor Cabang TILAMUTA",
+      "unitType": "branch",
+      "code": "015"
+    },
+    {
+      "id": 17,
+      "name": "Branch JAKARTA",
+      "displayName": "Kantor Cabang JAKARTA",
+      "unitType": "branch",
+      "code": "016"
+    },
+    {
+      "id": 18,
+      "name": "Branch AIRMADIDI",
+      "displayName": "Kantor Cabang AIRMADIDI",
+      "unitType": "branch",
+      "code": "017"
+    },
+    {
+      "id": 19,
+      "name": "Branch SUWAWA",
+      "displayName": "Kantor Cabang SUWAWA",
+      "unitType": "branch",
+      "code": "018"
+    },
+    {
+      "id": 20,
+      "name": "Branch KWANDANG",
+      "displayName": "Kantor Cabang KWANDANG",
+      "unitType": "branch",
+      "code": "019"
+    },
+    {
+      "id": 21,
+      "name": "Branch BOROKO",
+      "displayName": "Kantor Cabang BOROKO",
+      "unitType": "branch",
+      "code": "020"
+    },
+    {
+      "id": 22,
+      "name": "Branch RATAHAN",
+      "displayName": "Kantor Cabang RATAHAN",
+      "unitType": "branch",
+      "code": "022"
+    },
+    {
+      "id": 23,
+      "name": "Branch SURABAYA",
+      "displayName": "Kantor Cabang SURABAYA",
+      "unitType": "branch",
+      "code": "023"
+    },
+    {
+      "id": 24,
+      "name": "Branch MALANG",
+      "displayName": "Kantor Cabang MALANG",
+      "unitType": "branch",
+      "code": "026"
+    },
+    {
+      "id": 25,
+      "name": "Branch TUTUYAN",
+      "displayName": "Kantor Cabang TUTUYAN",
+      "unitType": "branch",
+      "code": "027"
+    },
+    {
+      "id": 26,
+      "name": "Branch MOLIBAGU",
+      "displayName": "Kantor Cabang MOLIBAGU",
+      "unitType": "branch",
+      "code": "030"
+    },
+    {
+      "id": 27,
+      "name": "Branch LOLAK",
+      "displayName": "Kantor Cabang LOLAK",
+      "unitType": "branch",
+      "code": "031"
+    },
+    {
+      "id": 28,
+      "name": "Branch MELONGUANE",
+      "displayName": "Kantor Cabang MELONGUANE",
+      "unitType": "branch",
+      "code": "038"
+    },
+    {
+      "id": 29,
+      "name": "CAPEM LIRUNG",
+      "displayName": "Kantor Cabang Pembantu LIRUNG",
+      "unitType": "sub_branch",
+      "code": "014"
+    },
+    {
+      "id": 30,
+      "name": "CAPEM KELAPA GADING",
+      "displayName": "Kantor Cabang Pembantu KELAPA GADING",
+      "unitType": "sub_branch",
+      "code": "021"
+    },
+    {
+      "id": 31,
+      "name": "CAPEM CEMPAKA PUTIH",
+      "displayName": "Kantor Cabang Pembantu CEMPAKA PUTIH",
+      "unitType": "sub_branch",
+      "code": "024"
+    },
+    {
+      "id": 32,
+      "name": "CAPEM MANGGA DUA",
+      "displayName": "Kantor Cabang Pembantu MANGGA DUA",
+      "unitType": "sub_branch",
+      "code": "025"
+    },
+    {
+      "id": 33,
+      "name": "CAPEM POPAYATO",
+      "displayName": "Kantor Cabang Pembantu POPAYATO",
+      "unitType": "sub_branch",
+      "code": "028"
+    },
+    {
+      "id": 34,
+      "name": "CAPEM PASAR SENTRAL",
+      "displayName": "Kantor Cabang Pembantu PASAR SENTRAL",
+      "unitType": "sub_branch",
+      "code": "029"
+    },
+    {
+      "id": 35,
+      "name": "CAPEM TAGULANDANG",
+      "displayName": "Kantor Cabang Pembantu TAGULANDANG",
+      "unitType": "sub_branch",
+      "code": "032"
+    },
+    {
+      "id": 36,
+      "name": "CAPEM TUMINTING",
+      "displayName": "Kantor Cabang Pembantu TUMINTING",
+      "unitType": "sub_branch",
+      "code": "033"
+    },
+    {
+      "id": 37,
+      "name": "CAPEM LIKUPANG",
+      "displayName": "Kantor Cabang Pembantu LIKUPANG",
+      "unitType": "sub_branch",
+      "code": "034"
+    },
+    {
+      "id": 38,
+      "name": "CAPEM PAAL DUA",
+      "displayName": "Kantor Cabang Pembantu PAAL DUA",
+      "unitType": "sub_branch",
+      "code": "035"
+    },
+    {
+      "id": 39,
+      "name": "CAPEM PAGUAT",
+      "displayName": "Kantor Cabang Pembantu PAGUAT",
+      "unitType": "sub_branch",
+      "code": "036"
+    },
+    {
+      "id": 40,
+      "name": "CAPEM MOTOLING",
+      "displayName": "Kantor Cabang Pembantu MOTOLING",
+      "unitType": "sub_branch",
+      "code": "037"
+    },
+    {
+      "id": 41,
+      "name": "CAPEM MANEMBO-NEMBO",
+      "displayName": "Kantor Cabang Pembantu MANEMBO-NEMBO",
+      "unitType": "sub_branch",
+      "code": "039"
+    },
+    {
+      "id": 42,
+      "name": "CAPEM RANDANGAN",
+      "displayName": "Kantor Cabang Pembantu RANDANGAN",
+      "unitType": "sub_branch",
+      "code": "040"
+    },
+    {
+      "id": 43,
+      "name": "CAPEM TOLANGOHULA",
+      "displayName": "Kantor Cabang Pembantu TOLANGOHULA",
+      "unitType": "sub_branch",
+      "code": "041"
+    },
+    {
+      "id": 44,
+      "name": "CAPEM BAHU",
+      "displayName": "Kantor Cabang Pembantu BAHU",
+      "unitType": "sub_branch",
+      "code": "042"
+    },
+    {
+      "id": 45,
+      "name": "CAPEM RANOTANA",
+      "displayName": "Kantor Cabang Pembantu RANOTANA",
+      "unitType": "sub_branch",
+      "code": "043"
+    },
+    {
+      "id": 46,
+      "name": "CAPEM TAMAKO",
+      "displayName": "Kantor Cabang Pembantu TAMAKO",
+      "unitType": "sub_branch",
+      "code": "044"
+    },
+    {
+      "id": 47,
+      "name": "CAPEM PAGUYAMAN",
+      "displayName": "Kantor Cabang Pembantu PAGUYAMAN",
+      "unitType": "sub_branch",
+      "code": "045"
+    },
+    {
+      "id": 48,
+      "name": "CAPEM LANGOWAN",
+      "displayName": "Kantor Cabang Pembantu LANGOWAN",
+      "unitType": "sub_branch",
+      "code": "046"
+    },
+    {
+      "id": 49,
+      "name": "CAPEM SAMRAT",
+      "displayName": "Kantor Cabang Pembantu SAMRAT",
+      "unitType": "sub_branch",
+      "code": "047"
+    },
+    {
+      "id": 50,
+      "name": "CAPEM BEO",
+      "displayName": "Kantor Cabang Pembantu BEO",
+      "unitType": "sub_branch",
+      "code": "048"
+    },
+    {
+      "id": 51,
+      "name": "CAPEM TELAGA",
+      "displayName": "Kantor Cabang Pembantu TELAGA",
+      "unitType": "sub_branch",
+      "code": "049"
+    },
+    {
+      "id": 52,
+      "name": "CAPEM MOPUYA",
+      "displayName": "Kantor Cabang Pembantu MOPUYA",
+      "unitType": "sub_branch",
+      "code": "050"
+    },
+    {
+      "id": 53,
+      "name": "CAPEM MODOINDING",
+      "displayName": "Kantor Cabang Pembantu MODOINDING",
+      "unitType": "sub_branch",
+      "code": "051"
+    }
+  ],
+  "lastUpdate": "2025-06-29T08:29:27.852Z",
+  "runHistory": []
+}

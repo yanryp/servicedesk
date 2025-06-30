@@ -45,6 +45,21 @@ export const authService = {
   getStoredToken: (): string | null => {
     return localStorage.getItem('authToken');
   },
+
+  // Get all BSG branches for user assignment (independent of department)
+  getAllBranches: async (): Promise<any[]> => {
+    return api.get<any[]>('/auth/branches');
+  },
+
+  // Get units by department for user management (legacy)
+  getUnitsByDepartment: async (departmentId: number): Promise<any[]> => {
+    return api.get<any[]>(`/auth/units/${departmentId}`);
+  },
+
+  // Get potential managers by department for user management
+  getManagersByDepartment: async (departmentId: number): Promise<any[]> => {
+    return api.get<any[]>(`/auth/managers/${departmentId}`);
+  },
 };
 
 export default authService;

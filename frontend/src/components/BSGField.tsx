@@ -238,6 +238,40 @@ const BSGField: React.FC<BSGFieldProps> = ({
     }
   }, [field.fieldType, field.fieldName, value, onChange]);
 
+  // Auto-select single option for dropdown fields if required and no value is set
+  useEffect(() => {
+    const isDropdownField = [
+      'dropdown', 
+      'dropdown_branch', 
+      'dropdown_olibs_menu', 
+      'dropdown_atm', 
+      'dropdown_terminal',
+      'dropdown_government',
+      'dropdown_authority',
+      'dropdown_treasury',
+      'dropdown_budget',
+      'dropdown_request_type',
+      'dropdown_access_level'
+    ].includes(field.fieldType);
+    
+    if (isDropdownField && field.isRequired && !value && Array.isArray(masterData)) {
+      if (masterData.length === 1) {
+        // Auto-select single option
+        const singleOption = masterData[0];
+        const optionValue = singleOption?.value || singleOption?.id || '';
+        
+        if (optionValue) {
+          console.log(`BSGField: Auto-selecting single option for required field ${field.fieldName}:`, optionValue);
+          onChange(field.fieldName, optionValue);
+        }
+      } else if (masterData.length === 0) {
+        // If no options available, set a placeholder to satisfy validation
+        console.log(`BSGField: No options available for required field ${field.fieldName}, setting placeholder value`);
+        onChange(field.fieldName, 'NO_OPTIONS_AVAILABLE');
+      }
+    }
+  }, [field.fieldType, field.fieldName, field.isRequired, value, onChange, masterData]);
+
   // Render searchable dropdown with autocomplete functionality
   const renderSearchableDropdown = () => {
     const options = Array.isArray(masterData) ? masterData : [];
@@ -413,11 +447,17 @@ const BSGField: React.FC<BSGFieldProps> = ({
             <option value="">
               {loading ? 'Loading...' : (field.placeholderText || 'Pilih opsi')}
             </option>
-            {options.map((option, index) => (
-              <option key={option?.value || index} value={option?.value || ''}>
-                {option?.label || option?.displayName || option?.name || `Option ${index + 1}`}
+            {options.length === 0 && value === 'NO_OPTIONS_AVAILABLE' ? (
+              <option value="NO_OPTIONS_AVAILABLE">
+                Data tidak tersedia saat ini
               </option>
-            ))}
+            ) : (
+              options.map((option, index) => (
+                <option key={option?.value || index} value={option?.value || ''}>
+                  {option?.label || option?.displayName || option?.name || `Option ${index + 1}`}
+                </option>
+              ))
+            )}
           </select>
         );
 

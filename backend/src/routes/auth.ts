@@ -24,13 +24,13 @@ const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => P
 // POST /api/auth/register
 router.post('/register', asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   const { 
-    username, email, password, role, departmentId, firstName, lastName, specialization,
-    unitId, managerId, workloadCapacity, isBusinessReviewer, isKasdaUser 
+    username, name, email, password, role, departmentId,
+    unitId, managerId 
   } = req.body;
 
   // Basic validation
-  if (!username || !email || !password || !role || !departmentId) {
-    return next(Object.assign(new Error('Username, email, password, role, and departmentId are required.'), { status: 400 }));
+  if (!username || !email || !password || !role) {
+    return next(Object.assign(new Error('Username, email, password, and role are required.'), { status: 400 }));
   }
 
   const validRoles = ['admin', 'technician', 'requester', 'manager'];
@@ -38,20 +38,39 @@ router.post('/register', asyncHandler(async (req: Request, res: Response, next: 
     return next(Object.assign(new Error(`Invalid role. Must be one of: ${validRoles.join(', ')}`), { status: 400 }));
   }
 
-  // Additional validation for technician specialization
-  if (role === 'technician' && specialization) {
-    if (!specialization.primarySkill || !specialization.experienceLevel) {
-      return next(Object.assign(new Error('Primary skill and experience level are required for technicians.'), { status: 400 }));
+  // Validate assignment rules based on role
+  if (role === 'requester' || role === 'manager') {
+    if (!unitId) {
+      return next(Object.assign(new Error(`${role === 'requester' ? 'Requesters' : 'Managers'} must be assigned to a branch unit.`), { status: 400 }));
     }
   }
 
-  // Verify department exists
-  const department = await prisma.department.findUnique({
-    where: { id: parseInt(departmentId) }
-  });
+  if (role === 'technician' || role === 'admin') {
+    if (!departmentId && !unitId) {
+      return next(Object.assign(new Error(`${role === 'technician' ? 'Technicians' : 'Admins'} must be assigned to either a department or a branch unit.`), { status: 400 }));
+    }
+  }
 
-  if (!department) {
-    return next(Object.assign(new Error('Invalid department ID.'), { status: 400 }));
+  // Verify department exists if provided
+  if (departmentId) {
+    const department = await prisma.department.findUnique({
+      where: { id: parseInt(departmentId) }
+    });
+
+    if (!department) {
+      return next(Object.assign(new Error('Invalid department ID.'), { status: 400 }));
+    }
+  }
+
+  // Verify unit exists if provided
+  if (unitId) {
+    const unit = await prisma.unit.findUnique({
+      where: { id: parseInt(unitId) }
+    });
+
+    if (!unit) {
+      return next(Object.assign(new Error('Invalid unit ID.'), { status: 400 }));
+    }
   }
 
   // Check if user already exists
@@ -71,27 +90,56 @@ router.post('/register', asyncHandler(async (req: Request, res: Response, next: 
   // Hash password
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-  // Prepare user data
+  // Prepare user data with automatic business rule application
   const userData: any = {
     username,
+    name: name || null,
     email,
     passwordHash: hashedPassword,
-    role: role as any,
-    departmentId: parseInt(departmentId)
+    role: role as any
   };
 
-  // Add optional fields if provided
+  // Apply assignment rules
+  if (departmentId) userData.departmentId = parseInt(departmentId);
   if (unitId) userData.unitId = parseInt(unitId);
   if (managerId) userData.managerId = parseInt(managerId);
-  if (workloadCapacity) userData.workloadCapacity = parseInt(workloadCapacity);
-  if (typeof isBusinessReviewer === 'boolean') userData.isBusinessReviewer = isBusinessReviewer;
-  if (typeof isKasdaUser === 'boolean') userData.isKasdaUser = isKasdaUser;
 
-  // Add technician specialization fields if provided
-  if (role === 'technician' && specialization) {
-    userData.primarySkill = specialization.primarySkill;
-    userData.experienceLevel = specialization.experienceLevel;
-    userData.secondarySkills = specialization.secondarySkills;
+  // Automatic business rule application based on role and assignment
+  if (role === 'manager') {
+    // Managers automatically get business reviewer privileges
+    userData.isBusinessReviewer = true;
+    userData.workloadCapacity = 20; // Default manager workload
+  }
+
+  if (role === 'technician') {
+    // Set default technician attributes
+    userData.workloadCapacity = 10; // Default technician workload
+    userData.isAvailable = true;
+    userData.experienceLevel = 'intermediate'; // Default experience level
+    
+    // Set primary skill based on department assignment
+    if (departmentId) {
+      const dept = await prisma.department.findUnique({ where: { id: parseInt(departmentId) } });
+      if (dept?.name === 'Dukungan dan Layanan') {
+        userData.primarySkill = 'banking_systems';
+        userData.secondarySkills = 'KASDA, BSGDirect, Core Banking';
+      } else if (dept?.name === 'Information Technology') {
+        userData.primarySkill = 'network_infrastructure';
+        userData.secondarySkills = 'Network Admin, Server Management, IT Support';
+      }
+    }
+  }
+
+  if (role === 'admin') {
+    // Admins get full privileges
+    userData.isBusinessReviewer = true;
+    userData.workloadCapacity = 50; // Higher admin workload
+    userData.primarySkill = 'system_administration';
+  }
+
+  // KASDA access determination: All branch-assigned users get KASDA access
+  if (unitId) {
+    userData.isKasdaUser = true;
   }
 
   // Create new user
@@ -100,17 +148,30 @@ router.post('/register', asyncHandler(async (req: Request, res: Response, next: 
     select: {
       id: true,
       username: true,
+      name: true,
       email: true,
       role: true,
       departmentId: true,
+      unitId: true,
+      isBusinessReviewer: true,
+      isKasdaUser: true,
       primarySkill: true,
       experienceLevel: true,
       secondarySkills: true,
+      workloadCapacity: true,
       createdAt: true,
       department: {
         select: {
           id: true,
           name: true
+        }
+      },
+      unit: {
+        select: {
+          id: true,
+          name: true,
+          displayName: true,
+          unitType: true
         }
       }
     }
@@ -214,6 +275,43 @@ router.get('/units/:departmentId', asyncHandler(async (req: Request, res: Respon
   } catch (error) {
     console.error('Error fetching units:', error);
     return next(Object.assign(new Error('Failed to fetch units'), { status: 500 }));
+  }
+}));
+
+// GET /api/auth/branches - Get all BSG branches for user assignment (independent of department)
+router.get('/branches', asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const branches = await prisma.unit.findMany({
+      where: {
+        isActive: true,
+        // Only include actual BSG branch units, not department-level units
+        OR: [
+          { unitType: 'branch' },
+          { unitType: 'sub_branch' }
+        ]
+      },
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        displayName: true,
+        unitType: true,
+        sortOrder: true,
+        province: true,
+        region: true,
+        metadata: true
+      },
+      orderBy: [
+        { unitType: 'asc' }, // CABANG first, then CAPEM
+        { sortOrder: 'asc' },
+        { name: 'asc' }
+      ]
+    });
+
+    res.json(branches);
+  } catch (error) {
+    console.error('Error fetching branches:', error);
+    return next(Object.assign(new Error('Failed to fetch branches'), { status: 500 }));
   }
 }));
 

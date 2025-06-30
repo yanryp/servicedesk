@@ -134,12 +134,35 @@ const TicketDetailPage: React.FC = () => {
     try {
       console.log(`TicketDetailPage: Transitioning ticket to ${newStatus}`);
       
-      // Use ticketsService to update status
-      const updatedTicket = await ticketsService.updateTicketStatus(
-        parseInt(ticketId!), 
-        newStatus, 
-        transitionComment.trim() || undefined
-      );
+      let updatedTicket;
+      
+      // Special handling for starting work - auto-assign if unassigned
+      if (newStatus === 'in_progress' && action === 'Start Work') {
+        const isUnassigned = !ticket?.assignedToUserId;
+        
+        if (isUnassigned) {
+          console.log('TicketDetailPage: Auto-assigning ticket when starting work');
+          // Use combined start work and assign endpoint
+          updatedTicket = await ticketsService.startWorkAndAssign(
+            parseInt(ticketId!), 
+            transitionComment.trim() || 'Technician started working on this ticket'
+          );
+        } else {
+          // Regular status update for already assigned tickets
+          updatedTicket = await ticketsService.updateTicketStatus(
+            parseInt(ticketId!), 
+            newStatus, 
+            transitionComment.trim() || undefined
+          );
+        }
+      } else {
+        // Regular status update for other transitions
+        updatedTicket = await ticketsService.updateTicketStatus(
+          parseInt(ticketId!), 
+          newStatus, 
+          transitionComment.trim() || undefined
+        );
+      }
       
       setTicket(updatedTicket);
       setShowTransitionForm(null);
@@ -671,15 +694,16 @@ const TicketDetailPage: React.FC = () => {
 
           {/* Action Buttons based on current status */}
           <div className="flex flex-wrap gap-3">
-            {/* Start Work - for assigned tickets */}
+            {/* Start Work - for assigned tickets and unassigned tickets from queue */}
             {((ticket.status as string) === 'assigned' || (ticket.status as string) === 'approved' || (ticket.status as string) === 'open') && (
               <button
                 onClick={() => handleStatusTransition('in_progress', 'Start Work')}
                 disabled={isTransitioning}
                 className="flex items-center space-x-2 bg-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+                title={!ticket?.assignedToUserId ? 'This will assign the ticket to you and start work' : 'Start working on this assigned ticket'}
               >
                 <PlayIcon className="w-5 h-5" />
-                <span>Start Work</span>
+                <span>{!ticket?.assignedToUserId ? 'Take & Start Work' : 'Start Work'}</span>
               </button>
             )}
 

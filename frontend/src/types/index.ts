@@ -301,6 +301,9 @@ export interface TicketFilters {
   itemId?: number;
   serviceItemId?: number;
   catalogTag?: string;
+  // Sorting parameters
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 // Form interfaces
