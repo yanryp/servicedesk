@@ -9,6 +9,7 @@ import {
   LifebuoyIcon,
   UsersIcon,
   ServerIcon,
+  ServerStackIcon,
   WifiIcon,
   CreditCardIcon,
   ReceiptPercentIcon,
@@ -48,12 +49,13 @@ const iconMap = {
   'banknotes': BanknotesIcon,
   'currency-dollar': CurrencyDollarIcon,
   'circle-stack': CircleStackIcon, // For actual cash stacks
-  'atm': BanknotesIcon, // ATM services
+  'atm': CreditCardIcon, // ATM services - better represents card operations
   
   // Technology & Hardware  
   'hard-drive': ServerIcon,
   'computer-desktop': ComputerDesktopIcon,
   'server': ServerIcon,
+  'server-stack': ServerStackIcon, // For banking systems/OLIB
   'wifi': WifiIcon,
   'globe-alt': GlobeAltIcon,
   
@@ -688,11 +690,11 @@ const ServiceCatalogV2Page: React.FC = () => {
         // Fallback to name-based detection
         const categoryName = category.name.toLowerCase();
         if (categoryName.includes('atm') || categoryName.includes('hardware')) {
-          return BanknotesIcon;
+          return CreditCardIcon; // Better representation for ATM services
         } else if (categoryName.includes('claims') || categoryName.includes('dispute')) {
           return ClipboardDocumentListIcon;
         } else if (categoryName.includes('core') || categoryName.includes('banking') || categoryName.includes('financial')) {
-          return CurrencyDollarIcon;
+          return ServerStackIcon; // Better for core banking systems/OLIB
         } else if (categoryName.includes('corporate') || categoryName.includes('employee') || categoryName.includes('support')) {
           return UsersIcon;
         } else if (categoryName.includes('digital') || categoryName.includes('channel')) {
@@ -780,7 +782,7 @@ const ServiceCatalogV2Page: React.FC = () => {
         
         // ATM & Cash Services
         if (serviceName.includes('atm') || serviceName.includes('cash') || serviceName.includes('tunai')) {
-          return BanknotesIcon;
+          return CreditCardIcon; // Better representation for ATM card operations
         }
         // EDC & Payment Terminals
         else if (serviceName.includes('edc') || serviceName.includes('terminal') || serviceName.includes('pos')) {
@@ -790,9 +792,9 @@ const ServiceCatalogV2Page: React.FC = () => {
         else if (serviceName.includes('kasda') || serviceName.includes('treasury') || serviceName.includes('bendahara')) {
           return BanknotesIcon;
         }
-        // Core Banking & Financial Systems
-        else if (serviceName.includes('core') || serviceName.includes('banking') || serviceName.includes('financial') || serviceName.includes('keuangan')) {
-          return CurrencyDollarIcon;
+        // Core Banking & Financial Systems (OLIB)
+        else if (serviceName.includes('core') || serviceName.includes('banking') || serviceName.includes('financial') || serviceName.includes('keuangan') || serviceName.includes('olib')) {
+          return ServerStackIcon; // Better for core banking systems/OLIB
         }
         // QRIS & Digital Payments
         else if (serviceName.includes('qris') || serviceName.includes('digital') || serviceName.includes('payment') || serviceName.includes('pembayaran')) {

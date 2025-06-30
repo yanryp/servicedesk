@@ -1,0 +1,26 @@
+BSG Helpdesk - WSL Windows Deployment Package
+Created: Mon Jun 30 10:53:41 WITA 2025
+Version: 1.0.0
+Package: BSG-Helpdesk-WSL-Windows-20250630
+
+Contents:
+- Complete application source code
+- WSL-optimized Docker configuration
+- Windows deployment scripts
+- Comprehensive documentation
+- Environment configuration templates
+
+System Requirements:
+- Windows 10/11 with WSL2
+- Docker Desktop with WSL2 backend
+- 8GB RAM minimum (16GB recommended)
+- 5GB free disk space
+
+Quick Start:
+1. Extract this package to C:\BSG-Helpdesk2. Open Command Prompt as Administrator
+3. Navigate to the folder: cd C:\BSG-Helpdesk
+4. Run: deploy-wsl.bat
+5. Follow the prompts for configuration
+6. Access the application at http://localhost:3000
+
+For detailed instructions, see README-WSL-Deployment.md

@@ -1,0 +1,59 @@
+# Frontend Dockerfile optimized for WSL Environment
+# Multi-stage build for optimized image size
+
+# Build stage
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --no-audit --no-fund
+
+# Copy source code
+COPY public ./public/
+COPY src ./src/
+COPY tsconfig.json ./
+COPY tailwind.config.js ./
+COPY postcss.config.js ./
+
+# Build arguments for environment configuration
+ARG REACT_APP_API_URL=http://localhost:3001/api
+ARG REACT_APP_APP_NAME="BSG Helpdesk"
+
+# Set environment variables for build
+ENV REACT_APP_API_URL=${REACT_APP_API_URL}
+ENV REACT_APP_APP_NAME=${REACT_APP_APP_NAME}
+ENV GENERATE_SOURCEMAP=false
+ENV NODE_OPTIONS="--max_old_space_size=1024"
+
+# Build the React application
+RUN npm run build
+
+# Production stage
+FROM nginx:alpine
+
+# Install curl for health checks
+RUN apk add --no-cache curl
+
+# Copy built application from builder stage
+COPY --from=builder /app/build /usr/share/nginx/html
+
+# Copy nginx configuration optimized for WSL
+COPY nginx.wsl.conf /etc/nginx/conf.d/default.conf
+
+# Create nginx user and set permissions
+RUN chown -R nginx:nginx /usr/share/nginx/html && \
+    chmod -R 755 /usr/share/nginx/html
+
+# Expose port 80
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:80 || exit 1
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
