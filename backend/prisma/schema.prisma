@@ -66,6 +66,9 @@ model Department {
   bsgTemplateUsageLogs BSGTemplateUsageLog[] @relation("BSGTemplateUsageDept")
   categories           Category[]
   slaPolicy            DepartmentSlaPolicy[]
+  slaPolices           SlaPolicy[]
+  businessHours        BusinessHoursConfig[]
+  holidays             HolidayCalendar[]
   masterDataEntities   MasterDataEntity[]
   serviceCatalog       ServiceCatalog[]
   templateCategories   TemplateCategory[]
@@ -99,6 +102,8 @@ model Unit {
   parent       Unit?       @relation("UnitHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   children     Unit[]      @relation("UnitHierarchy")
   users        User[]
+  businessHours BusinessHoursConfig[]
+  holidays     HolidayCalendar[]
 
   @@index([unitType, isActive])
   @@index([parentId])
@@ -219,6 +224,7 @@ model Ticket {
   comments                 TicketComment[]
   customFieldValues        TicketCustomFieldValue[]
   serviceFieldValues       TicketServiceFieldValue[]
+  escalationInstances      EscalationInstance[]
   assignedTo               User?                       @relation("TicketAssignee", fields: [assignedToUserId], references: [id], onUpdate: NoAction)
   createdBy                User                        @relation("TicketCreator", fields: [createdByUserId], references: [id], onUpdate: NoAction)
   governmentEntity         GovernmentEntity?           @relation("GovernmentEntityTickets", fields: [governmentEntityId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -280,6 +286,7 @@ model ServiceCatalog {
   children         ServiceCatalog[] @relation("ServiceHierarchy")
   serviceItems     ServiceItem[]
   tickets          Ticket[]         @relation("ServiceCatalogTickets")
+  slaPolicies      SlaPolicy[]
 
   @@unique([departmentId, name])
   @@map("service_catalog")
@@ -301,6 +308,7 @@ model ServiceItem {
   serviceCatalog            ServiceCatalog           @relation(fields: [serviceCatalogId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   templates                 ServiceTemplate[]
   tickets                   Ticket[]                 @relation("ServiceItemTickets")
+  slaPolicies               SlaPolicy[]
 
   @@unique([serviceCatalogId, name])
   @@map("service_items")
@@ -426,6 +434,102 @@ model DepartmentSlaPolicy {
 
   @@unique([departmentId, serviceType])
   @@map("department_sla_policies")
+}
+
+model BusinessHoursConfig {
+  id              Int      @id @default(autoincrement())
+  departmentId    Int?     @map("department_id")
+  unitId          Int?     @map("unit_id")
+  dayOfWeek       Int      @map("day_of_week") // 0 = Sunday, 1 = Monday, etc.
+  startTime       String   @map("start_time") @db.VarChar(5) // HH:mm format
+  endTime         String   @map("end_time") @db.VarChar(5)   // HH:mm format
+  isActive        Boolean  @default(true) @map("is_active")
+  timezone        String   @default("Asia/Jakarta") @db.VarChar(50)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  department      Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  unit            Unit?       @relation(fields: [unitId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([departmentId, unitId, dayOfWeek])
+  @@index([departmentId])
+  @@index([unitId])
+  @@map("business_hours_config")
+}
+
+model HolidayCalendar {
+  id              Int      @id @default(autoincrement())
+  name            String   @db.VarChar(255)
+  date            DateTime @db.Date
+  description     String?
+  isRecurring     Boolean  @default(false) @map("is_recurring")
+  recurrenceRule  String?  @map("recurrence_rule") @db.VarChar(255) // RRULE format
+  departmentId    Int?     @map("department_id")
+  unitId          Int?     @map("unit_id")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  department      Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  unit            Unit?       @relation(fields: [unitId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([name, date, departmentId, unitId])
+  @@index([date])
+  @@index([departmentId])
+  @@index([unitId])
+  @@map("holiday_calendar")
+}
+
+model SlaPolicy {
+  id                    Int                @id @default(autoincrement())
+  name                  String             @db.VarChar(255)
+  description           String?
+  serviceCatalogId      Int?               @map("service_catalog_id")
+  serviceItemId         Int?               @map("service_item_id")
+  departmentId          Int?               @map("department_id")
+  priority              ticket_priority?
+  isKasdaSpecific       Boolean            @default(false) @map("is_kasda_specific")
+  responseTimeMinutes   Int                @map("response_time_minutes")
+  resolutionTimeMinutes Int                @map("resolution_time_minutes")
+  businessHoursOnly     Boolean            @default(true) @map("business_hours_only")
+  escalationMatrix      Json?              @map("escalation_matrix")
+  notificationRules     Json?              @map("notification_rules")
+  isActive              Boolean            @default(true) @map("is_active")
+  effectiveFrom         DateTime           @default(now()) @map("effective_from") @db.Timestamptz(6)
+  effectiveTo           DateTime?          @map("effective_to") @db.Timestamptz(6)
+  createdAt             DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  serviceCatalog        ServiceCatalog?    @relation(fields: [serviceCatalogId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  serviceItem           ServiceItem?       @relation(fields: [serviceItemId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  department            Department?        @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  escalationInstances   EscalationInstance[]
+
+  @@index([serviceCatalogId])
+  @@index([serviceItemId])
+  @@index([departmentId])
+  @@index([priority])
+  @@index([effectiveFrom, effectiveTo])
+  @@map("sla_policies")
+}
+
+model EscalationInstance {
+  id              Int       @id @default(autoincrement())
+  ticketId        Int       @map("ticket_id")
+  slaPolicyId     Int       @map("sla_policy_id")
+  escalationLevel Int       @map("escalation_level")
+  triggeredAt     DateTime  @map("triggered_at") @db.Timestamptz(6)
+  resolvedAt      DateTime? @map("resolved_at") @db.Timestamptz(6)
+  notifiedUsers   Json?     @map("notified_users") // Array of user IDs
+  escalationData  Json?     @map("escalation_data") // Custom escalation context
+  status          escalation_status @default(active)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  ticket          Ticket    @relation(fields: [ticketId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  slaPolicy       SlaPolicy @relation(fields: [slaPolicyId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([ticketId])
+  @@index([slaPolicyId])
+  @@index([triggeredAt])
+  @@index([status])
+  @@map("escalation_instances")
 }
 
 model TicketServiceFieldValue {
@@ -996,4 +1100,11 @@ enum notification_type {
   new_comment
   status_update
   assignment
+}
+
+enum escalation_status {
+  active
+  resolved
+  cancelled
+  failed
 }

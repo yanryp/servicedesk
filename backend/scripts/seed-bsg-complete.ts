@@ -11,18 +11,19 @@ async function seedBSGComplete() {
     console.log('🧹 Clearing existing data...');
     await prisma.businessApproval.deleteMany({});
     await prisma.ticket.deleteMany({});
-    await prisma.bsgTicketFieldValue.deleteMany({});
+    await prisma.bSGTicketFieldValue.deleteMany({});
     await prisma.serviceFieldDefinition.deleteMany({});
     await prisma.serviceTemplate.deleteMany({});
     await prisma.serviceItem.deleteMany({});
     await prisma.serviceCatalog.deleteMany({});
-    await prisma.bsgFieldOption.deleteMany({});
-    await prisma.bsgTemplateField.deleteMany({});
-    await prisma.bsgTemplate.deleteMany({});
-    await prisma.bsgTemplateCategory.deleteMany({});
-    await prisma.bsgMasterData.deleteMany({});
-    await prisma.bsgFieldType.deleteMany({});
+    await prisma.bSGFieldOption.deleteMany({});
+    await prisma.bSGTemplateField.deleteMany({});
+    await prisma.bSGTemplate.deleteMany({});
+    await prisma.bSGTemplateCategory.deleteMany({});
+    await prisma.bSGMasterData.deleteMany({});
+    await prisma.bSGFieldType.deleteMany({});
     await prisma.governmentEntity.deleteMany({});
+    await prisma.masterDataEntity.deleteMany({});
     await prisma.kasdaUserProfile.deleteMany({});
     await prisma.departmentSlaPolicy.deleteMany({});
     await prisma.autoAssignmentRule.deleteMany({});
@@ -145,37 +146,40 @@ async function seedBSGComplete() {
     const bsgFieldTypes = await Promise.all([
       prisma.bSGFieldType.create({
         data: {
-          typeName: 'text_input',
+          name: 'text_input',
           displayName: 'Text Input',
-          validationRules: { maxLength: 255, required: false }
+          htmlInputType: 'text',
+          validationPattern: '.{0,255}'
         }
       }),
       prisma.bSGFieldType.create({
         data: {
-          typeName: 'dropdown',
+          name: 'dropdown',
           displayName: 'Dropdown Selection',
-          validationRules: { required: false, allowMultiple: false }
+          htmlInputType: 'select'
         }
       }),
       prisma.bSGFieldType.create({
         data: {
-          typeName: 'textarea',
+          name: 'textarea',
           displayName: 'Text Area',
-          validationRules: { maxLength: 2000, rows: 4 }
+          htmlInputType: 'textarea',
+          validationPattern: '.{0,2000}'
         }
       }),
       prisma.bSGFieldType.create({
         data: {
-          typeName: 'checkbox',
+          name: 'checkbox',
           displayName: 'Checkbox',
-          validationRules: { required: false }
+          htmlInputType: 'checkbox'
         }
       }),
       prisma.bSGFieldType.create({
         data: {
-          typeName: 'number_input',
+          name: 'number_input',
           displayName: 'Number Input',
-          validationRules: { min: 0, max: 999999999 }
+          htmlInputType: 'number',
+          validationPattern: '^[0-9]+$'
         }
       })
     ]);
@@ -188,18 +192,20 @@ async function seedBSGComplete() {
       // OLIBS Menu Options
       prisma.bSGMasterData.create({
         data: {
-          entityType: 'olibs_menu',
-          entityName: 'Program Fasilitas OLIBS',
-          entityValue: 'program_fasilitas',
+          dataType: 'olibs_menu',
+          name: 'Program Fasilitas OLIBS',
+          code: 'program_fasilitas',
+          displayName: 'Program Fasilitas OLIBS',
           isActive: true,
           sortOrder: 1
         }
       }),
       prisma.bSGMasterData.create({
         data: {
-          entityType: 'olibs_menu',
-          entityName: 'Aplikasi OLIBS',
-          entityValue: 'aplikasi_olibs',
+          dataType: 'olibs_menu',
+          name: 'Aplikasi OLIBS',
+          code: 'aplikasi_olibs',
+          displayName: 'Aplikasi OLIBS',
           isActive: true,
           sortOrder: 2
         }
@@ -207,18 +213,20 @@ async function seedBSGComplete() {
       // Government Entities
       prisma.bSGMasterData.create({
         data: {
-          entityType: 'government_entity',
-          entityName: 'Pemerintah Provinsi Sulawesi Utara',
-          entityValue: 'prov_sulut',
+          dataType: 'government_entity',
+          name: 'Pemerintah Provinsi Sulawesi Utara',
+          code: 'prov_sulut',
+          displayName: 'Pemerintah Provinsi Sulawesi Utara',
           isActive: true,
           sortOrder: 1
         }
       }),
       prisma.bSGMasterData.create({
         data: {
-          entityType: 'government_entity',
-          entityName: 'Pemerintah Kota Manado',
-          entityValue: 'pemkot_manado',
+          dataType: 'government_entity',
+          name: 'Pemerintah Kota Manado',
+          code: 'pemkot_manado',
+          displayName: 'Pemerintah Kota Manado',
           isActive: true,
           sortOrder: 2
         }
@@ -226,18 +234,20 @@ async function seedBSGComplete() {
       // Access Levels
       prisma.bSGMasterData.create({
         data: {
-          entityType: 'access_level',
-          entityName: 'Admin',
-          entityValue: 'admin',
+          dataType: 'access_level',
+          name: 'Admin',
+          code: 'admin',
+          displayName: 'Admin',
           isActive: true,
           sortOrder: 1
         }
       }),
       prisma.bSGMasterData.create({
         data: {
-          entityType: 'access_level',
-          entityName: 'User',
-          entityValue: 'user',
+          dataType: 'access_level',
+          name: 'User',
+          code: 'user',
+          displayName: 'User',
           isActive: true,
           sortOrder: 2
         }
@@ -251,34 +261,37 @@ async function seedBSGComplete() {
     const governmentEntities = await Promise.all([
       prisma.governmentEntity.create({
         data: {
-          name: 'Pemerintah Provinsi Sulawesi Utara',
+          entityName: 'Pemerintah Provinsi Sulawesi Utara',
           entityType: 'provincial',
+          entityLevel: 'province',
           address: 'Jl. 17 Agustus No. 1, Manado',
           contactPerson: 'Kepala Bagian Keuangan',
-          phone: '0431-863333',
-          email: 'keuangan@sulutprov.go.id',
+          contactPhone: '0431-863333',
+          contactEmail: 'keuangan@sulutprov.go.id',
           isActive: true
         }
       }),
       prisma.governmentEntity.create({
         data: {
-          name: 'Pemerintah Kota Manado',
+          entityName: 'Pemerintah Kota Manado',
           entityType: 'municipal',
+          entityLevel: 'city',
           address: 'Jl. Balai Kota, Manado',
           contactPerson: 'Kepala Dinas Keuangan',
-          phone: '0431-852000',
-          email: 'dinkeu@manadokota.go.id',
+          contactPhone: '0431-852000',
+          contactEmail: 'dinkeu@manadokota.go.id',
           isActive: true
         }
       }),
       prisma.governmentEntity.create({
         data: {
-          name: 'Pemerintah Provinsi Gorontalo',
+          entityName: 'Pemerintah Provinsi Gorontalo',
           entityType: 'provincial',
+          entityLevel: 'province',
           address: 'Jl. Nani Wartabone, Gorontalo',
           contactPerson: 'Sekretaris Daerah',
-          phone: '0435-881006',
-          email: 'setda@gorontaloprov.go.id',
+          contactPhone: '0435-881006',
+          contactEmail: 'setda@gorontaloprov.go.id',
           isActive: true
         }
       })
@@ -295,7 +308,6 @@ async function seedBSGComplete() {
           description: 'IT support and technical services',
           departmentId: itDepartment.id,
           isActive: true,
-          sortOrder: 1
         }
       }),
       prisma.serviceCatalog.create({
@@ -304,7 +316,6 @@ async function seedBSGComplete() {
           description: 'KASDA and BSGDirect support services',
           departmentId: supportDepartment.id,
           isActive: true,
-          sortOrder: 2
         }
       }),
       prisma.serviceCatalog.create({
@@ -313,7 +324,6 @@ async function seedBSGComplete() {
           description: 'Services for government entities and KASDA users',
           departmentId: supportDepartment.id,
           isActive: true,
-          sortOrder: 3
         }
       })
     ]);
@@ -329,9 +339,8 @@ async function seedBSGComplete() {
           name: 'Hardware Support',
           description: 'Computer and hardware troubleshooting',
           serviceCatalogId: serviceCatalogs[0].id,
-          requiresApproval: true,
+          requiresGovApproval: true,
           isKasdaRelated: false,
-          estimatedResolutionHours: 4,
           isActive: true
         }
       }),
@@ -340,9 +349,8 @@ async function seedBSGComplete() {
           name: 'Network Connectivity',
           description: 'Network and internet connectivity issues',
           serviceCatalogId: serviceCatalogs[0].id,
-          requiresApproval: true,
+          requiresGovApproval: true,
           isKasdaRelated: false,
-          estimatedResolutionHours: 2,
           isActive: true
         }
       }),
@@ -352,9 +360,8 @@ async function seedBSGComplete() {
           name: 'OLIBS Support',
           description: 'OLIBS system support and troubleshooting',
           serviceCatalogId: serviceCatalogs[1].id,
-          requiresApproval: true,
+          requiresGovApproval: true,
           isKasdaRelated: false,
-          estimatedResolutionHours: 2,
           isActive: true
         }
       }),
@@ -363,9 +370,8 @@ async function seedBSGComplete() {
           name: 'BSGDirect Support',
           description: 'BSGDirect application support',
           serviceCatalogId: serviceCatalogs[1].id,
-          requiresApproval: true,
+          requiresGovApproval: true,
           isKasdaRelated: false,
-          estimatedResolutionHours: 3,
           isActive: true
         }
       }),
@@ -375,10 +381,8 @@ async function seedBSGComplete() {
           name: 'KASDA Account Management',
           description: 'KASDA user account and access management',
           serviceCatalogId: serviceCatalogs[2].id,
-          requiresApproval: true,
           requiresGovApproval: true,
           isKasdaRelated: true,
-          estimatedResolutionHours: 24,
           isActive: true
         }
       }),
@@ -387,10 +391,8 @@ async function seedBSGComplete() {
           name: 'Government Banking Integration',
           description: 'Integration services for government banking systems',
           serviceCatalogId: serviceCatalogs[2].id,
-          requiresApproval: true,
           requiresGovApproval: true,
           isKasdaRelated: true,
-          estimatedResolutionHours: 48,
           isActive: true
         }
       })
@@ -403,7 +405,8 @@ async function seedBSGComplete() {
     const bsgTemplateCategories = await Promise.all([
       prisma.bSGTemplateCategory.create({
         data: {
-          categoryName: 'IT Support',
+          name: 'IT Support',
+          displayName: 'IT Support',
           description: 'Templates for IT support requests',
           isActive: true,
           sortOrder: 1
@@ -411,7 +414,8 @@ async function seedBSGComplete() {
       }),
       prisma.bSGTemplateCategory.create({
         data: {
-          categoryName: 'Banking Operations',
+          name: 'Banking Operations',
+          displayName: 'Banking Operations',
           description: 'Templates for banking operation requests',
           isActive: true,
           sortOrder: 2
@@ -419,7 +423,8 @@ async function seedBSGComplete() {
       }),
       prisma.bSGTemplateCategory.create({
         data: {
-          categoryName: 'Government Services',
+          name: 'Government Services',
+          displayName: 'Government Services',
           description: 'Templates for government and KASDA services',
           isActive: true,
           sortOrder: 3
@@ -435,7 +440,7 @@ async function seedBSGComplete() {
       prisma.departmentSlaPolicy.create({
         data: {
           departmentId: itDepartment.id,
-          priorityLevel: 'urgent',
+          serviceType: 'urgent',
           responseTimeHours: 1,
           resolutionTimeHours: 4,
           businessHoursOnly: true,
@@ -445,7 +450,7 @@ async function seedBSGComplete() {
       prisma.departmentSlaPolicy.create({
         data: {
           departmentId: itDepartment.id,
-          priorityLevel: 'high',
+          serviceType: 'high',
           responseTimeHours: 4,
           resolutionTimeHours: 24,
           businessHoursOnly: true,
@@ -455,7 +460,7 @@ async function seedBSGComplete() {
       prisma.departmentSlaPolicy.create({
         data: {
           departmentId: supportDepartment.id,
-          priorityLevel: 'urgent',
+          serviceType: 'urgent',
           responseTimeHours: 2,
           resolutionTimeHours: 8,
           businessHoursOnly: true,
@@ -465,7 +470,7 @@ async function seedBSGComplete() {
       prisma.departmentSlaPolicy.create({
         data: {
           departmentId: supportDepartment.id,
-          priorityLevel: 'medium',
+          serviceType: 'medium',
           responseTimeHours: 8,
           resolutionTimeHours: 48,
           businessHoursOnly: true,

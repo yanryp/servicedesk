@@ -26,6 +26,9 @@ import ticketCommentsRoutes from './routes/ticketCommentsRoutes'; // Import tick
 import autoAssignmentRoutes from './routes/autoAssignmentRoutes'; // Import auto-assignment routes
 import apiTokenRoutes from './routes/apiTokenRoutes'; // Import API token routes
 import externalApiRoutes from './routes/externalApiRoutes'; // Import external API routes
+import slaPolicyRoutes from './routes/slaPolicyRoutes'; // Import SLA policy routes
+import businessHoursRoutes from './routes/businessHoursRoutes'; // Import business hours routes
+import holidayCalendarRoutes from './routes/holidayCalendarRoutes'; // Import holiday calendar routes
 import { startEscalationCronJob } from './services/escalationService'; // Import escalation service
 
 const app: Express = express();
@@ -103,6 +106,13 @@ app.use('/api/tokens', apiTokenRoutes); // API token management routes
 
 // External API (with API token authentication)
 app.use('/api/external-api', externalApiRoutes); // External API routes with token auth
+
+// SLA Policy Management
+app.use('/api/sla-policies', slaPolicyRoutes); // SLA policy management routes
+
+// Business Hours and Holiday Calendar Management
+app.use('/api/business-hours', businessHoursRoutes); // Business hours management routes
+app.use('/api/holidays', holidayCalendarRoutes); // Holiday calendar management routes
 
 // Legacy routes (for backward compatibility)
 app.use('/api/tickets', ticketRouter); // Mount legacy ticket router

@@ -13,7 +13,8 @@ import {
   ChevronRightIcon,
   TagIcon,
   CheckCircleIcon,
-  RectangleStackIcon
+  RectangleStackIcon,
+  ClockIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 
@@ -113,6 +114,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           name: 'Service Catalog Admin',
           href: '/service-catalog-admin',
           icon: RectangleStackIcon,
+          roles: ['admin']
+        },
+        {
+          name: 'SLA Policies',
+          href: '/admin/sla-policies',
+          icon: ClockIcon,
           roles: ['admin']
         },
         {

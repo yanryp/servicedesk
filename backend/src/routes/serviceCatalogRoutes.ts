@@ -125,16 +125,12 @@ const transformBSGTemplatesToServices = (bsgTemplates: any[]) => {
 // @access  Private
 router.get('/categories', protect, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   try {
-    // Get ServiceCatalog data with template counts
+    // Get ServiceCatalog data with service item counts
     const serviceCatalogs = await prisma.serviceCatalog.findMany({
       where: { isActive: true },
       include: {
         serviceItems: {
-          include: {
-            templates: {
-              where: { isVisible: true }
-            }
-          }
+          where: { isActive: true }
         }
       },
       orderBy: [
@@ -144,14 +140,15 @@ router.get('/categories', protect, asyncHandler(async (req: AuthenticatedRequest
 
     // Transform ServiceCatalogs to frontend format
     const serviceCatalogCategories = serviceCatalogs.map(catalog => {
-      const templateCount = catalog.serviceItems.reduce((sum: number, item: any) => sum + item.templates.length, 0);
+      // Count actual service items instead of templates
+      const serviceItemCount = catalog.serviceItems.length;
       
       return {
         id: `catalog_${catalog.id}`,
         name: catalog.name,
         description: catalog.description || `${catalog.name} services and support`,
         icon: getIconForServiceCatalog(catalog.name),
-        serviceCount: templateCount,
+        serviceCount: serviceItemCount,
         type: 'service_catalog'
       };
     });
@@ -185,10 +182,11 @@ router.get('/category/:categoryId/services', protect, asyncHandler(async (req: A
     if (categoryId.startsWith('catalog_')) {
       const serviceCatalogId = parseInt(categoryId.replace('catalog_', ''));
       
-      // Get ServiceTemplates for this catalog
+      // Get all service items for this catalog with their field definitions
       const serviceItems = await prisma.serviceItem.findMany({
         where: {
-          serviceCatalogId: serviceCatalogId
+          serviceCatalogId: serviceCatalogId,
+          isActive: true
         },
         include: {
           templates: {
@@ -198,6 +196,9 @@ router.get('/category/:categoryId/services', protect, asyncHandler(async (req: A
                 orderBy: { sortOrder: 'asc' }
               }
             },
+            orderBy: { sortOrder: 'asc' }
+          },
+          service_field_definitions: {
             orderBy: { sortOrder: 'asc' }
           },
           serviceCatalog: {
@@ -213,20 +214,50 @@ router.get('/category/:categoryId/services', protect, asyncHandler(async (req: A
       // Transform to services format
       const services: any[] = [];
       for (const item of serviceItems) {
-        for (const template of item.templates) {
+        // Count total fields from both templates and service field definitions
+        const templateFieldCount = item.templates.reduce((sum, t) => sum + t.customFieldDefinitions.length, 0);
+        const serviceFieldCount = item.service_field_definitions.length;
+        const totalFieldCount = templateFieldCount + serviceFieldCount;
+        
+        // Always create a single entry per service item
+        // Prefer template with fields if available, otherwise use service item directly
+        const templatesWithFields = item.templates.filter(t => t.customFieldDefinitions.length > 0);
+        
+        if (templatesWithFields.length > 0) {
+          // Use the template with the most fields
+          const bestTemplate = templatesWithFields.reduce((best, current) => 
+            current.customFieldDefinitions.length > best.customFieldDefinitions.length ? current : best
+          );
+          
           services.push({
-            id: `template_${template.id}`,
-            name: template.name,
-            description: template.description || `${template.name} service request`,
+            id: `template_${bestTemplate.id}`,
+            name: item.name, // Use service item name, not template name
+            description: item.description || bestTemplate.description || `${item.name} service request`,
             categoryId: categoryId,
-            templateId: template.id,
+            templateId: bestTemplate.id,
             serviceItemId: item.id,
             popularity: 0,
             usageCount: 0,
-            hasFields: template.customFieldDefinitions.length > 0,
-            fieldCount: template.customFieldDefinitions.length,
+            hasFields: bestTemplate.customFieldDefinitions.length > 0 || serviceFieldCount > 0,
+            fieldCount: bestTemplate.customFieldDefinitions.length + serviceFieldCount,
             type: 'service_template',
-            estimatedResolutionTime: template.estimatedResolutionTime
+            estimatedResolutionTime: bestTemplate.estimatedResolutionTime
+          });
+        } else {
+          // No templates with fields, use service item directly
+          services.push({
+            id: `service_${item.id}`,
+            name: item.name,
+            description: item.description || `${item.name} service request`,
+            categoryId: categoryId,
+            templateId: null,
+            serviceItemId: item.id,
+            popularity: 0,
+            usageCount: 0,
+            hasFields: serviceFieldCount > 0,
+            fieldCount: serviceFieldCount,
+            type: 'service_item',
+            estimatedResolutionTime: null
           });
         }
       }
@@ -434,6 +465,67 @@ router.get('/service/:serviceId/template', protect, asyncHandler(async (req: Aut
           estimatedResolutionTime: template.estimatedResolutionTime,
           defaultRootCause: template.defaultRootCause,
           defaultIssueType: template.defaultIssueType
+        }
+      });
+    } else if (serviceId.startsWith('service_')) {
+      // Handle direct service items (without templates)
+      const serviceItemId = parseInt(serviceId.replace('service_', ''));
+      
+      // Get ServiceItem with field definitions
+      const serviceItem = await prisma.serviceItem.findUnique({
+        where: { id: serviceItemId },
+        include: {
+          serviceCatalog: {
+            select: {
+              name: true,
+              description: true
+            }
+          },
+          service_field_definitions: {
+            orderBy: { sortOrder: 'asc' }
+          }
+        }
+      });
+
+      if (!serviceItem) {
+        return res.status(404).json({
+          success: false,
+          message: 'Service not found'
+        });
+      }
+
+      // Transform service field definitions to service catalog format
+      const transformedFields = serviceItem.service_field_definitions.map((field: any) => ({
+        id: field.id,
+        name: field.fieldName,
+        label: field.fieldLabel,
+        type: field.fieldType,
+        required: field.isRequired,
+        description: field.placeholder,
+        placeholder: field.placeholder,
+        helpText: '',
+        maxLength: field.validationRules?.maxLength || null,
+        validationRules: field.validationRules,
+        options: field.validationRules?.options || [],
+        originalFieldType: field.fieldType,
+        isDropdownField: field.fieldType === 'dropdown',
+        masterDataType: null
+      }));
+
+      res.json({
+        success: true,
+        data: {
+          id: serviceId,
+          templateId: null,
+          serviceItemId: serviceItem.id,
+          name: serviceItem.name,
+          description: serviceItem.description,
+          category: serviceItem.serviceCatalog,
+          fields: transformedFields,
+          type: 'service_item',
+          estimatedResolutionTime: null,
+          defaultRootCause: null,
+          defaultIssueType: null
         }
       });
     } else if (serviceId.startsWith('bsg_template_')) {
