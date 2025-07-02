@@ -55,7 +55,7 @@ const TechnicianTicketsPage: React.FC = () => {
     { key: 'dueDate', label: 'Due Date', visible: false, sortable: true, group: 'dates' },
     { key: 'attachments', label: 'Attachments', visible: false, group: 'meta' },
     { key: 'branch', label: 'Branch', visible: false, filterable: true, group: 'user' },
-    { key: 'department', label: 'Department', visible: false, filterable: true, group: 'user' }
+    { key: 'department', label: 'Supporting Group', visible: false, filterable: true, group: 'user' }
   ]);
 
   const isAuthenticated = !!user;

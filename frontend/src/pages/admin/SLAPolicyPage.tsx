@@ -256,13 +256,13 @@ const SLAPolicyPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Department</label>
+                  <label className="block text-sm font-medium text-gray-700">Supporting Group</label>
                   <select
                     value={formData.departmentId}
                     onChange={(e) => setFormData({ ...formData, departmentId: e.target.value })}
                     className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
                   >
-                    <option value="">All Departments</option>
+                    <option value="">All Supporting Groups</option>
                     {departments.map(dept => (
                       <option key={dept.id} value={dept.id}>{dept.name}</option>
                     ))}
@@ -439,7 +439,7 @@ const SLAPolicyPage: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {policy.department?.name || 'All Departments'}
+                      {policy.department?.name || 'All Supporting Groups'}
                     </div>
                     <div className="text-sm text-gray-500">
                       {policy.serviceCatalog?.name || 'All Services'}

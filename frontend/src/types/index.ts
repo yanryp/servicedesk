@@ -24,7 +24,7 @@ export type UserRole = 'admin' | 'manager' | 'technician' | 'requester';
 
 export type CustomFieldType = 'text' | 'number' | 'date' | 'dropdown' | 'radio' | 'checkbox';
 
-// Department interface
+// Supporting Group interface
 export interface Department {
   id: number;
   name: string;

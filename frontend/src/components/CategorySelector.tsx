@@ -225,13 +225,13 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
             <div className="pt-2 border-t border-blue-200">
               {(() => {
                 const selectedCategory = categories.find(c => c.id === selectedCategoryId);
-                const departmentName = selectedCategory?.department_name || 'Unknown Department';
+                const departmentName = selectedCategory?.department_name || 'Unknown Supporting Group';
                 const departmentType = selectedCategory?.department_type || 'internal';
                 
                 return (
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-blue-700">
-                      <span className="font-medium">Department:</span> {departmentName}
+                      <span className="font-medium">Supporting Group:</span> {departmentName}
                     </p>
                     <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                       departmentType === 'business' 

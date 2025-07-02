@@ -10,7 +10,7 @@ const mockUser = {
   username: 'test-user',
   email: 'test@bsg.com',
   role: 'admin',
-  department: { name: 'IT Department' }
+  department: { name: 'IT Support Group' }
 };
 
 const mockAuthContext = {
@@ -174,10 +174,10 @@ describe('App Integration Tests', () => {
     expect(screen.getByTestId('navigation')).toBeInTheDocument();
   });
 
-  test('handles BSG Banking department users', () => {
+  test('handles BSG Banking supporting group users', () => {
     const bsgUser = {
       ...mockUser,
-      department: { name: 'BSG Banking Operations' }
+      department: { name: 'BSG Banking Operations Group' }
     };
 
     const bsgContext = {

@@ -245,7 +245,7 @@ const ServiceCatalogEditor: React.FC<ServiceCatalogEditorProps> = ({
             {/* Department */}
             <div>
               <label htmlFor="departmentId" className="block text-sm font-medium text-gray-700 mb-1">
-                Owning Department
+                Owning Supporting Group
               </label>
               <select
                 id="departmentId"
@@ -255,7 +255,7 @@ const ServiceCatalogEditor: React.FC<ServiceCatalogEditorProps> = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isLoading}
               >
-                <option value="">Global (No specific department)</option>
+                <option value="">Global (No specific supporting group)</option>
                 {departments.map((dept) => (
                   <option key={dept.id} value={dept.id}>
                     {dept.name}
@@ -263,7 +263,7 @@ const ServiceCatalogEditor: React.FC<ServiceCatalogEditorProps> = ({
                 ))}
               </select>
               <p className="mt-1 text-xs text-gray-500">
-                Select a department if this catalog is specific to one department
+                Select a supporting group if this catalog is specific to one supporting group
               </p>
             </div>
 

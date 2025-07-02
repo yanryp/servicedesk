@@ -40,8 +40,8 @@ const RegisterPage: React.FC = () => {
         const departments = await departmentService.getAllDepartments();
         setDepartments(departments || []);
       } catch (error) {
-        console.error('Failed to load departments:', error);
-        toast.error('Failed to load departments');
+        console.error('Failed to load supporting groups:', error);
+        toast.error('Failed to load supporting groups');
       } finally {
         setLoadingDepartments(false);
       }
@@ -310,17 +310,17 @@ const RegisterPage: React.FC = () => {
                 {shouldShowDepartmentField(selectedRole) && (
                   <div>
                     <label htmlFor="departmentId" className="block text-sm font-medium text-slate-700">
-                      Department {isDepartmentRequired(selectedRole) ? '*' : '(Optional)'}
+                      Supporting Group {isDepartmentRequired(selectedRole) ? '*' : '(Optional)'}
                     </label>
                     <select
                       id="departmentId"
                       {...register('departmentId', { 
-                        required: isDepartmentRequired(selectedRole) ? 'Department selection is required for this role' : false 
+                        required: isDepartmentRequired(selectedRole) ? 'Supporting Group selection is required for this role' : false 
                       })}
                       disabled={isSubmitting || loadingDepartments}
                       className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100 transition-all duration-200"
                     >
-                      <option value="">Select Department</option>
+                      <option value="">Select Supporting Group</option>
                       {departments.map((dept) => (
                         <option key={dept.id} value={dept.id}>
                           {dept.name}
@@ -331,7 +331,7 @@ const RegisterPage: React.FC = () => {
                       <p className="mt-1 text-sm text-red-600">{errors.departmentId.message}</p>
                     )}
                     {loadingDepartments && (
-                      <p className="mt-1 text-xs text-blue-600">Loading departments...</p>
+                      <p className="mt-1 text-xs text-blue-600">Loading supporting groups...</p>
                     )}
                   </div>
                 )}

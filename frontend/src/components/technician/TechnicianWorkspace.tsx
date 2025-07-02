@@ -81,7 +81,7 @@ const TechnicianWorkspace: React.FC = () => {
     { key: 'createdDate', label: 'Created', width: 130, visible: true, sortable: true, filterable: false, group: 'dates' },
     { key: 'dueDate', label: 'Due Date', width: 130, visible: true, sortable: true, filterable: false, group: 'dates' },
     { key: 'branch', label: 'Branch', width: 120, visible: false, sortable: true, filterable: true, group: 'meta' },
-    { key: 'department', label: 'Department', width: 130, visible: false, sortable: true, filterable: true, group: 'meta' },
+    { key: 'department', label: 'Supporting Group', width: 130, visible: false, sortable: true, filterable: true, group: 'meta' },
     { key: 'attachments', label: 'Files', width: 80, visible: false, sortable: false, filterable: false, group: 'meta' }
   ]);
   
@@ -178,6 +178,7 @@ const TechnicianWorkspace: React.FC = () => {
 
   const isAuthenticated = !!user;
   const isTechnician = user?.role === 'technician';
+  const canAccessWorkspace = user?.role === 'technician' || user?.role === 'manager' || user?.role === 'admin';
 
   // Calculate comprehensive ticket counts for department
   const calculateTicketCounts = async (departmentId?: number) => {
@@ -231,7 +232,7 @@ const TechnicianWorkspace: React.FC = () => {
 
   // Fetch tickets with new filtering approach
   const fetchTickets = useCallback(async (showRefresh = false) => {
-    if (authIsLoading || !isAuthenticated || !isTechnician || !token) return;
+    if (authIsLoading || !isAuthenticated || !canAccessWorkspace || !token) return;
     
     if (showRefresh) setRefreshing(true);
     else setLoading(true);
@@ -379,7 +380,7 @@ const TechnicianWorkspace: React.FC = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [authIsLoading, isAuthenticated, isTechnician, token, activeFilter, searchTerm, selectedTickets, activeCategoryTags]);
+  }, [authIsLoading, isAuthenticated, canAccessWorkspace, token, activeFilter, searchTerm, selectedTickets, activeCategoryTags]);
 
   useEffect(() => {
     fetchTickets();
@@ -553,12 +554,12 @@ const TechnicianWorkspace: React.FC = () => {
     );
   }
 
-  if (!isAuthenticated || !isTechnician) {
+  if (!isAuthenticated || !canAccessWorkspace) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
-          <p className="text-gray-600">You need to be logged in as a technician to access this workspace.</p>
+          <p className="text-gray-600">You need to be logged in as a technician, manager, or admin to access this workspace.</p>
         </div>
       </div>
     );
