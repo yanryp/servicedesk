@@ -22,6 +22,7 @@ import ServiceCatalogPage from './pages/ServiceCatalogPage';
 import ServiceCatalogV2Page from './pages/ServiceCatalogV2Page';
 import ServiceCatalogAdminPage from './pages/ServiceCatalogAdminPage';
 import SLAPolicyPage from './pages/admin/SLAPolicyPage';
+import SupportingGroupsPage from './pages/admin/SupportingGroupsPage';
 import TechnicianWorkspace from './components/technician/TechnicianWorkspace';
 import TechnicianTicketsPage from './pages/TechnicianTicketsPage';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -180,7 +181,7 @@ function App() {
         <main className="flex-1 overflow-auto">
           <Routes>
             {/* Technician Workspace - Full-screen inbox-style interface without container */}
-            <Route path="/technician/workspace" element={<ProtectedRoute roles={['technician']}><TechnicianWorkspace /></ProtectedRoute>} />
+            <Route path="/technician/workspace" element={<ProtectedRoute roles={['technician', 'manager', 'admin']}><TechnicianWorkspace /></ProtectedRoute>} />
             
             {/* All other routes wrapped in container */}
             <Route path="/" element={<div className="container mx-auto p-6 max-w-7xl"><HomePage /></div>} />
@@ -201,6 +202,7 @@ function App() {
             <Route path="/service-catalog-v2" element={<ProtectedRoute roles={['requester', 'technician', 'manager', 'admin']}><div className="container mx-auto p-6 max-w-7xl"><ServiceCatalogV2Page /></div></ProtectedRoute>} />
             <Route path="/service-catalog-admin" element={<ProtectedRoute roles={['admin']}><div className="container mx-auto p-6 max-w-7xl"><ServiceCatalogAdminPage /></div></ProtectedRoute>} />
             <Route path="/admin/sla-policies" element={<ProtectedRoute roles={['admin']}><SLAPolicyPage /></ProtectedRoute>} />
+            <Route path="/admin/supporting-groups" element={<ProtectedRoute roles={['admin']}><SupportingGroupsPage /></ProtectedRoute>} />
             <Route path="/tickets/:ticketId" element={<ProtectedRoute roles={['requester', 'technician', 'manager', 'admin']}><div className="container mx-auto p-6 max-w-7xl"><TicketDetailPage /></div></ProtectedRoute>} />
             <Route path="/tickets/:ticketId/edit" element={<ProtectedRoute roles={['requester', 'technician', 'manager', 'admin']}><div className="container mx-auto p-6 max-w-7xl"><EditTicketPage /></div></ProtectedRoute>} />
             <Route path="/manager" element={<ProtectedRoute roles={['admin', 'manager']}><div className="container mx-auto p-6 max-w-7xl"><ManagerDashboard /></div></ProtectedRoute>} />

@@ -14,7 +14,8 @@ import {
   TagIcon,
   CheckCircleIcon,
   RectangleStackIcon,
-  ClockIcon
+  ClockIcon,
+  UserGroupIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 
@@ -41,12 +42,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const isActive = (path: string) => {
+    // For technician tickets route, only check exact match
     if (path === '/technician/tickets') {
       return location.pathname === path;
     }
-    if (path === '/tickets' && ['technician', 'manager', 'admin'].includes(user?.role || '')) {
-      // Redirect technicians, managers, and admins to the modern ticket management page
-      return location.pathname === '/technician/tickets';
+    // For regular tickets route, only check exact match (don't redirect active state)
+    if (path === '/tickets') {
+      return location.pathname === path;
     }
     return location.pathname === path;
   };
@@ -79,6 +81,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         {
           name: 'Service Catalog',
           href: '/service-catalog-v2',
+          icon: RectangleStackIcon,
+          roles: ['requester', 'technician', 'manager', 'admin']
+        },
+        {
+          name: 'Service Catalog (Legacy)',
+          href: '/service-catalog',
           icon: RectangleStackIcon,
           roles: ['requester', 'technician', 'manager', 'admin']
         }
@@ -120,6 +128,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           name: 'SLA Policies',
           href: '/admin/sla-policies',
           icon: ClockIcon,
+          roles: ['admin']
+        },
+        {
+          name: 'Supporting Groups',
+          href: '/admin/supporting-groups',
+          icon: UserGroupIcon,
           roles: ['admin']
         },
         {

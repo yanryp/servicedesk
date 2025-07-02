@@ -208,6 +208,122 @@ router.delete('/:id',
   })
 );
 
+// @route   GET /api/departments/:id/service-catalogs
+// @desc    Get service catalogs managed by department
+// @access  Private (Admin/Manager only)
+router.get('/:id/service-catalogs',
+  protect,
+  authorize('admin', 'manager'),
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const { id } = req.params;
+    
+    const department = await prisma.department.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        serviceCatalog: {
+          where: { isActive: true },
+          include: {
+            serviceItems: {
+              where: { isActive: true },
+              include: {
+                templates: {
+                  where: { isVisible: true }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!department) {
+      return res.status(404).json({ message: 'Department not found' });
+    }
+
+    // Transform service catalogs to include item counts
+    const serviceCatalogs = department.serviceCatalog.map(catalog => ({
+      id: catalog.id,
+      name: catalog.name,
+      description: catalog.description,
+      itemCount: catalog.serviceItems.length,
+      templateCount: catalog.serviceItems.reduce((total, item) => total + item.templates.length, 0)
+    }));
+
+    res.json(serviceCatalogs);
+  })
+);
+
+// @route   GET /api/departments/:id/metrics
+// @desc    Get department metrics (active tickets, resolution time)
+// @access  Private (Admin/Manager only)
+router.get('/:id/metrics',
+  protect,
+  authorize('admin', 'manager'),
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const { id } = req.params;
+    
+    // Get users in this department first
+    const departmentUsers = await prisma.user.findMany({
+      where: { departmentId: parseInt(id) },
+      select: { id: true }
+    });
+    
+    const userIds = departmentUsers.map(u => u.id);
+
+    // Get active tickets assigned to users in this department
+    const activeTickets = await prisma.ticket.count({
+      where: {
+        assignedToUserId: {
+          in: userIds
+        },
+        status: {
+          in: ['open', 'assigned', 'in_progress', 'pending_requester_response']
+        }
+      }
+    });
+
+    // Get resolved tickets for average resolution time (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const resolvedTickets = await prisma.ticket.findMany({
+      where: {
+        assignedToUserId: {
+          in: userIds
+        },
+        status: 'resolved',
+        resolvedAt: {
+          gte: thirtyDaysAgo
+        }
+      },
+      select: {
+        createdAt: true,
+        resolvedAt: true
+      }
+    });
+
+    // Calculate average resolution time in hours
+    let avgResolutionTime = 0;
+    if (resolvedTickets.length > 0) {
+      const totalResolutionTime = resolvedTickets.reduce((total, ticket) => {
+        if (ticket.resolvedAt && ticket.createdAt) {
+          const resolutionTime = ticket.resolvedAt.getTime() - ticket.createdAt.getTime();
+          return total + resolutionTime;
+        }
+        return total;
+      }, 0);
+      
+      avgResolutionTime = Math.round((totalResolutionTime / resolvedTickets.length) / (1000 * 60 * 60)); // Convert to hours
+    }
+
+    res.json({
+      activeTickets,
+      avgResolutionTime,
+      resolvedTicketsLast30Days: resolvedTickets.length
+    });
+  })
+);
+
 // @route   PUT /api/departments/:id/assign-user/:userId
 // @desc    Assign user to department
 // @access  Private (Admin only)
