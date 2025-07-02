@@ -89,7 +89,8 @@
       "Bash(cp:*)",
       "Bash(./create-wsl-deployment.sh:*)",
       "mcp__playwright__browser_resize",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(./create-deployment-zip.sh:*)"
     ],
     "deny": []
   }
