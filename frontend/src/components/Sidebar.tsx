@@ -15,7 +15,8 @@ import {
   CheckCircleIcon,
   RectangleStackIcon,
   ClockIcon,
-  UserGroupIcon
+  UserGroupIcon,
+  BookOpenIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 
@@ -89,6 +90,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           href: '/service-catalog',
           icon: RectangleStackIcon,
           roles: ['requester', 'technician', 'manager', 'admin']
+        },
+        {
+          name: 'Knowledge Base',
+          href: '/knowledge-base',
+          icon: BookOpenIcon,
+          roles: ['requester', 'technician', 'manager', 'admin']
         }
       ]
     },
@@ -135,6 +142,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           href: '/admin/supporting-groups',
           icon: UserGroupIcon,
           roles: ['admin']
+        },
+        {
+          name: 'Knowledge Base Admin',
+          href: '/knowledge-base/admin',
+          icon: BookOpenIcon,
+          roles: ['admin', 'manager']
         },
         {
           name: 'Analytics',

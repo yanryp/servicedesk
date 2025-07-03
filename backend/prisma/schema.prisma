@@ -50,6 +50,13 @@ model User {
   manager                  User?                       @relation("UserManager", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   subordinates             User[]                      @relation("UserManager")
   unit                     Unit?                       @relation(fields: [unitId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  // Knowledge Base relations
+  authoredArticles         KnowledgeArticle[]          @relation("ArticleAuthor")
+  editedArticles           KnowledgeArticle[]          @relation("ArticleEditor")
+  articleViews             KnowledgeArticleView[]      @relation("ArticleViewer")
+  knowledgeLinks           KnowledgeTicketLink[]       @relation("KnowledgeLinkCreator")
+  articleFeedbacks         KnowledgeArticleFeedback[]  @relation("ArticleFeedbackUser")
 
   @@map("users")
 }
@@ -234,6 +241,7 @@ model Ticket {
   serviceTemplate          ServiceTemplate?            @relation("ServiceTemplateTickets", fields: [serviceTemplateId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   techCategorizedByUser    User?                       @relation("TechCategorizer", fields: [techCategorizedBy], references: [id], onUpdate: NoAction)
   template                 TicketTemplate?             @relation(fields: [templateId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  knowledgeLinks           KnowledgeTicketLink[]
 
   @@map("tickets")
 }
@@ -1107,4 +1115,129 @@ enum escalation_status {
   resolved
   cancelled
   failed
+}
+
+// Knowledge Base Models
+model KnowledgeCategory {
+  id          Int               @id @default(autoincrement())
+  name        String            @db.VarChar(100)
+  description String?
+  parentId    Int?              @map("parent_id")
+  icon        String?           @db.VarChar(50)
+  color       String?           @db.VarChar(20)
+  sortOrder   Int               @default(0) @map("sort_order")
+  isActive    Boolean           @default(true) @map("is_active")
+  createdAt   DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
+  // Relations
+  parent      KnowledgeCategory? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction)
+  children    KnowledgeCategory[] @relation("CategoryHierarchy")
+  articles    KnowledgeArticle[]
+
+  @@unique([name, parentId])
+  @@index([isActive, sortOrder])
+  @@map("knowledge_categories")
+}
+
+model KnowledgeArticle {
+  id               Int                    @id @default(autoincrement())
+  title            String                 @db.VarChar(255)
+  content          String                 // Rich text content
+  excerpt          String?                @db.VarChar(500) // Short summary
+  categoryId       Int?                   @map("category_id")
+  tags             String[]               // Array of tags for search
+  status           knowledge_status       @default(draft)
+  publishedAt      DateTime?              @map("published_at") @db.Timestamptz(6)
+  authorId         Int                    @map("author_id")
+  editorId         Int?                   @map("editor_id") // Last person who edited
+  viewCount        Int                    @default(0) @map("view_count")
+  helpfulCount     Int                    @default(0) @map("helpful_count") // User feedback
+  notHelpfulCount  Int                    @default(0) @map("not_helpful_count")
+  searchKeywords   String?                @map("search_keywords") @db.VarChar(500)
+  attachments      Json?                  // File attachments metadata
+  metadata         Json?                  // Additional structured data
+  createdAt        DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
+  // Relations
+  category         KnowledgeCategory?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  author           User                   @relation("ArticleAuthor", fields: [authorId], references: [id])
+  editor           User?                  @relation("ArticleEditor", fields: [editorId], references: [id])
+  views            KnowledgeArticleView[]
+  ticketLinks      KnowledgeTicketLink[]
+  feedbacks        KnowledgeArticleFeedback[]
+
+  @@index([status, publishedAt])
+  @@index([categoryId, status])
+  @@index([authorId])
+  @@index([viewCount])
+  @@map("knowledge_articles")
+}
+
+model KnowledgeArticleView {
+  id         Int              @id @default(autoincrement())
+  articleId  Int              @map("article_id")
+  userId     Int?             @map("user_id") // Null for anonymous views
+  ipAddress  String?          @map("ip_address") @db.VarChar(45)
+  userAgent  String?          @map("user_agent") @db.VarChar(500)
+  viewedAt   DateTime         @default(now()) @map("viewed_at") @db.Timestamptz(6)
+  
+  // Relations
+  article    KnowledgeArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user       User?            @relation("ArticleViewer", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([articleId, viewedAt])
+  @@index([userId])
+  @@map("knowledge_article_views")
+}
+
+model KnowledgeTicketLink {
+  id          Int              @id @default(autoincrement())
+  articleId   Int              @map("article_id")
+  ticketId    Int              @map("ticket_id")
+  linkType    kb_link_type     @default(referenced) // referenced, resolved_with, related_to
+  linkedBy    Int              @map("linked_by") // User who created the link
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  
+  // Relations
+  article     KnowledgeArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  ticket      Ticket           @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user        User             @relation("KnowledgeLinkCreator", fields: [linkedBy], references: [id])
+
+  @@unique([articleId, ticketId, linkType])
+  @@index([ticketId])
+  @@index([articleId])
+  @@map("knowledge_ticket_links")
+}
+
+model KnowledgeArticleFeedback {
+  id         Int              @id @default(autoincrement())
+  articleId  Int              @map("article_id")
+  userId     Int?             @map("user_id") // Null for anonymous feedback
+  isHelpful  Boolean          @map("is_helpful")
+  comment    String?          // Optional feedback comment
+  ipAddress  String?          @map("ip_address") @db.VarChar(45)
+  createdAt  DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  
+  // Relations
+  article    KnowledgeArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user       User?            @relation("ArticleFeedbackUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([articleId, userId, ipAddress]) // Prevent duplicate feedback
+  @@index([articleId, isHelpful])
+  @@map("knowledge_article_feedback")
+}
+
+// Knowledge Base Enums
+enum knowledge_status {
+  draft
+  published
+  archived
+}
+
+enum kb_link_type {
+  referenced       // Article was referenced during ticket resolution
+  resolved_with    // Ticket was resolved using this article
+  related_to       // Article is related to the ticket topic
 }

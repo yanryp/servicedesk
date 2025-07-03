@@ -1,6 +1,6 @@
 // frontend/src/App.tsx
 import React, { useState } from 'react';
-import { Routes, Route, Link, useNavigate, Navigate } from 'react-router-dom';
+import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { 
   Bars3Icon,
@@ -25,11 +25,16 @@ import SLAPolicyPage from './pages/admin/SLAPolicyPage';
 import SupportingGroupsPage from './pages/admin/SupportingGroupsPage';
 import TechnicianWorkspace from './components/technician/TechnicianWorkspace';
 import TechnicianTicketsPage from './pages/TechnicianTicketsPage';
+import KnowledgeBasePage from './pages/KnowledgeBasePage';
+import ArticleViewPage from './pages/ArticleViewPage';
+import KnowledgeBaseAdminPage from './pages/admin/KnowledgeBaseAdminPage';
+import ArticleEditorPage from './pages/admin/ArticleEditorPage';
+import CategoryManagementPage from './pages/admin/CategoryManagementPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
 
 function App() {
-  const { user, logout, isLoading, isAuthenticated } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -201,6 +206,16 @@ function App() {
             <Route path="/service-catalog" element={<ProtectedRoute roles={['requester', 'technician', 'manager', 'admin']}><div className="container mx-auto p-6 max-w-7xl"><ServiceCatalogPage /></div></ProtectedRoute>} />
             <Route path="/service-catalog-v2" element={<ProtectedRoute roles={['requester', 'technician', 'manager', 'admin']}><div className="container mx-auto p-6 max-w-7xl"><ServiceCatalogV2Page /></div></ProtectedRoute>} />
             <Route path="/service-catalog-admin" element={<ProtectedRoute roles={['admin']}><div className="container mx-auto p-6 max-w-7xl"><ServiceCatalogAdminPage /></div></ProtectedRoute>} />
+            
+            {/* Knowledge Base Routes */}
+            <Route path="/knowledge-base" element={<ProtectedRoute roles={['requester', 'technician', 'manager', 'admin']}><KnowledgeBasePage /></ProtectedRoute>} />
+            <Route path="/knowledge-base/articles/:id" element={<ProtectedRoute roles={['requester', 'technician', 'manager', 'admin']}><ArticleViewPage /></ProtectedRoute>} />
+            
+            {/* Knowledge Base Admin Routes */}
+            <Route path="/knowledge-base/admin" element={<ProtectedRoute roles={['admin', 'manager']}><KnowledgeBaseAdminPage /></ProtectedRoute>} />
+            <Route path="/knowledge-base/admin/articles/new" element={<ProtectedRoute roles={['admin', 'manager']}><ArticleEditorPage /></ProtectedRoute>} />
+            <Route path="/knowledge-base/admin/articles/:id/edit" element={<ProtectedRoute roles={['admin', 'manager']}><ArticleEditorPage /></ProtectedRoute>} />
+            <Route path="/knowledge-base/admin/categories" element={<ProtectedRoute roles={['admin', 'manager']}><CategoryManagementPage /></ProtectedRoute>} />
             <Route path="/admin/sla-policies" element={<ProtectedRoute roles={['admin']}><div className="container mx-auto p-6 max-w-7xl"><SLAPolicyPage /></div></ProtectedRoute>} />
             <Route path="/admin/supporting-groups" element={<ProtectedRoute roles={['admin']}><SupportingGroupsPage /></ProtectedRoute>} />
             <Route path="/tickets/:ticketId" element={<ProtectedRoute roles={['requester', 'technician', 'manager', 'admin']}><div className="container mx-auto p-6 max-w-7xl"><TicketDetailPage /></div></ProtectedRoute>} />
