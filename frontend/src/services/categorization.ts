@@ -115,7 +115,14 @@ export const categorizationService = {
       department?: number;
     }): Promise<CategorizationAnalytics> {
       const response = await api.get('/analytics/categorization/overview', { params });
-      return response.data.data;
+      const data = response.data.data; // The backend returns nested data under response.data.data
+      
+      // The API already returns the data in the correct structure with overview nested
+      return {
+        overview: data.overview,
+        distributions: data.distributions,
+        qualityMetrics: data.qualityMetrics
+      };
     },
 
     // Get categorization trends

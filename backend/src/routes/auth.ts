@@ -281,13 +281,16 @@ router.get('/units/:departmentId', asyncHandler(async (req: Request, res: Respon
 // GET /api/auth/branches - Get all BSG branches for user assignment (independent of department)
 router.get('/branches', asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   try {
+    console.log('=== BRANCHES API CALLED ===');
+    console.log('Request query params:', req.query);
+    console.log('Request headers:', req.headers.authorization ? 'Has auth header' : 'No auth header');
+    
     const branches = await prisma.unit.findMany({
       where: {
         isActive: true,
-        // Only include actual BSG branch units, not department-level units
         OR: [
-          { unitType: 'branch' },
-          { unitType: 'sub_branch' }
+          { unitType: 'CABANG' },
+          { unitType: 'CAPEM' }
         ]
       },
       select: {
@@ -302,15 +305,29 @@ router.get('/branches', asyncHandler(async (req: Request, res: Response, next: N
         metadata: true
       },
       orderBy: [
-        { unitType: 'asc' }, // CABANG first, then CAPEM
+        { unitType: 'asc' },
         { sortOrder: 'asc' },
         { name: 'asc' }
-      ]
+      ],
+      take: 100 // Explicitly limit to 100 results, no offset
     });
 
+    console.log(`=== BRANCHES QUERY RESULT: ${branches.length} results ===`);
+    if (branches.length > 0) {
+      console.log('Sample branches:', branches.slice(0, 3).map(b => ({ id: b.id, code: b.code, name: b.name, unitType: b.unitType })));
+    } else {
+      console.log('No branches found - investigating...');
+      // Check if there are any units at all
+      const allUnits = await prisma.unit.findMany({
+        select: { id: true, code: true, unitType: true, isActive: true },
+        take: 5
+      });
+      console.log('Sample of all units in database:', allUnits);
+    }
+    
     res.json(branches);
   } catch (error) {
-    console.error('Error fetching branches:', error);
+    console.error('=== ERROR FETCHING BRANCHES ===', error);
     return next(Object.assign(new Error('Failed to fetch branches'), { status: 500 }));
   }
 }));
