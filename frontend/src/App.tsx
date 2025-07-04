@@ -32,6 +32,7 @@ import ArticleEditorPage from './pages/admin/ArticleEditorPage';
 import CategoryManagementPage from './pages/admin/CategoryManagementPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
+import CustomerPortalPage from './pages/customer/CustomerPortalPage';
 
 function App() {
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -107,6 +108,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/customer/*" element={<CustomerPortalPage />} />
             <Route path="*" element={<Navigate to="/login" />} />
           </Routes>
         </main>

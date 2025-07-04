@@ -42,6 +42,7 @@ const externalApiRoutes_1 = __importDefault(require("./routes/externalApiRoutes"
 const slaPolicyRoutes_1 = __importDefault(require("./routes/slaPolicyRoutes")); // Import SLA policy routes
 const businessHoursRoutes_1 = __importDefault(require("./routes/businessHoursRoutes")); // Import business hours routes
 const holidayCalendarRoutes_1 = __importDefault(require("./routes/holidayCalendarRoutes")); // Import holiday calendar routes
+const knowledgeBaseRoutes_1 = __importDefault(require("./routes/knowledgeBaseRoutes")); // Import knowledge base routes
 const escalationService_1 = require("./services/escalationService"); // Import escalation service
 const app = (0, express_1.default)();
 // Security middleware
@@ -113,6 +114,8 @@ app.use('/api/sla-policies', slaPolicyRoutes_1.default); // SLA policy managemen
 // Business Hours and Holiday Calendar Management
 app.use('/api/business-hours', businessHoursRoutes_1.default); // Business hours management routes
 app.use('/api/holidays', holidayCalendarRoutes_1.default); // Holiday calendar management routes
+// Knowledge Base System
+app.use('/api/knowledge-base', knowledgeBaseRoutes_1.default); // Knowledge base articles and categories
 // Legacy routes (for backward compatibility)
 app.use('/api/tickets', ticketRoutes_1.default); // Mount legacy ticket router
 app.use('/api/categories', categoryRoutes_1.default); // Use category routes

@@ -92,7 +92,8 @@
       "Bash(npm ls:*)",
       "Bash(./create-deployment-zip.sh:*)",
       "Bash(git tag:*)",
-      "Bash(zip:*)"
+      "Bash(zip:*)",
+      "Bash(gzip:*)"
     ],
     "deny": []
   }
