@@ -93,7 +93,11 @@
       "Bash(./create-deployment-zip.sh:*)",
       "Bash(git tag:*)",
       "Bash(zip:*)",
-      "Bash(gzip:*)"
+      "Bash(gzip:*)",
+      "mcp__playwright__browser_file_upload",
+      "Bash(pgrep:*)",
+      "mcp__playwright__browser_tab_new",
+      "mcp__playwright__browser_handle_dialog"
     ],
     "deny": []
   }

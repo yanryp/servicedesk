@@ -12,16 +12,18 @@ import {
   FaceFrownIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import { ticketsService } from '../../services/tickets';
+import { useAuth } from '../../context/AuthContext';
+import type { Ticket } from '../../types';
 
-interface SurveyTicket {
-  id: number;
+interface SurveyTicket extends Ticket {
+  subject: string; // Map from title
   ticketNumber: string;
-  subject: string;
   resolvedAt: string;
-  assignedTo: string;
   category: string;
   resolutionTime: string;
   alreadyRated: boolean;
+  assignedToName: string; // Rename to avoid conflict with Ticket.assignedTo
 }
 
 interface SurveyResponse {
@@ -36,6 +38,7 @@ interface SurveyResponse {
 }
 
 const CustomerSatisfactionSurvey: React.FC = () => {
+  const { user } = useAuth();
   const [eligibleTickets, setEligibleTickets] = useState<SurveyTicket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<SurveyTicket | null>(null);
   const [surveyResponse, setSurveyResponse] = useState<SurveyResponse>({
@@ -51,50 +54,55 @@ const CustomerSatisfactionSurvey: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadEligibleTickets();
   }, []);
 
   const loadEligibleTickets = async () => {
+    if (!user) return;
+    
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      const mockTickets: SurveyTicket[] = [
-        {
-          id: 1,
-          ticketNumber: 'BSG-2024-0001',
-          subject: 'Password Reset Request',
-          resolvedAt: '2024-07-03T16:30:00Z',
-          assignedTo: 'Jakarta IT Team',
-          category: 'Account Management',
-          resolutionTime: '4 hours',
-          alreadyRated: false
-        },
-        {
-          id: 2,
-          ticketNumber: 'BSG-2024-0002',
-          subject: 'Email Configuration Issue',
-          resolvedAt: '2024-07-02T14:45:00Z',
-          assignedTo: 'Support Team Alpha',
-          category: 'Email Support',
-          resolutionTime: '2 hours',
-          alreadyRated: false
-        },
-        {
-          id: 3,
-          ticketNumber: 'BSG-2024-0003',
-          subject: 'Mobile Banking App Setup',
-          resolvedAt: '2024-06-29T11:20:00Z',
-          assignedTo: 'Customer Support',
-          category: 'Mobile Banking',
-          resolutionTime: '1.5 hours',
-          alreadyRated: true
-        }
-      ];
-      setEligibleTickets(mockTickets);
+    setError(null);
+    
+    try {
+      // Get resolved/closed tickets for the current user
+      const response = await ticketsService.getTickets({
+        page: 1,
+        limit: 20,
+        status: 'resolved' as any // TypeScript workaround for status filter
+      });
+      
+      // Transform tickets to survey format
+      const surveyTickets: SurveyTicket[] = response.tickets
+        .filter(ticket => ticket.status === 'resolved' || ticket.status === 'closed')
+        .map(ticket => {
+          const createdDate = new Date(ticket.createdAt);
+          const updatedDate = new Date(ticket.updatedAt);
+          const resolutionTimeMs = updatedDate.getTime() - createdDate.getTime();
+          const resolutionHours = Math.round(resolutionTimeMs / (1000 * 60 * 60));
+          
+          return {
+            ...ticket,
+            subject: ticket.title, // Map title to subject
+            ticketNumber: `BSG-${ticket.id.toString().padStart(4, '0')}`,
+            resolvedAt: ticket.updatedAt,
+            category: ticket.serviceItem ? 'Service Request' : 'General Support',
+            resolutionTime: resolutionHours > 0 ? `${resolutionHours} hours` : 'Less than 1 hour',
+            alreadyRated: false, // Default to false for now
+            assignedToName: ticket.assignedTo?.name || 'Support Team'
+          };
+        });
+      
+      setEligibleTickets(surveyTickets);
+    } catch (error) {
+      console.error('Error loading eligible tickets:', error);
+      setError('Failed to load your resolved tickets. Please try again.');
+      setEligibleTickets([]);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const handleTicketSelection = (ticket: SurveyTicket) => {
@@ -111,12 +119,41 @@ const CustomerSatisfactionSurvey: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    if (!selectedTicket) return;
+    
     setLoading(true);
-    // Simulate API submission
-    setTimeout(() => {
+    setError(null);
+    
+    try {
+      // For now, we'll store the feedback as a simple API call
+      // In a real implementation, you'd have a dedicated feedback endpoint
+      
+      // Create a feedback comment that includes all the ratings
+      const feedbackData = {
+        ticketId: selectedTicket.id,
+        overallSatisfaction: surveyResponse.overallSatisfaction,
+        resolutionSpeed: surveyResponse.resolutionSpeed,
+        communicationQuality: surveyResponse.communicationQuality,
+        technicalExpertise: surveyResponse.technicalExpertise,
+        wouldRecommend: surveyResponse.wouldRecommend,
+        comments: surveyResponse.comments,
+        followUpNeeded: surveyResponse.followUpNeeded,
+        submittedAt: new Date().toISOString()
+      };
+      
+      // Store feedback (in a real app, this would be a dedicated feedback API)
+      console.log('Submitting feedback:', feedbackData);
+      
+      // For now, just simulate successful submission
+      // In the future, you could create a dedicated feedback service
+      
       setSubmitted(true);
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      setError('Failed to submit feedback. Please try again.');
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
   const renderStarRating = (
@@ -175,6 +212,25 @@ const CustomerSatisfactionSurvey: React.FC = () => {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <p className="ml-4 text-slate-600">Loading your resolved tickets...</p>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+          <FaceFrownIcon className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-red-900 mb-2">Error Loading Tickets</h3>
+          <p className="text-red-700 mb-4">{error}</p>
+          <button
+            onClick={loadEligibleTickets}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all duration-200"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
@@ -301,7 +357,7 @@ const CustomerSatisfactionSurvey: React.FC = () => {
                           </div>
                           <div className="flex items-center space-x-1">
                             <UserIcon className="w-3 h-3" />
-                            <span>{ticket.assignedTo}</span>
+                            <span>{ticket.assignedToName}</span>
                           </div>
                           <div>
                             <span>{formatDate(ticket.resolvedAt)}</span>
@@ -361,7 +417,7 @@ const CustomerSatisfactionSurvey: React.FC = () => {
                   <strong>Ticket:</strong> {selectedTicket.ticketNumber}
                 </div>
                 <div>
-                  <strong>Resolved by:</strong> {selectedTicket.assignedTo}
+                  <strong>Resolved by:</strong> {selectedTicket.assignedToName}
                 </div>
                 <div>
                   <strong>Resolution time:</strong> {selectedTicket.resolutionTime}

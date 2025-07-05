@@ -14,24 +14,22 @@ import {
   UserIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
+import { ticketsService } from '../../services/tickets';
+import { useAuth } from '../../context/AuthContext';
+import type { Ticket } from '../../types';
 
-interface CustomerTicket {
-  id: number;
+// Use the existing Ticket type from the system and extend if needed
+interface CustomerTicket extends Ticket {
+  subject: string; // Map from title
   ticketNumber: string;
-  subject: string;
-  description: string;
-  status: string;
-  priority: string;
   service: string;
   category: string;
-  createdAt: string;
-  updatedAt: string;
-  assignedTo?: string;
   estimatedResolution?: string;
   resolutionNotes?: string;
   customerSatisfaction?: number;
   commentsCount: number;
   attachmentsCount: number;
+  assignedToName?: string; // Rename to avoid conflict with Ticket.assignedTo
 }
 
 interface TicketFilter {
@@ -43,12 +41,14 @@ interface TicketFilter {
 }
 
 const CustomerTicketTracking: React.FC = () => {
+  const { user } = useAuth();
   const [tickets, setTickets] = useState<CustomerTicket[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<CustomerTicket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<CustomerTicket | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [filters, setFilters] = useState<TicketFilter>({
     status: 'all',
@@ -58,85 +58,49 @@ const CustomerTicketTracking: React.FC = () => {
     searchTerm: ''
   });
 
-  // Mock ticket data
+  // Load tickets data from API
   useEffect(() => {
     loadTickets();
   }, []);
 
   const loadTickets = async () => {
+    if (!user) return;
+    
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      const mockTickets: CustomerTicket[] = [
-        {
-          id: 1,
-          ticketNumber: 'BSG-2024-0001',
-          subject: 'BSGDirect Login Issue',
-          description: 'Unable to login to BSGDirect. Getting "Invalid credentials" error even with correct password.',
-          status: 'In Progress',
-          priority: 'High',
-          service: 'BSGDirect Support',
-          category: 'Banking Operations',
-          createdAt: '2024-07-04T08:30:00Z',
-          updatedAt: '2024-07-04T14:15:00Z',
-          assignedTo: 'IT Support Team',
-          estimatedResolution: '2024-07-04T18:00:00Z',
-          commentsCount: 3,
-          attachmentsCount: 1
-        },
-        {
-          id: 2,
-          ticketNumber: 'BSG-2024-0002',
-          subject: 'Password Reset Request',
-          description: 'Need to reset my email password. Cannot access Outlook.',
-          status: 'Resolved',
-          priority: 'Medium',
-          service: 'Password Reset',
-          category: 'IT Support',
-          createdAt: '2024-07-03T10:15:00Z',
-          updatedAt: '2024-07-03T16:30:00Z',
-          assignedTo: 'Jakarta IT Team',
-          resolutionNotes: 'Password has been reset and new credentials sent to alternate email address.',
-          customerSatisfaction: 5,
-          commentsCount: 2,
-          attachmentsCount: 0
-        },
-        {
-          id: 3,
-          ticketNumber: 'BSG-2024-0003',
-          subject: 'Email Configuration Problem',
-          description: 'Email not syncing properly on mobile device. Missing recent emails.',
-          status: 'Pending Approval',
-          priority: 'Low',
-          service: 'Email Support',
-          category: 'IT Support',
-          createdAt: '2024-07-02T14:20:00Z',
-          updatedAt: '2024-07-02T14:20:00Z',
-          commentsCount: 0,
-          attachmentsCount: 2
-        },
-        {
-          id: 4,
-          ticketNumber: 'BSG-2024-0004',
-          subject: 'Mobile Banking App Installation',
-          description: 'Need help installing and configuring the new BSG mobile banking app.',
-          status: 'Closed',
-          priority: 'Low',
-          service: 'Mobile Banking Support',
-          category: 'Banking Operations',
-          createdAt: '2024-06-28T09:00:00Z',
-          updatedAt: '2024-06-29T11:45:00Z',
-          assignedTo: 'Customer Support',
-          resolutionNotes: 'App installed successfully. Provided training on key features.',
-          customerSatisfaction: 4,
-          commentsCount: 5,
-          attachmentsCount: 0
-        }
-      ];
-      setTickets(mockTickets);
-      setFilteredTickets(mockTickets);
+    setError(null);
+    
+    try {
+      // Get tickets for the current requester only
+      const response = await ticketsService.getTickets({
+        page: 1,
+        limit: 100 // Get all tickets for the user
+      });
+      
+      // Transform tickets to match CustomerTicket interface
+      const customerTickets: CustomerTicket[] = response.tickets.map(ticket => ({
+        ...ticket,
+        subject: ticket.title, // Map title to subject
+        ticketNumber: `BSG-${ticket.id.toString().padStart(4, '0')}`,
+        service: ticket.serviceItem?.name || 'General Support',
+        category: ticket.serviceItem ? 'Service Request' : 'General',
+        estimatedResolution: undefined, // Not available in current API
+        resolutionNotes: undefined, // Not available in current API
+        customerSatisfaction: undefined, // Not available in current API
+        commentsCount: 0, // Not available in current API
+        attachmentsCount: ticket.attachments?.length || 0,
+        assignedToName: ticket.assignedTo?.name || undefined
+      }));
+      
+      setTickets(customerTickets);
+      setFilteredTickets(customerTickets);
+    } catch (error) {
+      console.error('Error loading tickets:', error);
+      setError('Failed to load your tickets. Please try again.');
+      setTickets([]);
+      setFilteredTickets([]);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const refreshTickets = async () => {
@@ -263,6 +227,25 @@ const CustomerTicketTracking: React.FC = () => {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <p className="ml-4 text-slate-600">Loading your tickets...</p>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+          <ExclamationTriangleIcon className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-red-900 mb-2">Error Loading Tickets</h3>
+          <p className="text-red-700 mb-4">{error}</p>
+          <button
+            onClick={loadTickets}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all duration-200"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
@@ -452,10 +435,10 @@ const CustomerTicketTracking: React.FC = () => {
                       <span>Created {formatDate(ticket.createdAt)}</span>
                     </span>
                     <span>Updated {getTimeAgo(ticket.updatedAt)}</span>
-                    {ticket.assignedTo && (
+                    {ticket.assignedToName && (
                       <span className="flex items-center space-x-1">
                         <UserIcon className="w-3 h-3" />
-                        <span>Assigned to {ticket.assignedTo}</span>
+                        <span>Assigned to {ticket.assignedToName}</span>
                       </span>
                     )}
                   </div>
@@ -573,10 +556,10 @@ const CustomerTicketTracking: React.FC = () => {
                 <p className="text-slate-600 bg-slate-50 p-3 rounded-lg">{selectedTicket.description}</p>
               </div>
 
-              {selectedTicket.assignedTo && (
+              {selectedTicket.assignedToName && (
                 <div>
                   <h3 className="font-medium text-slate-700 mb-2">Assigned To</h3>
-                  <p className="text-slate-600">{selectedTicket.assignedTo}</p>
+                  <p className="text-slate-600">{selectedTicket.assignedToName}</p>
                 </div>
               )}
 

@@ -15,22 +15,24 @@ import {
   ShieldCheckIcon,
   WrenchScrewdriverIcon
 } from '@heroicons/react/24/outline';
+import { serviceCatalogService } from '../../services/serviceCatalog';
 
+// Local interfaces for customer portal (different from API service types)
 interface ServiceCategory {
-  id: number;
+  id: string;
   name: string;
   description: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   color: string;
   serviceCount: number;
   services: Service[];
 }
 
 interface Service {
-  id: number;
+  id: string;
   name: string;
   description: string;
-  categoryId: number;
+  categoryId: string;
   estimatedTime: string;
   priority: string;
   cost: string;
@@ -39,6 +41,41 @@ interface Service {
   tags: string[];
   popular: boolean;
 }
+
+// Helper functions for category icons and colors
+const getIconForCategory = (categoryName: string) => {
+  const name = categoryName.toLowerCase();
+  if (name.includes('it') || name.includes('computer') || name.includes('software')) {
+    return ComputerDesktopIcon;
+  }
+  if (name.includes('banking') || name.includes('kasda') || name.includes('olibs')) {
+    return BuildingOfficeIcon;
+  }
+  if (name.includes('mobile') || name.includes('app')) {
+    return DevicePhoneMobileIcon;
+  }
+  if (name.includes('hardware') || name.includes('atm')) {
+    return WrenchScrewdriverIcon;
+  }
+  if (name.includes('security') || name.includes('access')) {
+    return ShieldCheckIcon;
+  }
+  if (name.includes('card') || name.includes('xcard')) {
+    return CreditCardIcon;
+  }
+  return ComputerDesktopIcon; // Default icon
+};
+
+const getColorForCategory = (categoryName: string) => {
+  const name = categoryName.toLowerCase();
+  if (name.includes('it') || name.includes('computer')) return 'blue';
+  if (name.includes('banking') || name.includes('kasda')) return 'green';
+  if (name.includes('mobile')) return 'purple';
+  if (name.includes('hardware')) return 'red';
+  if (name.includes('security')) return 'yellow';
+  if (name.includes('card')) return 'indigo';
+  return 'blue'; // Default color
+};
 
 const CustomerServiceCatalog: React.FC = () => {
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
@@ -59,223 +96,57 @@ const CustomerServiceCatalog: React.FC = () => {
 
   const loadServiceCatalog = async () => {
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      const mockServices: Service[] = [
-        // IT Support Services
-        {
-          id: 1,
-          name: 'Password Reset',
-          description: 'Reset forgotten passwords for email, BSGDirect, or system access',
-          categoryId: 1,
-          estimatedTime: '30 minutes',
-          priority: 'Medium',
-          cost: 'Free',
-          availability: '24/7',
-          requirements: ['Valid employee ID', 'Security questions verification'],
-          tags: ['password', 'security', 'account', 'urgent'],
-          popular: true
-        },
-        {
-          id: 2,
-          name: 'Email Configuration',
-          description: 'Set up or troubleshoot email access on desktop or mobile devices',
-          categoryId: 1,
-          estimatedTime: '1-2 hours',
-          priority: 'Medium',
-          cost: 'Free',
-          availability: 'Business hours',
-          requirements: ['Device access', 'Email credentials'],
-          tags: ['email', 'outlook', 'mobile', 'configuration'],
-          popular: true
-        },
-        {
-          id: 3,
-          name: 'Software Installation',
-          description: 'Install approved business software on your work computer',
-          categoryId: 1,
-          estimatedTime: '2-4 hours',
-          priority: 'Low',
-          cost: 'Free',
-          availability: 'Business hours',
-          requirements: ['Manager approval', 'Software license availability'],
-          tags: ['software', 'installation', 'applications'],
-          popular: false
-        },
-        // Banking Operations Services
-        {
-          id: 4,
-          name: 'BSGDirect Support',
-          description: 'Troubleshoot BSGDirect online banking login and functionality issues',
-          categoryId: 2,
-          estimatedTime: '2-4 hours',
-          priority: 'High',
-          cost: 'Free',
-          availability: '24/7',
-          requirements: ['Account verification', 'Security information'],
-          tags: ['bsgdirect', 'online banking', 'login', 'critical'],
-          popular: true
-        },
-        {
-          id: 5,
-          name: 'Account Management',
-          description: 'Assistance with customer account access, updates, and maintenance',
-          categoryId: 2,
-          estimatedTime: '1-3 hours',
-          priority: 'High',
-          cost: 'Free',
-          availability: 'Business hours',
-          requirements: ['Customer verification', 'Valid ID'],
-          tags: ['account', 'customer service', 'maintenance'],
-          popular: true
-        },
-        {
-          id: 6,
-          name: 'Transaction Support',
-          description: 'Help with failed transactions, transaction history, and payment issues',
-          categoryId: 2,
-          estimatedTime: '2-6 hours',
-          priority: 'High',
-          cost: 'Free',
-          availability: 'Business hours',
-          requirements: ['Transaction details', 'Account verification'],
-          tags: ['transactions', 'payments', 'banking'],
-          popular: false
-        },
-        // Mobile Banking Services
-        {
-          id: 7,
-          name: 'Mobile App Installation',
-          description: 'Guide for downloading and setting up the BSG mobile banking app',
-          categoryId: 3,
-          estimatedTime: '30-60 minutes',
-          priority: 'Medium',
-          cost: 'Free',
-          availability: '24/7',
-          requirements: ['Smartphone', 'App store access'],
-          tags: ['mobile', 'app', 'installation', 'setup'],
-          popular: true
-        },
-        {
-          id: 8,
-          name: 'Mobile Banking Training',
-          description: 'Personal training session on using mobile banking features',
-          categoryId: 3,
-          estimatedTime: '1-2 hours',
-          priority: 'Low',
-          cost: 'Free',
-          availability: 'By appointment',
-          requirements: ['BSG mobile app installed', 'Active account'],
-          tags: ['training', 'mobile', 'education'],
-          popular: false
-        },
-        // Hardware Support Services
-        {
-          id: 9,
-          name: 'Computer Repair',
-          description: 'Hardware diagnostics and repair for desktop and laptop computers',
-          categoryId: 4,
-          estimatedTime: '2-8 hours',
-          priority: 'Medium',
-          cost: 'Parts cost applies',
-          availability: 'Business hours',
-          requirements: ['Manager approval for parts cost', 'Backup data if possible'],
-          tags: ['hardware', 'repair', 'computer', 'maintenance'],
-          popular: false
-        },
-        {
-          id: 10,
-          name: 'Printer Setup',
-          description: 'Install, configure, and troubleshoot network and local printers',
-          categoryId: 4,
-          estimatedTime: '1-2 hours',
-          priority: 'Low',
-          cost: 'Free',
-          availability: 'Business hours',
-          requirements: ['Printer model information', 'Network access'],
-          tags: ['printer', 'setup', 'network', 'configuration'],
-          popular: false
-        },
-        // Security Services
-        {
-          id: 11,
-          name: 'Security Incident Response',
-          description: 'Immediate response to suspected security breaches or malware',
-          categoryId: 5,
-          estimatedTime: '1-4 hours',
-          priority: 'High',
-          cost: 'Free',
-          availability: '24/7',
-          requirements: ['Immediate device isolation', 'Incident details'],
-          tags: ['security', 'incident', 'malware', 'emergency'],
-          popular: false
-        },
-        {
-          id: 12,
-          name: 'Security Training',
-          description: 'Personal or group training on cybersecurity best practices',
-          categoryId: 5,
-          estimatedTime: '2-4 hours',
-          priority: 'Medium',
-          cost: 'Free',
-          availability: 'By appointment',
-          requirements: ['Group booking (minimum 5 people)', 'Training schedule coordination'],
-          tags: ['training', 'security', 'education', 'awareness'],
-          popular: false
+    try {
+      // Get service catalog categories from the real API
+      const categoriesResponse = await serviceCatalogService.getCategories();
+      
+      // Transform API response to match expected format
+      const transformedCategories: ServiceCategory[] = [];
+      
+      for (const category of categoriesResponse) {
+        // Get services for this category
+        let services: Service[] = [];
+        try {
+          const servicesResponse = await serviceCatalogService.getServicesByCategory(category.id);
+          
+          // Transform services to match expected format
+          services = servicesResponse.map((service: any) => ({
+            id: service.id,
+            name: service.name,
+            description: service.description || 'Service request',
+            categoryId: category.id,
+            estimatedTime: service.estimatedResolutionTime || '1-2 hours',
+            priority: 'Medium',
+            cost: 'Free',
+            availability: 'Business hours',
+            requirements: ['Valid employee ID'],
+            tags: [service.name.toLowerCase().replace(/\s+/g, '-')],
+            popular: service.popularity > 0 || service.usageCount > 0
+          }));
+        } catch (error) {
+          console.error(`Error loading services for category ${category.id}:`, error);
         }
-      ];
-
-      const mockCategories: ServiceCategory[] = [
-        {
-          id: 1,
-          name: 'IT Support',
-          description: 'Computer, email, and software support services',
-          icon: ComputerDesktopIcon,
-          color: 'blue',
-          serviceCount: 3,
-          services: mockServices.filter(s => s.categoryId === 1)
-        },
-        {
-          id: 2,
-          name: 'Banking Operations',
-          description: 'Online banking, account, and transaction support',
-          icon: BuildingOfficeIcon,
-          color: 'green',
-          serviceCount: 3,
-          services: mockServices.filter(s => s.categoryId === 2)
-        },
-        {
-          id: 3,
-          name: 'Mobile Banking',
-          description: 'Mobile app installation and support services',
-          icon: DevicePhoneMobileIcon,
-          color: 'purple',
-          serviceCount: 2,
-          services: mockServices.filter(s => s.categoryId === 3)
-        },
-        {
-          id: 4,
-          name: 'Hardware Support',
-          description: 'Computer, printer, and equipment repair services',
-          icon: WrenchScrewdriverIcon,
-          color: 'red',
-          serviceCount: 2,
-          services: mockServices.filter(s => s.categoryId === 4)
-        },
-        {
-          id: 5,
-          name: 'Security Services',
-          description: 'Cybersecurity incident response and training',
-          icon: ShieldCheckIcon,
-          color: 'yellow',
-          serviceCount: 2,
-          services: mockServices.filter(s => s.categoryId === 5)
-        }
-      ];
-
-      setCategories(mockCategories);
+        
+        // Transform category to match expected format
+        transformedCategories.push({
+          id: category.id,
+          name: category.name,
+          description: category.description || `${category.name} services and support`,
+          icon: getIconForCategory(category.name),
+          color: getColorForCategory(category.name),
+          serviceCount: services.length,
+          services: services
+        });
+      }
+      
+      setCategories(transformedCategories);
+    } catch (error) {
+      console.error('Error loading service catalog:', error);
+      // Set empty state on error
+      setCategories([]);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   // Filter services based on search and filters
@@ -528,7 +399,7 @@ const CustomerServiceCatalog: React.FC = () => {
 
                   <div className="ml-6">
                     <Link
-                      to={`/customer/create-ticket?service=${service.id}`}
+                      to={`/customer/create-ticket?serviceId=${service.id}`}
                       className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 flex items-center space-x-2"
                     >
                       <TicketIcon className="w-4 h-4" />
@@ -562,20 +433,73 @@ const CustomerServiceCatalog: React.FC = () => {
             placeholder="Search for services..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-12 pr-12 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
+        {searchTerm && (
+          <div className="mt-2 text-sm text-slate-600 text-center">
+            Searching for: <span className="font-medium">"{searchTerm}"</span>
+          </div>
+        )}
       </div>
 
       {/* Service Categories */}
       <div className="max-w-6xl mx-auto">
         <h2 className="text-2xl font-bold text-slate-900 mb-6">Service Categories</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categories.map((category) => {
-            const Icon = category.icon;
+        {(() => {
+          const filteredCategories = categories.filter(category => {
+            if (!searchTerm) return true;
+            
+            // Search in category name and description
+            const categoryMatch = 
+              category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              category.description.toLowerCase().includes(searchTerm.toLowerCase());
+            
+            // Search in services within the category
+            const serviceMatch = category.services.some(service =>
+              service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              service.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              service.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+            );
+            
+            return categoryMatch || serviceMatch;
+          });
+          
+          if (filteredCategories.length === 0 && searchTerm) {
             return (
-              <div
-                key={category.id}
+              <div className="col-span-full text-center py-12">
+                <MagnifyingGlassIcon className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-slate-900 mb-2">No services found</h3>
+                <p className="text-slate-600 mb-4">
+                  No services match your search for "{searchTerm}"
+                </p>
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200"
+                >
+                  Clear search
+                </button>
+              </div>
+            );
+          }
+          
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredCategories.map((category) => {
+                const Icon = category.icon;
+                return (
+                  <div
+                    key={category.id}
                 onClick={() => setSelectedCategory(category)}
                 className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-all duration-200 cursor-pointer group"
               >
@@ -617,8 +541,10 @@ const CustomerServiceCatalog: React.FC = () => {
                 </div>
               </div>
             );
-          })}
-        </div>
+              })}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Quick access to popular services */}
@@ -631,29 +557,22 @@ const CustomerServiceCatalog: React.FC = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link
-            to="/customer/create-ticket?service=1"
-            className="bg-white/20 backdrop-blur-sm rounded-lg p-4 hover:bg-white/30 transition-all duration-200"
-          >
-            <h3 className="font-medium mb-1">Password Reset</h3>
-            <p className="text-sm text-blue-100">Get back into your accounts quickly</p>
-          </Link>
-          
-          <Link
-            to="/customer/create-ticket?service=4"
-            className="bg-white/20 backdrop-blur-sm rounded-lg p-4 hover:bg-white/30 transition-all duration-200"
-          >
-            <h3 className="font-medium mb-1">BSGDirect Support</h3>
-            <p className="text-sm text-blue-100">Online banking issues resolved fast</p>
-          </Link>
-          
-          <Link
-            to="/customer/create-ticket?service=2"
-            className="bg-white/20 backdrop-blur-sm rounded-lg p-4 hover:bg-white/30 transition-all duration-200"
-          >
-            <h3 className="font-medium mb-1">Email Configuration</h3>
-            <p className="text-sm text-blue-100">Set up email on any device</p>
-          </Link>
+          {/* Show popular services from first 3 categories */}
+          {categories.slice(0, 3).map((category, index) => {
+            const popularService = category.services.find(s => s.popular) || category.services[0];
+            if (!popularService) return null;
+            
+            return (
+              <Link
+                key={popularService.id}
+                to={`/customer/create-ticket?serviceId=${popularService.id}`}
+                className="bg-white/20 backdrop-blur-sm rounded-lg p-4 hover:bg-white/30 transition-all duration-200"
+              >
+                <h3 className="font-medium mb-1">{popularService.name}</h3>
+                <p className="text-sm text-blue-100">{popularService.description}</p>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </div>

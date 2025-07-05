@@ -15,31 +15,23 @@ import {
   ChevronRightIcon,
   ArrowLeftIcon
 } from '@heroicons/react/24/outline';
+import { knowledgeBaseService, type KnowledgeArticle as APIKnowledgeArticle, type KnowledgeCategory as APIKnowledgeCategory } from '../../services/knowledgeBase';
 
-interface KnowledgeCategory {
-  id: number;
-  name: string;
-  description: string;
+// Local interfaces for customer portal (extending API types with UI-specific fields)
+interface KnowledgeCategory extends Omit<APIKnowledgeCategory, '_count'> {
   articleCount: number;
   icon: string;
   color: string;
 }
 
-interface KnowledgeArticle {
-  id: number;
-  title: string;
+interface KnowledgeArticle extends Omit<APIKnowledgeArticle, 'author' | 'editor' | 'category'> {
   summary: string;
-  content: string;
-  categoryId: number;
   categoryName: string;
-  tags: string[];
   views: number;
   helpful: number;
   notHelpful: number;
   rating: number;
   author: string;
-  publishedAt: string;
-  updatedAt: string;
   estimatedReadTime: number;
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
   featured: boolean;
@@ -76,357 +68,42 @@ const CustomerKnowledgeBase: React.FC = () => {
 
   const loadKnowledgeBaseData = async () => {
     setLoading(true);
-    // Simulate API calls
-    setTimeout(() => {
-      setCategories([
-        {
-          id: 1,
-          name: 'Getting Started',
-          description: 'Basic guides for new users',
-          articleCount: 12,
-          icon: '🚀',
-          color: 'blue'
-        },
-        {
-          id: 2,
-          name: 'Account Management',
-          description: 'Password, profile, and security settings',
-          articleCount: 8,
-          icon: '👤',
-          color: 'green'
-        },
-        {
-          id: 3,
-          name: 'BSGDirect Banking',
-          description: 'Online banking features and troubleshooting',
-          articleCount: 15,
-          icon: '🏦',
-          color: 'purple'
-        },
-        {
-          id: 4,
-          name: 'Mobile Banking',
-          description: 'Mobile app installation and usage',
-          articleCount: 10,
-          icon: '📱',
-          color: 'indigo'
-        },
-        {
-          id: 5,
-          name: 'Email & Communication',
-          description: 'Email setup and troubleshooting',
-          articleCount: 6,
-          icon: '📧',
-          color: 'cyan'
-        },
-        {
-          id: 6,
-          name: 'Security & Safety',
-          description: 'Best practices for online security',
-          articleCount: 9,
-          icon: '🔒',
-          color: 'red'
-        }
-      ]);
-
-      setArticles([
-        {
-          id: 1,
-          title: 'How to Reset Your Password',
-          summary: 'Step-by-step guide to reset your BSG account password safely and securely.',
-          content: `# How to Reset Your Password
-
-If you've forgotten your password or need to reset it for security reasons, follow these steps:
-
-## Method 1: Online Reset
-
-1. **Go to the login page** - Navigate to the BSG login portal
-2. **Click "Forgot Password"** - Look for the link below the login form
-3. **Enter your email address** - Use the email associated with your account
-4. **Check your email** - Look for a reset link (check spam folder if needed)
-5. **Click the reset link** - This will take you to a secure password reset page
-6. **Create a new password** - Follow the password requirements below
-
-## Password Requirements
-
-Your new password must include:
-- At least 8 characters long
-- At least one uppercase letter (A-Z)
-- At least one lowercase letter (a-z)
-- At least one number (0-9)
-- At least one special character (!@#$%^&*)
-
-## Method 2: Contact Support
-
-If you're unable to reset your password online:
-
-1. **Call our support line** - +62-431-123-4567
-2. **Visit your branch** - Bring valid ID for verification
-3. **Submit a support ticket** - Use our customer portal
-
-## Security Tips
-
-- Never share your password with anyone
-- Use a unique password for your BSG account
-- Enable two-factor authentication when available
-- Change your password regularly
-
-## Troubleshooting
-
-**Not receiving the reset email?**
-- Check your spam/junk folder
-- Verify you're using the correct email address
-- Wait 5 minutes before requesting another reset
-
-**Reset link not working?**
-- Ensure you're clicking the latest reset link
-- Links expire after 24 hours
-- Try copying and pasting the link directly
-
-If you continue to have issues, please contact our support team.`,
-          categoryId: 2,
-          categoryName: 'Account Management',
-          tags: ['password', 'security', 'account', 'login'],
-          views: 1250,
-          helpful: 89,
-          notHelpful: 12,
-          rating: 4.7,
-          author: 'BSG Support Team',
-          publishedAt: '2024-06-15T10:00:00Z',
-          updatedAt: '2024-07-01T14:30:00Z',
-          estimatedReadTime: 3,
-          difficulty: 'Beginner',
-          featured: true
-        },
-        {
-          id: 2,
-          title: 'Setting Up BSGDirect Mobile App',
-          summary: 'Complete guide to downloading, installing, and configuring the BSG mobile banking app.',
-          content: `# Setting Up BSGDirect Mobile App
-
-Get started with mobile banking in just a few minutes.
-
-## Download the App
-
-### For Android Devices:
-1. Open Google Play Store
-2. Search for "BSGDirect Mobile"
-3. Tap "Install" on the official BSG app
-4. Wait for download to complete
-
-### For iOS Devices:
-1. Open App Store
-2. Search for "BSGDirect Mobile"  
-3. Tap "Get" on the official BSG app
-4. Use Face ID, Touch ID, or your Apple ID password
-
-## First-Time Setup
-
-1. **Open the app** and tap "Get Started"
-2. **Accept terms and conditions** 
-3. **Enter your account details**:
-   - Account number
-   - Date of birth
-   - Phone number registered with the bank
-4. **Create a mobile PIN** (6 digits)
-5. **Set up biometric login** (optional but recommended)
-
-## Security Setup
-
-### Enable Biometric Authentication:
-- **Fingerprint** (Android/iOS)
-- **Face Recognition** (iOS Face ID)
-- **Voice Recognition** (select devices)
-
-### Set Up Transaction Limits:
-- Daily transfer limit
-- Monthly bill payment limit
-- ATM withdrawal limit
-
-## Features Overview
-
-- **Account Balance** - View real-time balances
-- **Transaction History** - Last 6 months of activity
-- **Fund Transfers** - Between BSG accounts and other banks
-- **Bill Payments** - Utilities, loans, credit cards
-- **Mobile Top-Up** - Prepaid phone credit
-- **ATM Locator** - Find nearest BSG ATMs
-- **Contact Support** - Direct access to help
-
-## Troubleshooting
-
-**App won't download?**
-- Check your internet connection
-- Ensure sufficient storage space
-- Update your device's operating system
-
-**Login issues?**
-- Verify account details are correct
-- Ensure phone number is registered with BSG
-- Try resetting your mobile PIN
-
-**App crashes or freezes?**
-- Force close and restart the app
-- Update to the latest version
-- Restart your device
-- Clear app cache (Android)
-
-## Security Tips
-
-- Never share your mobile PIN
-- Log out when using shared devices
-- Enable app lock with biometric authentication
-- Report suspicious activity immediately
-
-For additional help, contact BSG Customer Service at +62-431-123-4567.`,
-          categoryId: 4,
-          categoryName: 'Mobile Banking',
-          tags: ['mobile', 'app', 'installation', 'setup', 'banking'],
-          views: 980,
-          helpful: 76,
-          notHelpful: 8,
-          rating: 4.5,
-          author: 'BSG Mobile Team',
-          publishedAt: '2024-06-20T09:15:00Z',
-          updatedAt: '2024-06-25T16:45:00Z',
-          estimatedReadTime: 5,
-          difficulty: 'Beginner',
-          featured: true
-        },
-        {
-          id: 3,
-          title: 'Internet Banking Security Best Practices',
-          summary: 'Essential security tips to protect your online banking account from fraud and unauthorized access.',
-          content: `# Internet Banking Security Best Practices
-
-Protect your account with these essential security measures.
-
-## Strong Authentication
-
-### Password Security:
-- Use a unique, complex password
-- Include uppercase, lowercase, numbers, and symbols
-- Change passwords every 90 days
-- Never share or write down passwords
-
-### Two-Factor Authentication:
-- Enable SMS verification
-- Use mobile app authentication when available
-- Consider hardware security keys for high-value accounts
-
-## Safe Browsing Practices
-
-### Always:
-- Type the bank URL directly into your browser
-- Look for the padlock icon (🔒) in the address bar
-- Ensure the URL starts with "https://"
-- Log out completely when finished
-
-### Never:
-- Click links in emails claiming to be from BSG
-- Use public WiFi for banking
-- Save banking passwords in browsers
-- Bank on shared or public computers
-
-## Recognizing Phishing Attempts
-
-### Red Flags:
-- Urgent requests for account information
-- Emails with spelling or grammar errors
-- Requests to click suspicious links
-- Pressure to act immediately
-
-### BSG Will Never:
-- Ask for passwords via email
-- Request personal information by phone
-- Send urgent account suspension warnings
-- Ask you to "verify" account details
-
-## Regular Account Monitoring
-
-### Daily Checks:
-- Review account balances
-- Check recent transactions
-- Verify all activity is authorized
-
-### Weekly Reviews:
-- Download and review statements
-- Check for unknown beneficiaries
-- Verify contact information is current
-
-### Monthly Actions:
-- Update passwords
-- Review account settings
-- Check credit reports
-- Update contact information
-
-## Incident Response
-
-### If You Suspect Fraud:
-1. **Immediately** change your online banking password
-2. **Contact BSG** customer service: +62-431-123-4567
-3. **Document** suspicious transactions
-4. **File** a police report if necessary
-5. **Monitor** your credit report
-
-### If Your Device is Lost/Stolen:
-1. **Call BSG** to suspend online access
-2. **Change** all banking passwords
-3. **Enable** remote device wipe if available
-4. **Monitor** accounts for unauthorized activity
-
-## Device Security
-
-### Computer Security:
-- Keep operating system updated
-- Use current antivirus software
-- Enable automatic security updates
-- Use a firewall
-
-### Mobile Security:
-- Set device lock with PIN/password
-- Enable automatic app updates
-- Use official app stores only
-- Avoid banking on jailbroken/rooted devices
-
-## Safe Transaction Practices
-
-### Before Making Transfers:
-- Verify recipient details twice
-- Use only trusted beneficiaries
-- Set reasonable transaction limits
-- Enable transaction confirmations
-
-### During Transactions:
-- Double-check amounts and recipients
-- Save confirmation numbers
-- Never share transaction details
-- Log out immediately after completion
-
-## Additional Resources
-
-- **BSG Security Center**: Visit our online security portal
-- **Fraud Hotline**: Report suspicious activity 24/7
-- **Security Alerts**: Subscribe to email notifications
-- **Mobile Alerts**: Enable SMS transaction notifications
-
-Remember: When in doubt, contact BSG customer service for assistance.`,
-          categoryId: 6,
-          categoryName: 'Security & Safety',
-          tags: ['security', 'phishing', 'fraud', 'best-practices', 'safety'],
-          views: 756,
-          helpful: 92,
-          notHelpful: 5,
-          rating: 4.8,
-          author: 'BSG Security Team',
-          publishedAt: '2024-06-10T11:20:00Z',
-          updatedAt: '2024-06-30T13:15:00Z',
-          estimatedReadTime: 7,
-          difficulty: 'Intermediate',
-          featured: true
-        }
-      ]);
-
+    try {
+      // Load categories from API
+      const apiCategories = await knowledgeBaseService.getCategories();
+      
+      // Transform categories to match UI format
+      const transformedCategories: KnowledgeCategory[] = apiCategories.map(cat => ({
+        ...cat,
+        articleCount: cat._count?.articles || 0,
+        icon: getIconForCategory(cat.name),
+        color: getColorForCategory(cat.name),
+        description: cat.description || `${cat.name} help articles`
+      }));
+      
+      setCategories(transformedCategories);
+      
+      // Load featured/popular articles
+      const popularArticles = await knowledgeBaseService.getPopularArticles(10);
+      
+      // Transform articles to match UI format
+      const transformedArticles: KnowledgeArticle[] = popularArticles.map(article => ({
+        ...article,
+        summary: article.excerpt || `${article.title} - Help article`,
+        categoryName: article.category?.name || 'General',
+        views: article.viewCount,
+        helpful: article.helpfulCount,
+        notHelpful: article.notHelpfulCount,
+        rating: calculateRating(article.helpfulCount, article.notHelpfulCount),
+        author: article.author.name,
+        estimatedReadTime: calculateReadTime(article.content),
+        difficulty: 'Beginner' as const, // Default for now
+        featured: article.viewCount > 100 || article.helpfulCount > 10
+      }));
+      
+      setArticles(transformedArticles);
+      
+      // Set mock popular searches for now
       setPopularSearches([
         { term: 'password reset', count: 145 },
         { term: 'mobile banking', count: 98 },
@@ -434,42 +111,168 @@ Remember: When in doubt, contact BSG customer service for assistance.`,
         { term: 'transfer money', count: 65 },
         { term: 'ATM card', count: 54 }
       ]);
-
+      
+    } catch (error) {
+      console.error('Error loading knowledge base data:', error);
+      // Set empty state on error
+      setCategories([]);
+      setArticles([]);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
+  };
+  
+  // Helper functions
+  const getIconForCategory = (categoryName: string): string => {
+    const name = categoryName.toLowerCase();
+    if (name.includes('getting') || name.includes('start')) return '🚀';
+    if (name.includes('account') || name.includes('user')) return '👤';
+    if (name.includes('banking') || name.includes('bsg')) return '🏦';
+    if (name.includes('mobile') || name.includes('app')) return '📱';
+    if (name.includes('email') || name.includes('communication')) return '📧';
+    if (name.includes('security') || name.includes('safety')) return '🔒';
+    return '📖'; // Default icon
+  };
+  
+  const getColorForCategory = (categoryName: string): string => {
+    const name = categoryName.toLowerCase();
+    if (name.includes('getting') || name.includes('start')) return 'blue';
+    if (name.includes('account') || name.includes('user')) return 'green';
+    if (name.includes('banking') || name.includes('bsg')) return 'purple';
+    if (name.includes('mobile') || name.includes('app')) return 'indigo';
+    if (name.includes('email') || name.includes('communication')) return 'cyan';
+    if (name.includes('security') || name.includes('safety')) return 'red';
+    return 'gray'; // Default color
+  };
+  
+  const calculateRating = (helpful: number, notHelpful: number): number => {
+    const total = helpful + notHelpful;
+    if (total === 0) return 0;
+    return Math.round((helpful / total) * 5 * 10) / 10; // Round to 1 decimal
+  };
+  
+  const calculateReadTime = (content: string): number => {
+    const wordsPerMinute = 200;
+    const words = content.split(/\s+/).length;
+    return Math.ceil(words / wordsPerMinute) || 1;
   };
 
   const loadArticle = async (articleId: number) => {
-    const article = articles.find(a => a.id === articleId);
-    if (article) {
+    try {
+      // Try to find in already loaded articles first
+      let article = articles.find(a => a.id === articleId);
+      
+      if (!article) {
+        // Load from API if not found
+        const apiArticle = await knowledgeBaseService.getArticleById(articleId);
+        
+        // Transform to UI format
+        article = {
+          ...apiArticle,
+          summary: apiArticle.excerpt || `${apiArticle.title} - Help article`,
+          categoryName: apiArticle.category?.name || 'General',
+          views: apiArticle.viewCount,
+          helpful: apiArticle.helpfulCount,
+          notHelpful: apiArticle.notHelpfulCount,
+          rating: calculateRating(apiArticle.helpfulCount, apiArticle.notHelpfulCount),
+          author: apiArticle.author.name,
+          estimatedReadTime: calculateReadTime(apiArticle.content),
+          difficulty: 'Beginner' as const,
+          featured: apiArticle.viewCount > 100 || apiArticle.helpfulCount > 10
+        };
+      }
+      
       setSelectedArticle(article);
+    } catch (error) {
+      console.error('Error loading article:', error);
     }
   };
 
-  const handleSearch = (term: string) => {
+  const handleSearch = async (term: string) => {
     if (!term.trim()) {
       setSearchResults([]);
       setView('browse');
       return;
     }
 
-    const results = articles.filter(article =>
-      article.title.toLowerCase().includes(term.toLowerCase()) ||
-      article.summary.toLowerCase().includes(term.toLowerCase()) ||
-      article.content.toLowerCase().includes(term.toLowerCase()) ||
-      article.tags.some(tag => tag.toLowerCase().includes(term.toLowerCase()))
-    );
-
-    setSearchResults(results);
-    setView('search');
+    try {
+      setLoading(true);
+      
+      // Search using the API
+      const searchResult = await knowledgeBaseService.searchArticles({
+        query: term,
+        status: 'published',
+        limit: 20,
+        sortBy: 'views',
+        sortOrder: 'desc'
+      });
+      
+      // Transform results to UI format
+      const transformedResults: KnowledgeArticle[] = searchResult.articles.map(article => ({
+        ...article,
+        summary: article.excerpt || `${article.title} - Help article`,
+        categoryName: article.category?.name || 'General',
+        views: article.viewCount,
+        helpful: article.helpfulCount,
+        notHelpful: article.notHelpfulCount,
+        rating: calculateRating(article.helpfulCount, article.notHelpfulCount),
+        author: article.author.name,
+        estimatedReadTime: calculateReadTime(article.content),
+        difficulty: 'Beginner' as const,
+        featured: article.viewCount > 100 || article.helpfulCount > 10
+      }));
+      
+      setSearchResults(transformedResults);
+      setView('search');
+    } catch (error) {
+      console.error('Error searching articles:', error);
+      // Fallback to local search if API fails
+      const results = articles.filter(article =>
+        article.title.toLowerCase().includes(term.toLowerCase()) ||
+        article.summary.toLowerCase().includes(term.toLowerCase()) ||
+        article.content.toLowerCase().includes(term.toLowerCase()) ||
+        article.tags.some(tag => tag.toLowerCase().includes(term.toLowerCase()))
+      );
+      setSearchResults(results);
+      setView('search');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleFeedback = (articleId: number, type: 'helpful' | 'not-helpful') => {
-    setFeedback(prev => ({
-      ...prev,
-      [articleId]: type
-    }));
-    // Here you would typically send the feedback to your API
+  const handleFeedback = async (articleId: number, type: 'helpful' | 'not-helpful') => {
+    try {
+      // Submit feedback to API
+      await knowledgeBaseService.submitFeedback(articleId, {
+        isHelpful: type === 'helpful',
+        comment: undefined
+      });
+      
+      // Update local state
+      setFeedback(prev => ({
+        ...prev,
+        [articleId]: type
+      }));
+      
+      // Update article counts if it's the currently selected article
+      if (selectedArticle && selectedArticle.id === articleId) {
+        setSelectedArticle(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            helpful: type === 'helpful' ? prev.helpful + 1 : prev.helpful,
+            notHelpful: type === 'not-helpful' ? prev.notHelpful + 1 : prev.notHelpful
+          };
+        });
+      }
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      // Still update local state even if API fails
+      setFeedback(prev => ({
+        ...prev,
+        [articleId]: type
+      }));
+    }
   };
 
   const getDifficultyColor = (difficulty: string): string => {

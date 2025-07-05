@@ -16,7 +16,8 @@ import {
   RectangleStackIcon,
   ClockIcon,
   UserGroupIcon,
-  BookOpenIcon
+  BookOpenIcon,
+  WrenchScrewdriverIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 
@@ -47,6 +48,10 @@ const Sidebar: React.FC<SidebarProps> = ({
     if (path === '/technician/tickets') {
       return location.pathname === path;
     }
+    // For technician portal, check if path starts with portal route
+    if (path === '/technician/portal') {
+      return location.pathname.startsWith('/technician/portal');
+    }
     // For regular tickets route, only check exact match (don't redirect active state)
     if (path === '/tickets') {
       return location.pathname === path;
@@ -63,6 +68,13 @@ const Sidebar: React.FC<SidebarProps> = ({
           name: 'Technician Workspace',
           href: '/technician/workspace',
           icon: InboxIcon,
+          roles: ['technician', 'manager', 'admin']
+        },
+        // Technician Portal (Self-service portal)
+        {
+          name: 'Technician Portal',
+          href: '/technician/portal',
+          icon: WrenchScrewdriverIcon,
           roles: ['technician', 'manager', 'admin']
         },
         // Technician Tickets (Modern Table/Kanban View)

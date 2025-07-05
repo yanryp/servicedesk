@@ -1,46 +1,49 @@
-#!/usr/bin/env npx ts-node
+#\!/usr/bin/env npx ts-node
 
+// Simple ticket check to validate our recent tests
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-async function simpleTicketCheck() {
-  console.log('🔍 Simple ticket check...\n');
-
+async function checkRecentTickets() {
   try {
-    // Check ticket 24
-    const ticket24 = await prisma.ticket.findUnique({
-      where: { id: 24 }
-    });
-
-    console.log('🎫 Ticket #24:');
-    console.log(`   Status: ${ticket24?.status}`);
-    console.log(`   Assigned to: ${ticket24?.assignedToUserId || 'Unassigned'}`);
-    console.log(`   KASDA ticket: ${ticket24?.isKasdaTicket}`);
-    console.log(`   Requires approval: ${ticket24?.requiresBusinessApproval}`);
-
-    // Check business approval
-    const approval = await prisma.businessApproval.findUnique({
-      where: { ticketId: 24 }
-    });
-
-    console.log('\n✅ Business Approval:');
-    console.log(`   Status: ${approval?.approvalStatus || 'None'}`);
-    console.log(`   Approved at: ${approval?.approvedAt || 'Not approved'}`);
-
-    // Check all open tickets
-    const openTickets = await prisma.ticket.findMany({
-      where: { 
-        status: 'open',
-        assignedToUserId: null
+    console.log('🔍 Checking Recent Test Tickets...');
+    console.log('');
+    
+    // Get tickets 11-14 (our test tickets)
+    const testTickets = await prisma.ticket.findMany({
+      where: {
+        id: {
+          gte: 11,
+          lte: 14
+        }
+      },
+      orderBy: { id: 'asc' },
+      include: {
+        createdBy: {
+          select: { email: true }
+        }
       }
     });
-
-    console.log(`\n📊 Open unassigned tickets: ${openTickets.length}`);
-    openTickets.forEach(t => {
-      console.log(`   #${t.id}: ${t.title} (KASDA: ${t.isKasdaTicket})`);
-    });
-
+    
+    console.log(`📊 Found ${testTickets.length} test tickets:`);
+    console.log('');
+    
+    for (const ticket of testTickets) {
+      console.log(`🎫 Ticket #${ticket.id}:`);
+      console.log(`   Title: ${ticket.title}`);
+      console.log(`   Status: ${ticket.status}`);
+      console.log(`   Priority: ${ticket.priority}`);
+      console.log(`   Service ID: ${ticket.serviceItemId}`);
+      console.log(`   KASDA Ticket: ${ticket.isKasdaTicket ? 'Yes' : 'No'}`);
+      console.log(`   Requires Approval: ${ticket.requiresBusinessApproval ? 'Yes' : 'No'}`);
+      console.log(`   Created By: ${ticket.createdBy.email}`);
+      console.log(`   Created: ${ticket.createdAt?.toLocaleString()}`);
+      console.log('');
+    }
+    
+    console.log('✅ Analysis complete\!');
+    
   } catch (error) {
     console.error('❌ Error:', error);
   } finally {
@@ -48,4 +51,5 @@ async function simpleTicketCheck() {
   }
 }
 
-simpleTicketCheck();
+checkRecentTickets();
+EOF < /dev/null

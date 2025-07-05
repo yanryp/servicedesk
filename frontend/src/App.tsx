@@ -25,6 +25,7 @@ import SLAPolicyPage from './pages/admin/SLAPolicyPage';
 import SupportingGroupsPage from './pages/admin/SupportingGroupsPage';
 import TechnicianWorkspace from './components/technician/TechnicianWorkspace';
 import TechnicianTicketsPage from './pages/TechnicianTicketsPage';
+import TechnicianPortalPage from './pages/technician/TechnicianPortalPage';
 import KnowledgeBasePage from './pages/KnowledgeBasePage';
 import ArticleViewPage from './pages/ArticleViewPage';
 import KnowledgeBaseAdminPage from './pages/admin/KnowledgeBaseAdminPage';
@@ -44,6 +45,43 @@ function App() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // Role-based routing: redirect requesters to customer portal
+  if (isAuthenticated && user?.role === 'requester') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#1e293b',
+              color: '#f8fafc',
+              borderRadius: '12px',
+              border: '1px solid #334155',
+              fontSize: '14px',
+            },
+            success: {
+              style: {
+                background: '#059669',
+                color: '#ffffff',
+              },
+            },
+            error: {
+              style: {
+                background: '#dc2626',
+                color: '#ffffff',
+              },
+            },
+          }}
+        />
+        <Routes>
+          <Route path="/customer/*" element={<CustomerPortalPage />} />
+          <Route path="*" element={<Navigate to="/customer/dashboard" replace />} />
+        </Routes>
       </div>
     );
   }
@@ -189,6 +227,9 @@ function App() {
           <Routes>
             {/* Technician Workspace - Full-screen inbox-style interface without container */}
             <Route path="/technician/workspace" element={<ProtectedRoute roles={['technician', 'manager', 'admin']}><TechnicianWorkspace /></ProtectedRoute>} />
+            
+            {/* Technician Portal - Self-service portal interface */}
+            <Route path="/technician/portal/*" element={<ProtectedRoute roles={['technician', 'manager', 'admin']}><TechnicianPortalPage /></ProtectedRoute>} />
             
             {/* All other routes wrapped in container */}
             <Route path="/" element={<div className="container mx-auto p-6 max-w-7xl"><HomePage /></div>} />
