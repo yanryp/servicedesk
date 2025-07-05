@@ -59,10 +59,17 @@ const upload = multer({
     ];
     const validMimetype = allowedMimeTypes.includes(file.mimetype);
 
+    console.log(`🔍 File validation debug: ${file.originalname}`);
+    console.log(`   Extension check: ${extname} (${path.extname(file.originalname).toLowerCase()})`);
+    console.log(`   MIME type: ${file.mimetype}`);
+    console.log(`   MIME type valid: ${validMimetype}`);
+    console.log(`   Both valid: ${validMimetype && extname}`);
+
     if (validMimetype && extname) {
+      console.log(`✅ File accepted: ${file.originalname}`);
       return cb(null, true);
     } else {
-      console.log(`File rejected: ${file.originalname}, mimetype: ${file.mimetype}`);
+      console.log(`❌ File rejected: ${file.originalname}, mimetype: ${file.mimetype}, ext: ${extname}, mime_valid: ${validMimetype}`);
       cb(new Error('Invalid file type. Only images, PDFs, office documents, and text files are allowed.'));
     }
   }

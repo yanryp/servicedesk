@@ -3,11 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   TicketIcon,
-  ExclamationTriangleIcon,
   ClockIcon,
-  UserIcon,
-  BuildingOfficeIcon,
-  DocumentTextIcon,
   PaperClipIcon,
   ArrowLeftIcon,
   CheckCircleIcon,
@@ -16,6 +12,9 @@ import {
 import { serviceCatalogService } from '../../services/serviceCatalog';
 import { authService } from '../../services/auth';
 import { useAuth } from '../../context/AuthContext';
+import GlobalStorageField from '../../components/GlobalStorageField';
+import { globalFieldStorage } from '../../utils/fieldStorage';
+import { api } from '../../services/api';
 
 interface ServiceCategory {
   id: string;
@@ -31,6 +30,51 @@ interface Service {
   categoryId: string;
   estimatedTime: string;
   priority: string;
+  hasTemplate?: boolean;
+  templateId?: number;
+  fields?: ServiceField[];
+}
+
+interface ServiceField {
+  id: number;
+  name: string;
+  label: string;
+  type: string;
+  required: boolean;
+  description?: string;
+  placeholder?: string;
+  helpText?: string;
+  maxLength?: number;
+  validationRules?: any;
+  options?: ServiceFieldOption[];
+  originalFieldType?: string;
+  isDropdownField?: boolean;
+}
+
+interface ServiceFieldOption {
+  id?: number;
+  value: string;
+  label: string;
+  isDefault?: boolean;
+  sortOrder?: number;
+  displayName?: string;
+  name?: string;
+}
+
+interface BSGTemplateField {
+  id: number;
+  fieldName: string;
+  fieldLabel: string;
+  fieldType: string;
+  isRequired: boolean;
+  description?: string;
+  placeholderText?: string;
+  helpText?: string;
+  maxLength?: number;
+  validationRules?: any;
+  sortOrder: number;
+  options?: ServiceFieldOption[];
+  category?: string;
 }
 
 interface TicketForm {
@@ -64,6 +108,9 @@ const CustomerTicketCreation: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [dynamicFields, setDynamicFields] = useState<BSGTemplateField[]>([]);
+  const [loadingFields, setLoadingFields] = useState(false);
+  const [masterData, setMasterData] = useState<Record<string, ServiceFieldOption[]>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingServices, setLoadingServices] = useState(true);
@@ -92,6 +139,14 @@ const CustomerTicketCreation: React.FC = () => {
     attachments: []
   });
 
+  // Define handleInputChange function before usage
+  const handleInputChange = (field: keyof TicketForm, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
   // Load service catalog data and branches
   useEffect(() => {
     loadServiceCatalog();
@@ -117,7 +172,7 @@ const CustomerTicketCreation: React.FC = () => {
         }
       }
     }
-  }, [serviceCategories, searchParams]);
+  }, [serviceCategories, searchParams, formData.subject, handleInputChange]);
   
   const loadServiceCatalog = async () => {
     setLoadingServices(true);
@@ -139,7 +194,10 @@ const CustomerTicketCreation: React.FC = () => {
             description: service.description || 'Service request',
             categoryId: category.id,
             estimatedTime: service.estimatedResolutionTime || '1-2 hours',
-            priority: 'medium' // Default priority
+            priority: 'medium', // Default priority
+            hasTemplate: service.hasTemplate || false,
+            templateId: service.templateId,
+            fields: service.fields || []
           }));
           
           transformedCategories.push({
@@ -187,13 +245,6 @@ const CustomerTicketCreation: React.FC = () => {
     { value: 'high', label: 'High', description: 'Urgent, affects work', color: 'red' }
   ];
 
-  const handleInputChange = (field: keyof TicketForm, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
   const handleFileUpload = (files: FileList | null) => {
     if (files) {
       const newFiles = Array.from(files);
@@ -231,6 +282,82 @@ const CustomerTicketCreation: React.FC = () => {
     }));
   };
 
+  // Load dynamic fields for a service template
+  const loadDynamicFields = async (templateId: number, fields: ServiceField[]) => {
+    try {
+      setLoadingFields(true);
+      console.log(`🔍 Loading dynamic fields for template ${templateId}`);
+      
+      // Transform ServiceField to BSGTemplateField
+      const transformedFields: BSGTemplateField[] = fields.map(field => ({
+        id: field.id,
+        fieldName: field.name,
+        fieldLabel: field.label,
+        fieldType: field.originalFieldType || field.type,
+        isRequired: field.required,
+        description: field.description,
+        placeholderText: field.placeholder,
+        helpText: field.helpText,
+        maxLength: field.maxLength,
+        validationRules: field.validationRules,
+        sortOrder: field.id,
+        options: field.options || [],
+        category: field.isDropdownField ? 'location' : 'reference'
+      }));
+      
+      setDynamicFields(transformedFields);
+      
+      // Load master data for dropdown fields
+      const dropdownFields = transformedFields.filter(field => 
+        field.fieldType === 'dropdown' ||
+        field.fieldType.startsWith('dropdown_') || 
+        field.fieldType === 'searchable_dropdown' ||
+        field.fieldType === 'autocomplete'
+      );
+      
+      if (dropdownFields.length > 0) {
+        console.log(`🔽 Loading master data for ${dropdownFields.length} dropdown fields`);
+        const masterDataResults: Record<string, ServiceFieldOption[]> = {};
+        
+        for (const field of dropdownFields) {
+          try {
+            let dataType = field.fieldType.replace('dropdown_', '');
+            
+            // Special mapping for specific field types
+            const fieldName = field.fieldName.toLowerCase();
+            const fieldLabel = field.fieldLabel.toLowerCase();
+            
+            if (fieldLabel.includes('unit') || fieldName.includes('unit') ||
+                fieldName.includes('cabang') || fieldName.includes('capem')) {
+              dataType = 'unit';
+            } else if (fieldLabel.includes('olibs') || fieldName.includes('olibs')) {
+              dataType = 'olibs';
+            } else if (field.fieldType === 'dropdown') {
+              dataType = 'generic';
+            }
+            
+            console.log(`📡 Loading master data for field "${field.fieldLabel}" with data type "${dataType}"`);
+            const response = await api.get(`/api/master-data/${dataType}`);
+            masterDataResults[field.fieldName] = response.data || [];
+            console.log(`✅ Loaded ${response.data?.length || 0} options for ${field.fieldLabel}`);
+          } catch (error) {
+            console.warn(`⚠️ Failed to load master data for field ${field.fieldLabel}:`, error);
+            masterDataResults[field.fieldName] = [];
+          }
+        }
+        
+        setMasterData(masterDataResults);
+      }
+      
+    } catch (error) {
+      console.error('Error loading dynamic fields:', error);
+      setDynamicFields([]);
+      setMasterData({});
+    } finally {
+      setLoadingFields(false);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!formData.serviceId) {
       console.error('No service selected');
@@ -240,17 +367,20 @@ const CustomerTicketCreation: React.FC = () => {
     setLoading(true);
     
     try {
+      // Get dynamic field values from global storage
+      const currentFieldValues = globalFieldStorage.getAllValues();
+      
       // Create ticket using the real API with proper field mapping (matching ServiceCatalogPage)
       const ticketData = {
         serviceId: formData.serviceId,
         title: formData.subject,
         description: formData.description,
         priority: formData.priority as 'low' | 'medium' | 'high' | 'urgent',
-        fieldValues: {}, // Empty fieldValues (customer portal doesn't have dynamic fields yet)
+        fieldValues: currentFieldValues, // Include dynamic field values
         attachments: formData.attachments.length > 0 ? formData.attachments : undefined,
-        // Add optional classification fields
-        rootCause: undefined,
-        issueCategory: undefined
+        // Add optional classification fields from dynamic fields
+        rootCause: currentFieldValues['rootCause'] || undefined,
+        issueCategory: currentFieldValues['issueCategory'] || undefined
       };
 
       console.log('Customer Portal - Submitting ticket:', ticketData);
@@ -260,6 +390,9 @@ const CustomerTicketCreation: React.FC = () => {
       const ticketId = response.data?.ticketId;
       setTicketId(ticketId?.toString() || 'UNKNOWN');
       setSubmitted(true);
+      
+      // Clear global storage after successful submission
+      globalFieldStorage.clearAll();
     } catch (error) {
       console.error('Error creating ticket:', error);
       // Show error message to user
@@ -296,7 +429,7 @@ const CustomerTicketCreation: React.FC = () => {
     }
   };
   
-  const handleServiceSelection = (category: ServiceCategory, service: Service) => {
+  const handleServiceSelection = async (category: ServiceCategory, service: Service) => {
     setSelectedCategory(category);
     setSelectedService(service);
     handleInputChange('serviceId', service.id);
@@ -304,6 +437,14 @@ const CustomerTicketCreation: React.FC = () => {
     // Auto-fill subject if not already filled
     if (!formData.subject) {
       handleInputChange('subject', `Request for ${service.name}`);
+    }
+    
+    // Load dynamic fields if service has template
+    if (service.hasTemplate && service.templateId) {
+      await loadDynamicFields(service.templateId, service.fields || []);
+    } else {
+      setDynamicFields([]);
+      setMasterData({});
     }
     
     // Skip contact step for authenticated users
@@ -357,6 +498,10 @@ const CustomerTicketCreation: React.FC = () => {
                 setSelectedCategory(null);
                 setSelectedService(null);
                 setTicketId(null);
+                setDynamicFields([]);
+                setMasterData({});
+                // Clear global storage
+                globalFieldStorage.clearAll();
               }}
               className="w-full border border-slate-300 text-slate-700 px-6 py-3 rounded-lg font-medium hover:bg-slate-50 transition-all duration-200"
             >
@@ -566,9 +711,8 @@ const CustomerTicketCreation: React.FC = () => {
                         .map((service) => (
                         <button
                           key={service.id}
-                          onClick={() => {
-                            setSelectedService(service);
-                            handleInputChange('serviceId', service.id);
+                          onClick={async () => {
+                            await handleServiceSelection(selectedCategory, service);
                           }}
                           className={`w-full p-4 rounded-lg border-2 text-left transition-all duration-200 ${
                             selectedService?.id === service.id
@@ -732,6 +876,38 @@ const CustomerTicketCreation: React.FC = () => {
               />
             </div>
 
+            {/* Dynamic Service Fields */}
+            {dynamicFields.length > 0 && (
+              <div className="space-y-6">
+                <div className="border-t border-slate-200 pt-6">
+                  <h3 className="text-lg font-medium text-slate-900 mb-4">
+                    🔧 Service-Specific Information
+                  </h3>
+                  <p className="text-sm text-slate-600 mb-6">
+                    Please provide the following information for "{selectedService?.name}":
+                  </p>
+                  
+                  {loadingFields ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <p className="ml-3 text-slate-600">Loading service fields...</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {dynamicFields.map(field => (
+                        <GlobalStorageField
+                          key={field.id}
+                          field={field}
+                          masterData={masterData[field.fieldName] || []}
+                          loading={loadingFields}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Attachments (Optional)
@@ -752,7 +928,7 @@ const CustomerTicketCreation: React.FC = () => {
                 >
                   Choose Files
                 </label>
-                <p className="text-xs text-slate-500 mt-2">Max 5MB per file. PNG, JPG, PDF, DOC accepted.</p>
+                <p className="text-xs text-slate-500 mt-2">Max 5MB per file. PNG, JPG, PDF, DOC, TXT accepted.</p>
               </div>
               {formData.attachments.length > 0 && (
                 <div className="mt-4 space-y-2">
@@ -815,6 +991,26 @@ const CustomerTicketCreation: React.FC = () => {
                 <h3 className="font-medium text-slate-900 mb-2">Description</h3>
                 <p className="text-sm text-slate-600">{formData.description}</p>
               </div>
+
+              {/* Dynamic Field Values Review */}
+              {dynamicFields.length > 0 && (
+                <div>
+                  <h3 className="font-medium text-slate-900 mb-2">Service Information</h3>
+                  <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-2">
+                    {dynamicFields.map(field => {
+                      const value = globalFieldStorage.getValue(field.fieldName);
+                      if (!value) return null;
+                      
+                      return (
+                        <div key={field.id} className="flex justify-between">
+                          <span className="text-sm font-medium text-slate-700">{field.fieldLabel}:</span>
+                          <span className="text-sm text-slate-600">{value}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {formData.attachments.length > 0 && (
                 <div>
