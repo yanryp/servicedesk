@@ -125,12 +125,12 @@ const TechnicianKnowledgeBase: React.FC = () => {
   ];
 
   useEffect(() => {
-    // Simulate loading
+    // Simulate loading - reduced delay for faster testing
     setLoading(true);
     setTimeout(() => {
       setArticles(mockArticles);
       setLoading(false);
-    }, 1000);
+    }, 200);
   }, []);
 
   const categories = [
@@ -194,9 +194,22 @@ const TechnicianKnowledgeBase: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600"></div>
-        <p className="ml-4 text-slate-600">Loading knowledge base...</p>
+      <div className="space-y-8">
+        {/* Header - Always visible */}
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center">
+            <DocumentTextIcon className="w-8 h-8 mr-3 text-blue-500" />
+            Technical Documentation
+          </h1>
+          <p className="text-slate-600 mt-1">
+            Loading troubleshooting guides and technical documentation...
+          </p>
+        </div>
+        
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600"></div>
+          <p className="ml-4 text-slate-600">Loading knowledge base...</p>
+        </div>
       </div>
     );
   }

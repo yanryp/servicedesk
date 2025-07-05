@@ -44,7 +44,11 @@ const TechnicianQuickActions: React.FC = () => {
         assignedToUserId: user?.id,
         limit: 50
       });
-      setTickets(response.tickets || []);
+      // Filter to only show active tickets (exclude closed/resolved tickets)
+      const activeTickets = (response.tickets || []).filter(ticket => 
+        ['assigned', 'in_progress', 'pending'].includes(ticket.status)
+      );
+      setTickets(activeTickets);
     } catch (error) {
       console.error('Error loading tickets:', error);
     } finally {
@@ -81,7 +85,10 @@ const TechnicianQuickActions: React.FC = () => {
       icon: PlayIcon,
       action: (ticketIds) => bulkUpdateStatus(ticketIds, 'in_progress' as TicketStatus),
       color: 'bg-blue-600 hover:bg-blue-700',
-      enabled: (tickets) => tickets.some(t => selectedTickets.has(t.id) && t.status === 'assigned')
+      enabled: (tickets) => {
+        const selectedTicketsList = tickets.filter(t => selectedTickets.has(t.id));
+        return selectedTicketsList.some(t => t.status === 'assigned');
+      }
     },
     {
       id: 'mark_pending',
@@ -90,7 +97,10 @@ const TechnicianQuickActions: React.FC = () => {
       icon: PauseIcon,
       action: (ticketIds) => bulkUpdateStatus(ticketIds, 'pending' as TicketStatus),
       color: 'bg-yellow-600 hover:bg-yellow-700',
-      enabled: (tickets) => tickets.some(t => selectedTickets.has(t.id) && t.status === 'in_progress')
+      enabled: (tickets) => {
+        const selectedTicketsList = tickets.filter(t => selectedTickets.has(t.id));
+        return selectedTicketsList.some(t => t.status === 'in_progress');
+      }
     },
     {
       id: 'resume_work',
@@ -99,7 +109,10 @@ const TechnicianQuickActions: React.FC = () => {
       icon: ArrowPathIcon,
       action: (ticketIds) => bulkUpdateStatus(ticketIds, 'in_progress' as TicketStatus),
       color: 'bg-indigo-600 hover:bg-indigo-700',
-      enabled: (tickets) => tickets.some(t => selectedTickets.has(t.id) && t.status === 'pending')
+      enabled: (tickets) => {
+        const selectedTicketsList = tickets.filter(t => selectedTickets.has(t.id));
+        return selectedTicketsList.some(t => t.status === 'pending');
+      }
     },
     {
       id: 'resolve',
@@ -108,7 +121,10 @@ const TechnicianQuickActions: React.FC = () => {
       icon: CheckCircleIcon,
       action: (ticketIds) => bulkUpdateStatus(ticketIds, 'resolved' as TicketStatus),
       color: 'bg-green-600 hover:bg-green-700',
-      enabled: (tickets) => tickets.some(t => selectedTickets.has(t.id) && t.status === 'in_progress')
+      enabled: (tickets) => {
+        const selectedTicketsList = tickets.filter(t => selectedTickets.has(t.id));
+        return selectedTicketsList.some(t => t.status === 'in_progress');
+      }
     }
   ];
 

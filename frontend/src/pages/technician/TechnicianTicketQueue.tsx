@@ -57,7 +57,12 @@ const TechnicianTicketQueue: React.FC = () => {
       }
 
       const response = await ticketsService.getTickets(filters);
-      setTickets(response.tickets || []);
+      // Filter to only show active tickets (exclude closed/resolved tickets) unless specifically filtering for them
+      const allTickets = response.tickets || [];
+      const activeTickets = statusFilter === 'all' 
+        ? allTickets.filter(ticket => ['assigned', 'in_progress', 'pending'].includes(ticket.status))
+        : allTickets;
+      setTickets(activeTickets);
       
     } catch (error) {
       console.error('Error loading tickets:', error);
