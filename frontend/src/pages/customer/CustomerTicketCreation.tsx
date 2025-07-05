@@ -1,6 +1,6 @@
 // frontend/src/pages/customer/CustomerTicketCreation.tsx
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   TicketIcon,
   ExclamationTriangleIcon,
@@ -10,21 +10,25 @@ import {
   DocumentTextIcon,
   PaperClipIcon,
   ArrowLeftIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
+import { serviceCatalogService } from '../../services/serviceCatalog';
+import { authService } from '../../services/auth';
+import { useAuth } from '../../context/AuthContext';
 
 interface ServiceCategory {
-  id: number;
+  id: string;
   name: string;
   description: string;
   services: Service[];
 }
 
 interface Service {
-  id: number;
+  id: string;
   name: string;
   description: string;
-  categoryId: number;
+  categoryId: string;
   estimatedTime: string;
   priority: string;
 }
@@ -34,7 +38,7 @@ interface TicketForm {
   customerEmail: string;
   customerPhone: string;
   branchLocation: string;
-  serviceId: number | null;
+  serviceId: string | null;
   priority: string;
   subject: string;
   description: string;
@@ -43,20 +47,42 @@ interface TicketForm {
   attachments: File[];
 }
 
+interface Branch {
+  id: number;
+  name: string;
+  code: string;
+  type: string;
+  address?: string;
+}
+
 const CustomerTicketCreation: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [serviceCategories, setServiceCategories] = useState<ServiceCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingServices, setLoadingServices] = useState(true);
+  const [loadingBranches, setLoadingBranches] = useState(true);
   const [submitted, setSubmitted] = useState(false);
+  const [ticketId, setTicketId] = useState<string | null>(null);
+  
+  // Ref for scrolling to services section
+  const servicesRef = useRef<HTMLDivElement>(null);
+  
+  // Determine if user needs contact info step (only for external customers)
+  const isAuthenticatedUser = user && user.id;
+  const needsContactStep = !isAuthenticatedUser;
 
   const [formData, setFormData] = useState<TicketForm>({
-    customerName: '',
-    customerEmail: '',
+    customerName: user?.name || '',
+    customerEmail: user?.email || '',
     customerPhone: '',
-    branchLocation: '',
+    branchLocation: user?.unit?.name || '',
     serviceId: null,
     priority: 'medium',
     subject: '',
@@ -66,105 +92,94 @@ const CustomerTicketCreation: React.FC = () => {
     attachments: []
   });
 
-  // Mock service catalog data
+  // Load service catalog data and branches
   useEffect(() => {
-    setServiceCategories([
-      {
-        id: 1,
-        name: 'IT Support',
-        description: 'Computer, network, and software support',
-        services: [
-          {
-            id: 1,
-            name: 'Password Reset',
-            description: 'Reset forgotten passwords for email, BSGDirect, or system access',
-            categoryId: 1,
-            estimatedTime: '30 minutes',
-            priority: 'medium'
-          },
-          {
-            id: 2,
-            name: 'Email Issues',
-            description: 'Email access problems, configuration, or delivery issues',
-            categoryId: 1,
-            estimatedTime: '1-2 hours',
-            priority: 'medium'
-          },
-          {
-            id: 3,
-            name: 'BSGDirect Login Problems',
-            description: 'Unable to access BSGDirect online banking system',
-            categoryId: 1,
-            estimatedTime: '2-4 hours',
-            priority: 'high'
-          }
-        ]
-      },
-      {
-        id: 2,
-        name: 'Banking Operations',
-        description: 'Account, transaction, and banking service support',
-        services: [
-          {
-            id: 4,
-            name: 'Account Access',
-            description: 'Issues accessing customer accounts or account information',
-            categoryId: 2,
-            estimatedTime: '1-3 hours',
-            priority: 'high'
-          },
-          {
-            id: 5,
-            name: 'Transaction Issues',
-            description: 'Problems with transfers, payments, or transaction history',
-            categoryId: 2,
-            estimatedTime: '2-6 hours',
-            priority: 'high'
-          },
-          {
-            id: 6,
-            name: 'Mobile Banking',
-            description: 'Mobile app issues, installation, or configuration problems',
-            categoryId: 2,
-            estimatedTime: '1-2 hours',
-            priority: 'medium'
-          }
-        ]
-      },
-      {
-        id: 3,
-        name: 'Hardware Support',
-        description: 'Computer, printer, and equipment support',
-        services: [
-          {
-            id: 7,
-            name: 'Computer Problems',
-            description: 'Desktop or laptop hardware and software issues',
-            categoryId: 3,
-            estimatedTime: '2-4 hours',
-            priority: 'medium'
-          },
-          {
-            id: 8,
-            name: 'Printer Issues',
-            description: 'Printer connectivity, driver, or printing problems',
-            categoryId: 3,
-            estimatedTime: '1-2 hours',
-            priority: 'low'
-          }
-        ]
-      }
-    ]);
+    loadServiceCatalog();
+    loadBranches();
   }, []);
+  
+  useEffect(() => {
+    // Check if a service was pre-selected from the service catalog
+    const preSelectedServiceId = searchParams.get('serviceId');
+    if (preSelectedServiceId && serviceCategories.length > 0) {
+      // Find the service in the loaded categories
+      for (const category of serviceCategories) {
+        const service = category.services.find(s => s.id === preSelectedServiceId);
+        if (service) {
+          setSelectedCategory(category);
+          setSelectedService(service);
+          handleInputChange('serviceId', service.id);
+          // Auto-fill subject if service name is available
+          if (!formData.subject) {
+            handleInputChange('subject', `Request for ${service.name}`);
+          }
+          break;
+        }
+      }
+    }
+  }, [serviceCategories, searchParams]);
+  
+  const loadServiceCatalog = async () => {
+    setLoadingServices(true);
+    try {
+      // Get service catalog categories from the real API
+      const categoriesResponse = await serviceCatalogService.getCategories();
+      
+      // Transform and load services for each category
+      const transformedCategories: ServiceCategory[] = [];
+      
+      for (const category of categoriesResponse) {
+        try {
+          const servicesResponse = await serviceCatalogService.getServicesByCategory(category.id);
+          
+          // Transform services to match UI format
+          const services: Service[] = servicesResponse.map((service: any) => ({
+            id: service.id,
+            name: service.name,
+            description: service.description || 'Service request',
+            categoryId: category.id,
+            estimatedTime: service.estimatedResolutionTime || '1-2 hours',
+            priority: 'medium' // Default priority
+          }));
+          
+          transformedCategories.push({
+            id: category.id,
+            name: category.name,
+            description: category.description || `${category.name} services`,
+            services: services
+          });
+        } catch (error) {
+          console.error(`Error loading services for category ${category.id}:`, error);
+        }
+      }
+      
+      setServiceCategories(transformedCategories);
+    } catch (error) {
+      console.error('Error loading service catalog:', error);
+      setServiceCategories([]);
+    } finally {
+      setLoadingServices(false);
+    }
+  };
 
-  const branches = [
-    'Jakarta - Kantor Pusat',
-    'Manado - Kantor Cabang Utama',
-    'Gorontalo - Kantor Cabang',
-    'Bitung - Kantor Cabang Pembantu',
-    'Tomohon - Kantor Cabang Pembantu',
-    'Kotamobagu - Kantor Cabang Pembantu'
-  ];
+  // Load BSG branches data
+  const loadBranches = async () => {
+    try {
+      setLoadingBranches(true);
+      const branchData = await authService.getAllBranches();
+      setBranches(branchData);
+    } catch (error) {
+      console.error('Error loading branches:', error);
+      // Fallback to basic branches if API fails
+      setBranches([
+        { id: 1, name: 'Jakarta - Kantor Pusat', code: 'JKT001', type: 'CABANG' },
+        { id: 2, name: 'Manado - Kantor Cabang Utama', code: 'MDO001', type: 'CABANG' },
+        { id: 3, name: 'Gorontalo - Kantor Cabang', code: 'GTO001', type: 'CABANG' }
+      ]);
+    } finally {
+      setLoadingBranches(false);
+    }
+  };
 
   const priorityOptions = [
     { value: 'low', label: 'Low', description: 'Non-urgent, can wait', color: 'green' },
@@ -182,10 +197,30 @@ const CustomerTicketCreation: React.FC = () => {
   const handleFileUpload = (files: FileList | null) => {
     if (files) {
       const newFiles = Array.from(files);
-      setFormData(prev => ({
-        ...prev,
-        attachments: [...prev.attachments, ...newFiles]
-      }));
+      // Validate files (max 5MB each, supported formats)
+      const validFiles = newFiles.filter(file => {
+        const validTypes = ['image/png', 'image/jpeg', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        
+        if (!validTypes.includes(file.type) && !file.name.match(/\.(png|jpg|jpeg|pdf|doc|docx|txt)$/i)) {
+          alert(`File "${file.name}" is not a supported format. Please upload PNG, JPG, PDF, DOC, or TXT files.`);
+          return false;
+        }
+        
+        if (file.size > maxSize) {
+          alert(`File "${file.name}" is too large. Maximum file size is 5MB.`);
+          return false;
+        }
+        
+        return true;
+      });
+      
+      if (validFiles.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          attachments: [...prev.attachments, ...validFiles]
+        }));
+      }
     }
   };
 
@@ -197,17 +232,83 @@ const CustomerTicketCreation: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    if (!formData.serviceId) {
+      console.error('No service selected');
+      return;
+    }
+    
     setLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      // Create ticket using the real API with proper field mapping (matching ServiceCatalogPage)
+      const ticketData = {
+        serviceId: formData.serviceId,
+        title: formData.subject,
+        description: formData.description,
+        priority: formData.priority as 'low' | 'medium' | 'high' | 'urgent',
+        fieldValues: {}, // Empty fieldValues (customer portal doesn't have dynamic fields yet)
+        attachments: formData.attachments.length > 0 ? formData.attachments : undefined,
+        // Add optional classification fields
+        rootCause: undefined,
+        issueCategory: undefined
+      };
+
+      console.log('Customer Portal - Submitting ticket:', ticketData);
+      const response = await serviceCatalogService.createTicket(ticketData);
+      
+      // Handle the API response format
+      const ticketId = response.data?.ticketId;
+      setTicketId(ticketId?.toString() || 'UNKNOWN');
       setSubmitted(true);
-    }, 2000);
+    } catch (error) {
+      console.error('Error creating ticket:', error);
+      // Show error message to user
+      alert('Error submitting ticket. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 4));
-  const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
+  const nextStep = () => {
+    const maxStep = needsContactStep ? 4 : 4; // Keep maxStep as 4 for consistent logic
+    if (needsContactStep) {
+      setCurrentStep(prev => Math.min(prev + 1, maxStep));
+    } else {
+      // Skip step 2 for authenticated users
+      setCurrentStep(prev => {
+        if (prev === 1) return 3; // Service -> Details
+        if (prev === 3) return 4; // Details -> Review
+        return Math.min(prev + 1, maxStep);
+      });
+    }
+  };
+  
+  const prevStep = () => {
+    if (needsContactStep) {
+      setCurrentStep(prev => Math.max(prev - 1, 1));
+    } else {
+      // Skip step 2 for authenticated users going back
+      setCurrentStep(prev => {
+        if (prev === 4) return 3; // Review -> Details
+        if (prev === 3) return 1; // Details -> Service
+        return Math.max(prev - 1, 1);
+      });
+    }
+  };
+  
+  const handleServiceSelection = (category: ServiceCategory, service: Service) => {
+    setSelectedCategory(category);
+    setSelectedService(service);
+    handleInputChange('serviceId', service.id);
+    
+    // Auto-fill subject if not already filled
+    if (!formData.subject) {
+      handleInputChange('subject', `Request for ${service.name}`);
+    }
+    
+    // Skip contact step for authenticated users
+    nextStep();
+  };
 
   if (submitted) {
     return (
@@ -223,7 +324,7 @@ const CustomerTicketCreation: React.FC = () => {
           </p>
           <div className="bg-blue-50 rounded-lg p-4 mb-6">
             <p className="text-sm text-blue-800">
-              <strong>Ticket ID:</strong> #BSG-2024-{Math.floor(Math.random() * 10000).toString().padStart(4, '0')}
+              <strong>Ticket ID:</strong> #{ticketId || 'BSG-2024-XXXX'}
             </p>
             <p className="text-sm text-blue-800">
               <strong>Estimated Response Time:</strong> {selectedService?.estimatedTime || '2-4 hours'}
@@ -241,10 +342,10 @@ const CustomerTicketCreation: React.FC = () => {
                 setSubmitted(false);
                 setCurrentStep(1);
                 setFormData({
-                  customerName: '',
-                  customerEmail: '',
+                  customerName: user?.name || '',
+                  customerEmail: user?.email || '',
                   customerPhone: '',
-                  branchLocation: '',
+                  branchLocation: user?.unit?.name || '',
                   serviceId: null,
                   priority: 'medium',
                   subject: '',
@@ -253,6 +354,9 @@ const CustomerTicketCreation: React.FC = () => {
                   impact: 'medium',
                   attachments: []
                 });
+                setSelectedCategory(null);
+                setSelectedService(null);
+                setTicketId(null);
               }}
               className="w-full border border-slate-300 text-slate-700 px-6 py-3 rounded-lg font-medium hover:bg-slate-50 transition-all duration-200"
             >
@@ -281,34 +385,70 @@ const CustomerTicketCreation: React.FC = () => {
 
       {/* Progress Indicator */}
       <div className="mb-8">
-        <div className="flex items-center justify-between">
-          {[1, 2, 3, 4].map((step) => (
-            <div key={step} className="flex items-center">
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-medium ${
-                  step <= currentStep
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-200 text-slate-500'
-                }`}
-              >
-                {step}
-              </div>
-              {step < 4 && (
-                <div
-                  className={`w-24 h-1 mx-2 ${
-                    step < currentStep ? 'bg-blue-600' : 'bg-slate-200'
-                  }`}
-                />
-              )}
+        {needsContactStep ? (
+          // Full 4-step process for external customers
+          <>
+            <div className="flex items-center justify-between">
+              {[1, 2, 3, 4].map((step) => (
+                <div key={step} className="flex items-center">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-medium ${
+                      step <= currentStep
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-slate-200 text-slate-500'
+                    }`}
+                  >
+                    {step}
+                  </div>
+                  {step < 4 && (
+                    <div
+                      className={`w-24 h-1 mx-2 ${
+                        step < currentStep ? 'bg-blue-600' : 'bg-slate-200'
+                      }`}
+                    />
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        <div className="flex justify-between text-sm text-slate-600 mt-2">
-          <span>Service</span>
-          <span>Contact Info</span>
-          <span>Details</span>
-          <span>Review</span>
-        </div>
+            <div className="flex justify-between text-sm text-slate-600 mt-2">
+              <span>Service</span>
+              <span>Contact Info</span>
+              <span>Details</span>
+              <span>Review</span>
+            </div>
+          </>
+        ) : (
+          // Simplified 3-step process for authenticated users
+          <>
+            <div className="flex items-center justify-center space-x-8">
+              {[1, 3, 4].map((step, index) => (
+                <div key={step} className="flex items-center">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-medium ${
+                      (index + 1 <= (currentStep === 3 ? 2 : currentStep === 4 ? 3 : 1))
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-slate-200 text-slate-500'
+                    }`}
+                  >
+                    {index + 1}
+                  </div>
+                  {index < 2 && (
+                    <div
+                      className={`w-24 h-1 mx-2 ${
+                        index + 1 < (currentStep === 3 ? 2 : currentStep === 4 ? 3 : 1) ? 'bg-blue-600' : 'bg-slate-200'
+                      }`}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-center space-x-24 text-sm text-slate-600 mt-2">
+              <span>Service</span>
+              <span>Details</span>
+              <span>Review</span>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Form Content */}
@@ -316,73 +456,164 @@ const CustomerTicketCreation: React.FC = () => {
         {/* Step 1: Service Selection */}
         {currentStep === 1 && (
           <div className="space-y-6">
-            <h2 className="text-xl font-bold text-slate-900 mb-6">Select Service Category</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {serviceCategories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category)}
-                  className={`p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                    selectedCategory?.id === category.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50'
-                  }`}
-                >
-                  <h3 className="font-medium text-slate-900 mb-2">{category.name}</h3>
-                  <p className="text-sm text-slate-600">{category.description}</p>
-                  <p className="text-xs text-blue-600 mt-2">{category.services.length} services available</p>
-                </button>
-              ))}
-            </div>
-
-            {selectedCategory && (
-              <div className="mt-8">
-                <h3 className="text-lg font-medium text-slate-900 mb-4">Select Specific Service</h3>
-                <div className="space-y-3">
-                  {selectedCategory.services.map((service) => (
-                    <button
-                      key={service.id}
-                      onClick={() => {
-                        setSelectedService(service);
-                        handleInputChange('serviceId', service.id);
-                      }}
-                      className={`w-full p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                        selectedService?.id === service.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-slate-900 mb-1">{service.name}</h4>
-                          <p className="text-sm text-slate-600 mb-2">{service.description}</p>
-                          <div className="flex items-center space-x-4 text-xs text-slate-500">
-                            <span className="flex items-center space-x-1">
-                              <ClockIcon className="w-3 h-3" />
-                              <span>{service.estimatedTime}</span>
-                            </span>
-                            <span className={`px-2 py-1 rounded ${
-                              service.priority === 'high' ? 'bg-red-100 text-red-800' :
-                              service.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-green-100 text-green-800'
-                            }`}>
-                              {service.priority} priority
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-slate-900">Select Service Category</h2>
+              {isAuthenticatedUser && (
+                <div className="text-sm text-slate-600">
+                  Logged in as: <span className="font-medium">{user.name}</span> ({user.unit?.name || 'No branch assigned'})
                 </div>
+              )}
+            </div>
+            
+            {/* Search Bar */}
+            <div className="relative">
+              <MagnifyingGlassIcon className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search services and categories..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            {loadingServices ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <p className="ml-4 text-slate-600">Loading services...</p>
               </div>
+            ) : serviceCategories.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-slate-600 mb-4">No services available at the moment.</p>
+                <button
+                  onClick={loadServiceCatalog}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                >
+                  Retry Loading
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {serviceCategories
+                    .filter(category => 
+                      searchTerm === '' || 
+                      category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      category.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      category.services.some(service => 
+                        service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        service.description.toLowerCase().includes(searchTerm.toLowerCase())
+                      )
+                    )
+                    .map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => {
+                      setSelectedCategory(category);
+                      // Scroll to services section after a short delay to allow state update
+                      setTimeout(() => {
+                        servicesRef.current?.scrollIntoView({ 
+                          behavior: 'smooth', 
+                          block: 'start',
+                          inline: 'nearest'
+                        });
+                      }, 100);
+                    }}
+                    className={`p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                      selectedCategory?.id === category.id
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50'
+                    }`}
+                  >
+                    <h3 className="font-medium text-slate-900 mb-2">{category.name}</h3>
+                    <p className="text-sm text-slate-600">{category.description}</p>
+                    <p className="text-xs text-blue-600 mt-2">{category.services.length} services available</p>
+                  </button>
+                ))}
+                </div>
+
+                {selectedCategory && (
+                  <div ref={servicesRef} className="mt-8 scroll-mt-8">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-lg font-medium text-blue-900 mb-2">
+                            📋 {selectedCategory.name} Services
+                          </h3>
+                          <p className="text-sm text-blue-700">
+                            {selectedCategory.description} • {selectedCategory.services.filter(service =>
+                              searchTerm === '' ||
+                              service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              service.description.toLowerCase().includes(searchTerm.toLowerCase())
+                            ).length} services available
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => setSelectedCategory(null)}
+                          className="text-blue-600 hover:text-blue-800 text-sm font-medium px-3 py-1 rounded hover:bg-blue-100 transition-all duration-200"
+                        >
+                          Back to Categories
+                        </button>
+                      </div>
+                    </div>
+                    <h3 className="text-lg font-medium text-slate-900 mb-4">Choose Your Service</h3>
+                    <div className="space-y-3">
+                      {selectedCategory.services
+                        .filter(service =>
+                          searchTerm === '' ||
+                          service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          service.description.toLowerCase().includes(searchTerm.toLowerCase())
+                        )
+                        .map((service) => (
+                        <button
+                          key={service.id}
+                          onClick={() => {
+                            setSelectedService(service);
+                            handleInputChange('serviceId', service.id);
+                          }}
+                          className={`w-full p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                            selectedService?.id === service.id
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h4 className="font-medium text-slate-900 mb-1">{service.name}</h4>
+                              <p className="text-sm text-slate-600 mb-2">{service.description}</p>
+                              <div className="flex items-center space-x-4 text-xs text-slate-500">
+                                <span className="flex items-center space-x-1">
+                                  <ClockIcon className="w-3 h-3" />
+                                  <span>{service.estimatedTime}</span>
+                                </span>
+                                <span className={`px-2 py-1 rounded ${
+                                  service.priority === 'high' ? 'bg-red-100 text-red-800' :
+                                  service.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-green-100 text-green-800'
+                                }`}>
+                                  {service.priority} priority
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
 
-        {/* Step 2: Contact Information */}
-        {currentStep === 2 && (
+        {/* Step 2: Contact Information (only for external customers) */}
+        {currentStep === 2 && needsContactStep && (
           <div className="space-y-6">
             <h2 className="text-xl font-bold text-slate-900 mb-6">Contact Information</h2>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> This step is for external customers. BSG staff members are automatically logged in.
+              </p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -430,9 +661,15 @@ const CustomerTicketCreation: React.FC = () => {
                   className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select your branch</option>
-                  {branches.map((branch) => (
-                    <option key={branch} value={branch}>{branch}</option>
-                  ))}
+                  {loadingBranches ? (
+                    <option disabled>Loading branches...</option>
+                  ) : (
+                    branches.map((branch) => (
+                      <option key={branch.id} value={branch.name}>
+                        {branch.name} ({branch.type})
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
             </div>

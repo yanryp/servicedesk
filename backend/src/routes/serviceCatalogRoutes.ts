@@ -45,16 +45,25 @@ const upload = multer({
       return cb(null, false); // Reject empty files silently
     }
 
-    // Allowed file types
-    const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|xls|xlsx|txt/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
+    // Allowed file extensions
+    const allowedExtensions = /jpeg|jpg|png|gif|pdf|doc|docx|xls|xlsx|txt/;
+    const extname = allowedExtensions.test(path.extname(file.originalname).toLowerCase());
+    
+    // Allowed MIME types
+    const allowedMimeTypes = [
+      'image/jpeg', 'image/jpg', 'image/png', 'image/gif',
+      'application/pdf',
+      'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/plain'
+    ];
+    const validMimetype = allowedMimeTypes.includes(file.mimetype);
 
-    if (mimetype && extname) {
+    if (validMimetype && extname) {
       return cb(null, true);
     } else {
       console.log(`File rejected: ${file.originalname}, mimetype: ${file.mimetype}`);
-      cb(new Error('Invalid file type. Only images, PDFs, and office documents are allowed.'));
+      cb(new Error('Invalid file type. Only images, PDFs, office documents, and text files are allowed.'));
     }
   }
 });
