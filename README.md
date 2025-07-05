@@ -34,6 +34,13 @@ The BSG Enterprise Ticketing System is a comprehensive helpdesk solution designe
 - **Escalation System**: Time-based and condition-based escalations
 - **Real-time Notifications**: WebSocket and email notifications
 
+### 🔧 Technician Self-Service Portal
+- **Personal Dashboard**: Real-time metrics and performance indicators
+- **Smart Queue Management**: Active ticket filtering with search and filters
+- **Bulk Operations**: Multi-ticket processing with status-aware actions
+- **Knowledge Base**: Technical documentation with fast search
+- **Profile Management**: Preferences, working hours, and availability status
+
 ## 🚀 Quick Start
 
 ### Prerequisites
