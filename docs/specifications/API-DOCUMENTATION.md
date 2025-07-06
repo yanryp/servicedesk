@@ -84,6 +84,42 @@ Add comment to ticket
 ### **GET /health**
 System health check - returns database connection status
 
+## ⚠️ **DEPRECATED ENDPOINTS - July 2025**
+
+The following endpoints have been removed from the system. Use the specified replacements:
+
+### ~~Legacy Categories API~~ → **REMOVED** ❌
+```
+❌ GET /categories 
+❌ GET /categories/:id/subcategories
+❌ GET /categories/items-by-subcategory/:id
+```
+**Migration**: Use `GET /service-catalog/categories` with hierarchical structure
+
+### ~~Legacy Templates API~~ → **REMOVED** ❌  
+```
+❌ POST /templates
+❌ GET /templates
+❌ GET /templates/:id
+❌ PUT /templates/:id  
+❌ DELETE /templates/:id
+❌ POST /templates/:id/fields
+```
+**Migration**: 
+- For BSG templates: Use `/bsg-templates/*` endpoints
+- For service templates: Use `/template-management/*` endpoints
+
+### **Modern API Structure**
+```typescript
+// ✅ Current Active APIs
+/api/service-catalog/*     // ITIL-aligned service management
+/api/bsg-templates/*       // BSG-specific template system  
+/api/template-management/* // Administrative template management
+/api/v2/tickets/*          // Enhanced ticket system with ITIL support
+```
+
 ---
 
-**Current Status**: Core APIs implemented, template custom fields need completion
+**Current Status**: ✅ Production-ready system with clean, modern API architecture  
+**Legacy Code**: 🗑️ Removed (6MB cleanup completed July 2025)  
+**Backup**: 💾 Complete rollback capability maintained

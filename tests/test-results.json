@@ -1,0 +1,254 @@
+{
+  "summary": {
+    "totalTestSuites": 5,
+    "totalTests": 10,
+    "passedTests": 0,
+    "failedTests": 15,
+    "skippedTests": 0,
+    "executionTime": 10.540750709,
+    "startTime": "2025-07-06T07:10:02.109Z",
+    "endTime": "2025-07-06T07:10:12.650Z"
+  },
+  "categories": {
+    "unitTests": {
+      "status": "failed",
+      "tests": 0,
+      "passed": 0,
+      "failed": 2,
+      "time": 0.000613
+    },
+    "integrationTests": {
+      "status": "failed",
+      "tests": 0,
+      "passed": 0,
+      "failed": 2,
+      "time": 0.000041125
+    },
+    "e2eTests": {
+      "status": "failed",
+      "tests": 3,
+      "passed": 0,
+      "failed": 4,
+      "time": 3.230906208
+    },
+    "featureValidation": {
+      "status": "failed",
+      "tests": 5,
+      "passed": 0,
+      "failed": 5,
+      "time": 5.255235792
+    },
+    "performanceTests": {
+      "status": "failed",
+      "tests": 2,
+      "passed": 0,
+      "failed": 2,
+      "time": 2.053197208
+    }
+  },
+  "detailedResults": [
+    {
+      "name": "Unit Tests",
+      "tests": 0,
+      "passed": 0,
+      "failed": 2,
+      "skipped": 0,
+      "executionTime": 0.000613,
+      "testFiles": [
+        {
+          "file": "auth-user-management.test.js",
+          "tests": 0,
+          "passed": 0,
+          "failed": 1,
+          "skipped": 0,
+          "executionTime": 0,
+          "status": "file_not_found"
+        },
+        {
+          "file": "ticket-approval-workflow.test.js",
+          "tests": 0,
+          "passed": 0,
+          "failed": 1,
+          "skipped": 0,
+          "executionTime": 0,
+          "status": "file_not_found"
+        }
+      ]
+    },
+    {
+      "name": "Integration Tests",
+      "tests": 0,
+      "passed": 0,
+      "failed": 2,
+      "skipped": 0,
+      "executionTime": 0.000041125,
+      "testFiles": [
+        {
+          "file": "customer-portal-integration.test.js",
+          "tests": 0,
+          "passed": 0,
+          "failed": 1,
+          "skipped": 0,
+          "executionTime": 0,
+          "status": "file_not_found"
+        },
+        {
+          "file": "technician-portal-integration.test.js",
+          "tests": 0,
+          "passed": 0,
+          "failed": 1,
+          "skipped": 0,
+          "executionTime": 0,
+          "status": "file_not_found"
+        }
+      ]
+    },
+    {
+      "name": "End-to-End Workflow Tests",
+      "tests": 3,
+      "passed": 0,
+      "failed": 4,
+      "skipped": 0,
+      "executionTime": 3.230906208,
+      "testFiles": [
+        {
+          "file": "complete-workflow.test.js",
+          "tests": 0,
+          "passed": 0,
+          "failed": 1,
+          "skipped": 0,
+          "executionTime": 0,
+          "status": "file_not_found"
+        },
+        {
+          "file": "kasda-bsgdirect-workflow.test.js",
+          "tests": 1,
+          "passed": 0,
+          "failed": 1,
+          "skipped": 0,
+          "executionTime": 1.179896208,
+          "status": "execution_error",
+          "error": "Command failed: npx jest \"tests/03-e2e-workflow-tests/kasda-bsgdirect-workflow.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+        },
+        {
+          "file": "it-elos-workflow.test.js",
+          "tests": 1,
+          "passed": 0,
+          "failed": 1,
+          "skipped": 0,
+          "executionTime": 1.039443625,
+          "status": "execution_error",
+          "error": "Command failed: npx jest \"tests/03-e2e-workflow-tests/it-elos-workflow.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+        },
+        {
+          "file": "multi-branch-approval.test.js",
+          "tests": 1,
+          "passed": 0,
+          "failed": 1,
+          "skipped": 0,
+          "executionTime": 1.011221375,
+          "status": "execution_error",
+          "error": "Command failed: npx jest \"tests/03-e2e-workflow-tests/multi-branch-approval.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+        }
+      ]
+    },
+    {
+      "name": "Feature Validation Tests",
+      "tests": 5,
+      "passed": 0,
+      "failed": 5,
+      "skipped": 0,
+      "executionTime": 5.255235792,
+      "testFiles": [
+        {
+          "file": "branch-network-validation.test.js",
+          "tests": 1,
+          "passed": 0,
+          "failed": 1,
+          "skipped": 0,
+          "executionTime": 1.055561417,
+          "status": "execution_error",
+          "error": "Command failed: npx jest \"tests/04-feature-validation/branch-network-validation.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+        },
+        {
+          "file": "admin-capabilities.test.js",
+          "tests": 1,
+          "passed": 0,
+          "failed": 1,
+          "skipped": 0,
+          "executionTime": 1.038121125,
+          "status": "execution_error",
+          "error": "Command failed: npx jest \"tests/04-feature-validation/admin-capabilities.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+        },
+        {
+          "file": "manager-capabilities.test.js",
+          "tests": 1,
+          "passed": 0,
+          "failed": 1,
+          "skipped": 0,
+          "executionTime": 1.038020916,
+          "status": "execution_error",
+          "error": "Command failed: npx jest \"tests/04-feature-validation/manager-capabilities.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+        },
+        {
+          "file": "technician-capabilities.test.js",
+          "tests": 1,
+          "passed": 0,
+          "failed": 1,
+          "skipped": 0,
+          "executionTime": 1.080717708,
+          "status": "execution_error",
+          "error": "Command failed: npx jest \"tests/04-feature-validation/technician-capabilities.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+        },
+        {
+          "file": "requester-capabilities.test.js",
+          "tests": 1,
+          "passed": 0,
+          "failed": 1,
+          "skipped": 0,
+          "executionTime": 1.041851042,
+          "status": "execution_error",
+          "error": "Command failed: npx jest \"tests/04-feature-validation/requester-capabilities.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+        }
+      ]
+    },
+    {
+      "name": "Performance Tests",
+      "tests": 2,
+      "passed": 0,
+      "failed": 2,
+      "skipped": 0,
+      "executionTime": 2.053197208,
+      "testFiles": [
+        {
+          "file": "load-testing.test.js",
+          "tests": 1,
+          "passed": 0,
+          "failed": 1,
+          "skipped": 0,
+          "executionTime": 1.012602167,
+          "status": "execution_error",
+          "error": "Command failed: npx jest \"tests/05-performance-tests/load-testing.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+        },
+        {
+          "file": "stress-testing.test.js",
+          "tests": 1,
+          "passed": 0,
+          "failed": 1,
+          "skipped": 0,
+          "executionTime": 1.040358792,
+          "status": "execution_error",
+          "error": "Command failed: npx jest \"tests/05-performance-tests/stress-testing.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "reportGeneratedAt": "2025-07-06T07:10:12.650Z",
+    "nodeVersion": "v18.20.6",
+    "platform": "darwin",
+    "architecture": "arm64",
+    "testFramework": "Jest",
+    "systemUnderTest": "BSG Enterprise Ticketing System"
+  }
+}
