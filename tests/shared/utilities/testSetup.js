@@ -1,5 +1,5 @@
 // Test setup utilities for BSG Enterprise Ticketing System
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require('../../../backend/node_modules/@prisma/client');
 const jwt = require('jsonwebtoken');
 
 class TestSetup {

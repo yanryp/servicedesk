@@ -15,6 +15,7 @@ import TicketsPage from './pages/TicketsPage';
 import TicketDetailPage from './pages/TicketDetailPage';
 import EditTicketPage from './pages/EditTicketPage';
 import ReportingPage from './pages/ReportingPage';
+import TicketAnalyticsPage from './pages/TicketAnalyticsPage';
 import ManagerDashboard from './pages/ManagerDashboard';
 import CategorizationAnalyticsPage from './pages/CategorizationAnalyticsPage';
 import UncategorizedTicketsPage from './pages/UncategorizedTicketsPage';
@@ -49,7 +50,7 @@ function App() {
     );
   }
 
-  // Role-based routing: redirect requesters to customer portal
+  // Role-based routing: redirect requesters to customer portal, managers to approvals
   if (isAuthenticated && user?.role === 'requester') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
@@ -150,6 +151,94 @@ function App() {
             <Route path="*" element={<Navigate to="/login" />} />
           </Routes>
         </main>
+      </div>
+    );
+  }
+
+  // Role-based routing: redirect managers directly to approvals page
+  if (isAuthenticated && user?.role === 'manager') {
+    return (
+      <div className="h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex overflow-hidden">
+        {/* Toaster for notifications */}
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#1e293b',
+              color: '#f8fafc',
+              borderRadius: '12px',
+              border: '1px solid #334155',
+              fontSize: '14px',
+            },
+            success: {
+              style: {
+                background: '#059669',
+                color: '#ffffff',
+              },
+            },
+            error: {
+              style: {
+                background: '#dc2626',
+                color: '#ffffff',
+              },
+            },
+          }}
+        />
+
+        {/* Sidebar */}
+        <Sidebar
+          isCollapsed={sidebarCollapsed}
+          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+          isMobileOpen={mobileSidebarOpen}
+          onMobileToggle={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+        />
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Enhanced Mobile Header */}
+          <header className="lg:hidden bg-white/90 backdrop-blur-md border-b border-slate-200/50 p-4 shadow-lg">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setMobileSidebarOpen(true)}
+                className="p-2 rounded-xl hover:bg-slate-100 transition-all duration-200 active:scale-95"
+              >
+                <Bars3Icon className="w-6 h-6 text-slate-600" />
+              </button>
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <TicketIcon className="w-4 h-4 text-white" />
+                </div>
+                <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  BSG Helpdesk
+                </h1>
+              </div>
+              <div className="w-10 h-10 flex items-center justify-center">
+                {user && (
+                  <div className="w-8 h-8 bg-gradient-to-r from-slate-400 to-slate-600 rounded-lg flex items-center justify-center">
+                    <span className="text-xs font-bold text-white">
+                      {user.username?.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </header>
+
+          {/* Content - Manager always goes to approvals */}
+          <main className="flex-1 overflow-auto">
+            <Routes>
+              <Route path="/manager" element={<div className="container mx-auto p-6 max-w-7xl"><ManagerDashboard /></div>} />
+              <Route path="/tickets" element={<div className="container mx-auto p-6 max-w-7xl"><TicketsPage /></div>} />
+              <Route path="/service-catalog-v2" element={<div className="container mx-auto p-6 max-w-7xl"><ServiceCatalogV2Page /></div>} />
+              <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
+              <Route path="/knowledge-base/articles/:id" element={<ArticleViewPage />} />
+              <Route path="/tickets/:ticketId" element={<div className="container mx-auto p-6 max-w-7xl"><TicketDetailPage /></div>} />
+              {/* Default redirect to approvals for managers */}
+              <Route path="*" element={<Navigate to="/manager" replace />} />
+            </Routes>
+          </main>
+        </div>
       </div>
     );
   }
@@ -265,6 +354,7 @@ function App() {
             <Route path="/tickets/:ticketId/edit" element={<ProtectedRoute roles={['requester', 'technician', 'manager', 'admin']}><div className="container mx-auto p-6 max-w-7xl"><EditTicketPage /></div></ProtectedRoute>} />
             <Route path="/manager" element={<ProtectedRoute roles={['admin', 'manager']}><div className="container mx-auto p-6 max-w-7xl"><ManagerDashboard /></div></ProtectedRoute>} />
             <Route path="/reporting" element={<ProtectedRoute roles={['admin', 'manager']}><div className="container mx-auto p-6 max-w-7xl"><ReportingPage /></div></ProtectedRoute>} />
+            <Route path="/analytics/tickets" element={<ProtectedRoute roles={['admin']}><div className="container mx-auto p-6 max-w-7xl"><TicketAnalyticsPage /></div></ProtectedRoute>} />
             <Route path="/categorization/analytics" element={<ProtectedRoute roles={['admin', 'manager']}><div className="container mx-auto p-6 max-w-7xl"><CategorizationAnalyticsPage /></div></ProtectedRoute>} />
             <Route path="/categorization/queue" element={<ProtectedRoute roles={['admin', 'technician']}><div className="container mx-auto p-6 max-w-7xl"><UncategorizedTicketsPage /></div></ProtectedRoute>} />
             <Route path="/technician/tickets" element={<ProtectedRoute roles={['technician', 'manager', 'admin']}><div className="container mx-auto p-6 max-w-7xl"><TechnicianTicketsPage /></div></ProtectedRoute>} />

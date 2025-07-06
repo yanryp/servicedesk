@@ -17,7 +17,8 @@ import {
   ClockIcon,
   UserGroupIcon,
   BookOpenIcon,
-  WrenchScrewdriverIcon
+  WrenchScrewdriverIcon,
+  DocumentMagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 
@@ -63,26 +64,26 @@ const Sidebar: React.FC<SidebarProps> = ({
     {
       title: 'Workspace',
       items: [
-        // Technician Workspace (Inbox-style with view toggle)
+        // Technician Workspace (Inbox-style with view toggle) - TECHNICAL STAFF ONLY
         {
           name: 'Technician Workspace',
           href: '/technician/workspace',
           icon: InboxIcon,
-          roles: ['technician', 'manager', 'admin']
+          roles: ['technician', 'admin']
         },
-        // Technician Portal (Self-service portal)
+        // Technician Portal (Self-service portal) - TECHNICAL STAFF ONLY
         {
           name: 'Technician Portal',
           href: '/technician/portal',
           icon: WrenchScrewdriverIcon,
-          roles: ['technician', 'manager', 'admin']
+          roles: ['technician', 'admin']
         },
-        // Technician Tickets (Modern Table/Kanban View)
+        // Technician Tickets (Modern Table/Kanban View) - TECHNICAL STAFF ONLY
         {
           name: 'Ticket Management',
           href: '/technician/tickets',
           icon: ClipboardDocumentListIcon,
-          roles: ['technician', 'manager', 'admin']
+          roles: ['technician', 'admin']
         },
         // My Tickets for non-technicians
         {
@@ -159,19 +160,25 @@ const Sidebar: React.FC<SidebarProps> = ({
           name: 'Knowledge Base Admin',
           href: '/knowledge-base/admin',
           icon: BookOpenIcon,
-          roles: ['admin', 'manager']
+          roles: ['admin']
         },
         {
           name: 'Analytics',
           href: '/categorization/analytics',
           icon: ChartBarIcon,
-          roles: ['manager', 'admin']
+          roles: ['admin']
         },
         {
           name: 'Reporting',
           href: '/reporting',
           icon: ChartBarIcon,
-          roles: ['manager', 'admin']
+          roles: ['admin']
+        },
+        {
+          name: 'Ticket Analytics',
+          href: '/analytics/tickets',
+          icon: DocumentMagnifyingGlassIcon,
+          roles: ['admin']
         }
       ]
     }

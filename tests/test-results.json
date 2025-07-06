@@ -1,124 +1,149 @@
 {
   "summary": {
     "totalTestSuites": 5,
-    "totalTests": 10,
+    "totalTests": 17,
     "passedTests": 0,
-    "failedTests": 15,
+    "failedTests": 17,
     "skippedTests": 0,
-    "executionTime": 10.540750709,
-    "startTime": "2025-07-06T07:10:02.109Z",
-    "endTime": "2025-07-06T07:10:12.650Z"
+    "executionTime": 16.112472333,
+    "startTime": "2025-07-06T11:04:27.920Z",
+    "endTime": "2025-07-06T11:04:44.032Z"
   },
   "categories": {
     "unitTests": {
       "status": "failed",
-      "tests": 0,
+      "tests": 4,
       "passed": 0,
-      "failed": 2,
-      "time": 0.000613
+      "failed": 4,
+      "time": 4.537814209
     },
     "integrationTests": {
       "status": "failed",
-      "tests": 0,
+      "tests": 2,
       "passed": 0,
       "failed": 2,
-      "time": 0.000041125
+      "time": 1.781745708
     },
     "e2eTests": {
       "status": "failed",
-      "tests": 3,
+      "tests": 4,
       "passed": 0,
       "failed": 4,
-      "time": 3.230906208
+      "time": 3.520150209
     },
     "featureValidation": {
       "status": "failed",
       "tests": 5,
       "passed": 0,
       "failed": 5,
-      "time": 5.255235792
+      "time": 4.551037792
     },
     "performanceTests": {
       "status": "failed",
       "tests": 2,
       "passed": 0,
       "failed": 2,
-      "time": 2.053197208
+      "time": 1.721341167
     }
   },
   "detailedResults": [
     {
       "name": "Unit Tests",
-      "tests": 0,
+      "tests": 4,
       "passed": 0,
-      "failed": 2,
+      "failed": 4,
       "skipped": 0,
-      "executionTime": 0.000613,
+      "executionTime": 4.537814209,
       "testFiles": [
         {
-          "file": "auth-user-management.test.js",
-          "tests": 0,
+          "file": "authentication.test.js",
+          "tests": 1,
           "passed": 0,
           "failed": 1,
           "skipped": 0,
-          "executionTime": 0,
-          "status": "file_not_found"
+          "executionTime": 1.970542292,
+          "status": "execution_error",
+          "error": "Command failed: npx jest \"tests/01-unit-tests/authentication.test.js\" --verbose --json --coverage=false\njest-haste-map: Haste module naming collision: backend\n  The following files share their name; please adjust your hasteImpl:\n    * <rootDir>/backend/package.json\n    * <rootDir>/deployment/wsl-windows/backend/package.json\n\njest-haste-map: Haste module naming collision: frontend\n  The following files share their name; please adjust your hasteImpl:\n    * <rootDir>/frontend/package.json\n    * <rootDir>/deployment/wsl-windows/frontend/package.json\n\nFAIL tests/01-unit-tests/authentication.test.js\n  ● Test suite failed to run\n\n    Cannot find module '@prisma/client' from 'tests/shared/utilities/testSetup.js'\n\n    Require stack:\n      tests/shared/utilities/testSetup.js\n      tests/01-unit-tests/authentication.test.js\n\n      1 | // Test setup utilities for BSG Enterprise Ticketing System\n    > 2 | const { PrismaClient } = require('@prisma/client');\n        |                          ^\n      3 | const jwt = require('jsonwebtoken');\n      4 |\n      5 | class TestSetup {\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)\n      at Object.require (tests/shared/utilities/testSetup.js:2:26)\n      at Object.require (tests/01-unit-tests/authentication.test.js:2:19)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.24 s\nRan all test suites matching tests/01-unit-tests/authentication.test.js.\n"
         },
         {
-          "file": "ticket-approval-workflow.test.js",
-          "tests": 0,
+          "file": "user-management.test.js",
+          "tests": 1,
           "passed": 0,
           "failed": 1,
           "skipped": 0,
-          "executionTime": 0,
-          "status": "file_not_found"
+          "executionTime": 0.831662,
+          "status": "execution_error",
+          "error": "Command failed: npx jest \"tests/01-unit-tests/user-management.test.js\" --verbose --json --coverage=false\nFAIL tests/01-unit-tests/user-management.test.js\n  ● Test suite failed to run\n\n    Cannot find module '@prisma/client' from 'tests/shared/utilities/testSetup.js'\n\n    Require stack:\n      tests/shared/utilities/testSetup.js\n      tests/01-unit-tests/user-management.test.js\n\n      1 | // Test setup utilities for BSG Enterprise Ticketing System\n    > 2 | const { PrismaClient } = require('@prisma/client');\n        |                          ^\n      3 | const jwt = require('jsonwebtoken');\n      4 |\n      5 | class TestSetup {\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)\n      at Object.require (tests/shared/utilities/testSetup.js:2:26)\n      at Object.require (tests/01-unit-tests/user-management.test.js:2:19)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.211 s\nRan all test suites matching tests/01-unit-tests/user-management.test.js.\n"
+        },
+        {
+          "file": "ticket-engine.test.js",
+          "tests": 1,
+          "passed": 0,
+          "failed": 1,
+          "skipped": 0,
+          "executionTime": 0.939958417,
+          "status": "execution_error",
+          "error": "Command failed: npx jest \"tests/01-unit-tests/ticket-engine.test.js\" --verbose --json --coverage=false\nFAIL tests/01-unit-tests/ticket-engine.test.js\n  ● Test suite failed to run\n\n    Cannot find module '@prisma/client' from 'tests/shared/utilities/testSetup.js'\n\n    Require stack:\n      tests/shared/utilities/testSetup.js\n      tests/01-unit-tests/ticket-engine.test.js\n\n      1 | // Test setup utilities for BSG Enterprise Ticketing System\n    > 2 | const { PrismaClient } = require('@prisma/client');\n        |                          ^\n      3 | const jwt = require('jsonwebtoken');\n      4 |\n      5 | class TestSetup {\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)\n      at Object.require (tests/shared/utilities/testSetup.js:2:26)\n      at Object.require (tests/01-unit-tests/ticket-engine.test.js:2:19)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.201 s\nRan all test suites matching tests/01-unit-tests/ticket-engine.test.js.\n"
+        },
+        {
+          "file": "approval-workflow.test.js",
+          "tests": 1,
+          "passed": 0,
+          "failed": 1,
+          "skipped": 0,
+          "executionTime": 0.794459167,
+          "status": "execution_error",
+          "error": "Command failed: npx jest \"tests/01-unit-tests/approval-workflow.test.js\" --verbose --json --coverage=false\nFAIL tests/01-unit-tests/approval-workflow.test.js\n  ● Test suite failed to run\n\n    Cannot find module '@prisma/client' from 'tests/shared/utilities/testSetup.js'\n\n    Require stack:\n      tests/shared/utilities/testSetup.js\n      tests/01-unit-tests/approval-workflow.test.js\n\n      1 | // Test setup utilities for BSG Enterprise Ticketing System\n    > 2 | const { PrismaClient } = require('@prisma/client');\n        |                          ^\n      3 | const jwt = require('jsonwebtoken');\n      4 |\n      5 | class TestSetup {\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)\n      at Object.require (tests/shared/utilities/testSetup.js:2:26)\n      at Object.require (tests/01-unit-tests/approval-workflow.test.js:2:19)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.197 s\nRan all test suites matching tests/01-unit-tests/approval-workflow.test.js.\n"
         }
       ]
     },
     {
       "name": "Integration Tests",
-      "tests": 0,
+      "tests": 2,
       "passed": 0,
       "failed": 2,
       "skipped": 0,
-      "executionTime": 0.000041125,
+      "executionTime": 1.781745708,
       "testFiles": [
         {
-          "file": "customer-portal-integration.test.js",
-          "tests": 0,
+          "file": "customer-portal.test.js",
+          "tests": 1,
           "passed": 0,
           "failed": 1,
           "skipped": 0,
-          "executionTime": 0,
-          "status": "file_not_found"
+          "executionTime": 0.963444333,
+          "status": "execution_error",
+          "error": "Command failed: npx jest \"tests/02-integration-tests/customer-portal.test.js\" --verbose --json --coverage=false\nFAIL tests/02-integration-tests/customer-portal.test.js\n  ● Test suite failed to run\n\n    Cannot find module '@prisma/client' from 'tests/shared/utilities/testSetup.js'\n\n    Require stack:\n      tests/shared/utilities/testSetup.js\n      tests/02-integration-tests/customer-portal.test.js\n\n      1 | // Test setup utilities for BSG Enterprise Ticketing System\n    > 2 | const { PrismaClient } = require('@prisma/client');\n        |                          ^\n      3 | const jwt = require('jsonwebtoken');\n      4 |\n      5 | class TestSetup {\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)\n      at Object.require (tests/shared/utilities/testSetup.js:2:26)\n      at Object.require (tests/02-integration-tests/customer-portal.test.js:2:19)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.203 s\nRan all test suites matching tests/02-integration-tests/customer-portal.test.js.\n"
         },
         {
-          "file": "technician-portal-integration.test.js",
-          "tests": 0,
+          "file": "technician-portal.test.js",
+          "tests": 1,
           "passed": 0,
           "failed": 1,
           "skipped": 0,
-          "executionTime": 0,
-          "status": "file_not_found"
+          "executionTime": 0.818080667,
+          "status": "execution_error",
+          "error": "Command failed: npx jest \"tests/02-integration-tests/technician-portal.test.js\" --verbose --json --coverage=false\nFAIL tests/02-integration-tests/technician-portal.test.js\n  ● Test suite failed to run\n\n    Cannot find module '@prisma/client' from 'tests/shared/utilities/testSetup.js'\n\n    Require stack:\n      tests/shared/utilities/testSetup.js\n      tests/02-integration-tests/technician-portal.test.js\n\n      1 | // Test setup utilities for BSG Enterprise Ticketing System\n    > 2 | const { PrismaClient } = require('@prisma/client');\n        |                          ^\n      3 | const jwt = require('jsonwebtoken');\n      4 |\n      5 | class TestSetup {\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)\n      at Object.require (tests/shared/utilities/testSetup.js:2:26)\n      at Object.require (tests/02-integration-tests/technician-portal.test.js:2:19)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.219 s\nRan all test suites matching tests/02-integration-tests/technician-portal.test.js.\n"
         }
       ]
     },
     {
       "name": "End-to-End Workflow Tests",
-      "tests": 3,
+      "tests": 4,
       "passed": 0,
       "failed": 4,
       "skipped": 0,
-      "executionTime": 3.230906208,
+      "executionTime": 3.520150209,
       "testFiles": [
         {
-          "file": "complete-workflow.test.js",
-          "tests": 0,
+          "file": "complete-ticket-lifecycle.test.js",
+          "tests": 1,
           "passed": 0,
           "failed": 1,
           "skipped": 0,
-          "executionTime": 0,
-          "status": "file_not_found"
+          "executionTime": 0.955156625,
+          "status": "execution_error",
+          "error": "Command failed: npx jest \"tests/03-e2e-workflow-tests/complete-ticket-lifecycle.test.js\" --verbose --json --coverage=false\nFAIL tests/03-e2e-workflow-tests/complete-ticket-lifecycle.test.js\n  ● Test suite failed to run\n\n    Cannot find module '@prisma/client' from 'tests/shared/utilities/testSetup.js'\n\n    Require stack:\n      tests/shared/utilities/testSetup.js\n      tests/03-e2e-workflow-tests/complete-ticket-lifecycle.test.js\n\n      1 | // Test setup utilities for BSG Enterprise Ticketing System\n    > 2 | const { PrismaClient } = require('@prisma/client');\n        |                          ^\n      3 | const jwt = require('jsonwebtoken');\n      4 |\n      5 | class TestSetup {\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)\n      at Object.require (tests/shared/utilities/testSetup.js:2:26)\n      at Object.require (tests/03-e2e-workflow-tests/complete-ticket-lifecycle.test.js:2:19)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.209 s\nRan all test suites matching tests/03-e2e-workflow-tests/complete-ticket-lifecycle.test.js.\n"
         },
         {
           "file": "kasda-bsgdirect-workflow.test.js",
@@ -126,9 +151,9 @@
           "passed": 0,
           "failed": 1,
           "skipped": 0,
-          "executionTime": 1.179896208,
+          "executionTime": 0.796086542,
           "status": "execution_error",
-          "error": "Command failed: npx jest \"tests/03-e2e-workflow-tests/kasda-bsgdirect-workflow.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+          "error": "Command failed: npx jest \"tests/03-e2e-workflow-tests/kasda-bsgdirect-workflow.test.js\" --verbose --json --coverage=false\nFAIL tests/03-e2e-workflow-tests/kasda-bsgdirect-workflow.test.js\n  ● Test suite failed to run\n\n    Cannot find module '@prisma/client' from 'tests/shared/utilities/testSetup.js'\n\n    Require stack:\n      tests/shared/utilities/testSetup.js\n      tests/03-e2e-workflow-tests/kasda-bsgdirect-workflow.test.js\n\n      1 | // Test setup utilities for BSG Enterprise Ticketing System\n    > 2 | const { PrismaClient } = require('@prisma/client');\n        |                          ^\n      3 | const jwt = require('jsonwebtoken');\n      4 |\n      5 | class TestSetup {\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)\n      at Object.require (tests/shared/utilities/testSetup.js:2:26)\n      at Object.require (tests/03-e2e-workflow-tests/kasda-bsgdirect-workflow.test.js:2:19)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.211 s\nRan all test suites matching tests/03-e2e-workflow-tests/kasda-bsgdirect-workflow.test.js.\n"
         },
         {
           "file": "it-elos-workflow.test.js",
@@ -136,9 +161,9 @@
           "passed": 0,
           "failed": 1,
           "skipped": 0,
-          "executionTime": 1.039443625,
+          "executionTime": 0.960764458,
           "status": "execution_error",
-          "error": "Command failed: npx jest \"tests/03-e2e-workflow-tests/it-elos-workflow.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+          "error": "Command failed: npx jest \"tests/03-e2e-workflow-tests/it-elos-workflow.test.js\" --verbose --json --coverage=false\nFAIL tests/03-e2e-workflow-tests/it-elos-workflow.test.js\n  ● Test suite failed to run\n\n    Cannot find module '@prisma/client' from 'tests/shared/utilities/testSetup.js'\n\n    Require stack:\n      tests/shared/utilities/testSetup.js\n      tests/03-e2e-workflow-tests/it-elos-workflow.test.js\n\n      1 | // Test setup utilities for BSG Enterprise Ticketing System\n    > 2 | const { PrismaClient } = require('@prisma/client');\n        |                          ^\n      3 | const jwt = require('jsonwebtoken');\n      4 |\n      5 | class TestSetup {\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)\n      at Object.require (tests/shared/utilities/testSetup.js:2:26)\n      at Object.require (tests/03-e2e-workflow-tests/it-elos-workflow.test.js:2:19)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.209 s\nRan all test suites matching tests/03-e2e-workflow-tests/it-elos-workflow.test.js.\n"
         },
         {
           "file": "multi-branch-approval.test.js",
@@ -146,9 +171,9 @@
           "passed": 0,
           "failed": 1,
           "skipped": 0,
-          "executionTime": 1.011221375,
+          "executionTime": 0.807864417,
           "status": "execution_error",
-          "error": "Command failed: npx jest \"tests/03-e2e-workflow-tests/multi-branch-approval.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+          "error": "Command failed: npx jest \"tests/03-e2e-workflow-tests/multi-branch-approval.test.js\" --verbose --json --coverage=false\nFAIL tests/03-e2e-workflow-tests/multi-branch-approval.test.js\n  ● Test suite failed to run\n\n    Cannot find module '@prisma/client' from 'tests/shared/utilities/testSetup.js'\n\n    Require stack:\n      tests/shared/utilities/testSetup.js\n      tests/03-e2e-workflow-tests/multi-branch-approval.test.js\n\n      1 | // Test setup utilities for BSG Enterprise Ticketing System\n    > 2 | const { PrismaClient } = require('@prisma/client');\n        |                          ^\n      3 | const jwt = require('jsonwebtoken');\n      4 |\n      5 | class TestSetup {\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)\n      at Object.require (tests/shared/utilities/testSetup.js:2:26)\n      at Object.require (tests/03-e2e-workflow-tests/multi-branch-approval.test.js:2:19)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.211 s\nRan all test suites matching tests/03-e2e-workflow-tests/multi-branch-approval.test.js.\n"
         }
       ]
     },
@@ -158,7 +183,7 @@
       "passed": 0,
       "failed": 5,
       "skipped": 0,
-      "executionTime": 5.255235792,
+      "executionTime": 4.551037792,
       "testFiles": [
         {
           "file": "branch-network-validation.test.js",
@@ -166,9 +191,9 @@
           "passed": 0,
           "failed": 1,
           "skipped": 0,
-          "executionTime": 1.055561417,
+          "executionTime": 0.983341959,
           "status": "execution_error",
-          "error": "Command failed: npx jest \"tests/04-feature-validation/branch-network-validation.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+          "error": "Command failed: npx jest \"tests/04-feature-validation/branch-network-validation.test.js\" --verbose --json --coverage=false\nFAIL tests/04-feature-validation/branch-network-validation.test.js\n  ● Test suite failed to run\n\n    Cannot find module '@prisma/client' from 'tests/shared/utilities/testSetup.js'\n\n    Require stack:\n      tests/shared/utilities/testSetup.js\n      tests/04-feature-validation/branch-network-validation.test.js\n\n      1 | // Test setup utilities for BSG Enterprise Ticketing System\n    > 2 | const { PrismaClient } = require('@prisma/client');\n        |                          ^\n      3 | const jwt = require('jsonwebtoken');\n      4 |\n      5 | class TestSetup {\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)\n      at Object.require (tests/shared/utilities/testSetup.js:2:26)\n      at Object.require (tests/04-feature-validation/branch-network-validation.test.js:2:19)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.219 s\nRan all test suites matching tests/04-feature-validation/branch-network-validation.test.js.\n"
         },
         {
           "file": "admin-capabilities.test.js",
@@ -176,9 +201,9 @@
           "passed": 0,
           "failed": 1,
           "skipped": 0,
-          "executionTime": 1.038121125,
+          "executionTime": 0.822326084,
           "status": "execution_error",
-          "error": "Command failed: npx jest \"tests/04-feature-validation/admin-capabilities.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+          "error": "Command failed: npx jest \"tests/04-feature-validation/admin-capabilities.test.js\" --verbose --json --coverage=false\nFAIL tests/04-feature-validation/admin-capabilities.test.js\n  ● Test suite failed to run\n\n    Cannot find module '@prisma/client' from 'tests/shared/utilities/testSetup.js'\n\n    Require stack:\n      tests/shared/utilities/testSetup.js\n      tests/04-feature-validation/admin-capabilities.test.js\n\n      1 | // Test setup utilities for BSG Enterprise Ticketing System\n    > 2 | const { PrismaClient } = require('@prisma/client');\n        |                          ^\n      3 | const jwt = require('jsonwebtoken');\n      4 |\n      5 | class TestSetup {\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)\n      at Object.require (tests/shared/utilities/testSetup.js:2:26)\n      at Object.require (tests/04-feature-validation/admin-capabilities.test.js:2:19)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.22 s\nRan all test suites matching tests/04-feature-validation/admin-capabilities.test.js.\n"
         },
         {
           "file": "manager-capabilities.test.js",
@@ -186,9 +211,9 @@
           "passed": 0,
           "failed": 1,
           "skipped": 0,
-          "executionTime": 1.038020916,
+          "executionTime": 0.997428666,
           "status": "execution_error",
-          "error": "Command failed: npx jest \"tests/04-feature-validation/manager-capabilities.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+          "error": "Command failed: npx jest \"tests/04-feature-validation/manager-capabilities.test.js\" --verbose --json --coverage=false\nFAIL tests/04-feature-validation/manager-capabilities.test.js\n  ● Test suite failed to run\n\n    Cannot find module '@prisma/client' from 'tests/shared/utilities/testSetup.js'\n\n    Require stack:\n      tests/shared/utilities/testSetup.js\n      tests/04-feature-validation/manager-capabilities.test.js\n\n      1 | // Test setup utilities for BSG Enterprise Ticketing System\n    > 2 | const { PrismaClient } = require('@prisma/client');\n        |                          ^\n      3 | const jwt = require('jsonwebtoken');\n      4 |\n      5 | class TestSetup {\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)\n      at Object.require (tests/shared/utilities/testSetup.js:2:26)\n      at Object.require (tests/04-feature-validation/manager-capabilities.test.js:2:19)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.22 s\nRan all test suites matching tests/04-feature-validation/manager-capabilities.test.js.\n"
         },
         {
           "file": "technician-capabilities.test.js",
@@ -196,9 +221,9 @@
           "passed": 0,
           "failed": 1,
           "skipped": 0,
-          "executionTime": 1.080717708,
+          "executionTime": 0.804294959,
           "status": "execution_error",
-          "error": "Command failed: npx jest \"tests/04-feature-validation/technician-capabilities.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+          "error": "Command failed: npx jest \"tests/04-feature-validation/technician-capabilities.test.js\" --verbose --json --coverage=false\nFAIL tests/04-feature-validation/technician-capabilities.test.js\n  ● Test suite failed to run\n\n    Cannot find module '@prisma/client' from 'tests/shared/utilities/testSetup.js'\n\n    Require stack:\n      tests/shared/utilities/testSetup.js\n      tests/04-feature-validation/technician-capabilities.test.js\n\n      1 | // Test setup utilities for BSG Enterprise Ticketing System\n    > 2 | const { PrismaClient } = require('@prisma/client');\n        |                          ^\n      3 | const jwt = require('jsonwebtoken');\n      4 |\n      5 | class TestSetup {\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)\n      at Object.require (tests/shared/utilities/testSetup.js:2:26)\n      at Object.require (tests/04-feature-validation/technician-capabilities.test.js:2:19)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.218 s\nRan all test suites matching tests/04-feature-validation/technician-capabilities.test.js.\n"
         },
         {
           "file": "requester-capabilities.test.js",
@@ -206,9 +231,9 @@
           "passed": 0,
           "failed": 1,
           "skipped": 0,
-          "executionTime": 1.041851042,
+          "executionTime": 0.943211666,
           "status": "execution_error",
-          "error": "Command failed: npx jest \"tests/04-feature-validation/requester-capabilities.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+          "error": "Command failed: npx jest \"tests/04-feature-validation/requester-capabilities.test.js\" --verbose --json --coverage=false\nFAIL tests/04-feature-validation/requester-capabilities.test.js\n  ● Test suite failed to run\n\n    Cannot find module '@prisma/client' from 'tests/shared/utilities/testSetup.js'\n\n    Require stack:\n      tests/shared/utilities/testSetup.js\n      tests/04-feature-validation/requester-capabilities.test.js\n\n      1 | // Test setup utilities for BSG Enterprise Ticketing System\n    > 2 | const { PrismaClient } = require('@prisma/client');\n        |                          ^\n      3 | const jwt = require('jsonwebtoken');\n      4 |\n      5 | class TestSetup {\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)\n      at Object.require (tests/shared/utilities/testSetup.js:2:26)\n      at Object.require (tests/04-feature-validation/requester-capabilities.test.js:2:19)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.216 s\nRan all test suites matching tests/04-feature-validation/requester-capabilities.test.js.\n"
         }
       ]
     },
@@ -218,7 +243,7 @@
       "passed": 0,
       "failed": 2,
       "skipped": 0,
-      "executionTime": 2.053197208,
+      "executionTime": 1.721341167,
       "testFiles": [
         {
           "file": "load-testing.test.js",
@@ -226,9 +251,9 @@
           "passed": 0,
           "failed": 1,
           "skipped": 0,
-          "executionTime": 1.012602167,
+          "executionTime": 0.785066041,
           "status": "execution_error",
-          "error": "Command failed: npx jest \"tests/05-performance-tests/load-testing.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+          "error": "Command failed: npx jest \"tests/05-performance-tests/load-testing.test.js\" --verbose --json --coverage=false\nFAIL tests/05-performance-tests/load-testing.test.js\n  ● Test suite failed to run\n\n    Cannot find module '@prisma/client' from 'tests/shared/utilities/testSetup.js'\n\n    Require stack:\n      tests/shared/utilities/testSetup.js\n      tests/05-performance-tests/load-testing.test.js\n\n      1 | // Test setup utilities for BSG Enterprise Ticketing System\n    > 2 | const { PrismaClient } = require('@prisma/client');\n        |                          ^\n      3 | const jwt = require('jsonwebtoken');\n      4 |\n      5 | class TestSetup {\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)\n      at Object.require (tests/shared/utilities/testSetup.js:2:26)\n      at Object.require (tests/05-performance-tests/load-testing.test.js:2:19)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.218 s\nRan all test suites matching tests/05-performance-tests/load-testing.test.js.\n"
         },
         {
           "file": "stress-testing.test.js",
@@ -236,15 +261,15 @@
           "passed": 0,
           "failed": 1,
           "skipped": 0,
-          "executionTime": 1.040358792,
+          "executionTime": 0.936161292,
           "status": "execution_error",
-          "error": "Command failed: npx jest \"tests/05-performance-tests/stress-testing.test.js\" --verbose --json --coverage=false\nsh: jest: command not found\n"
+          "error": "Command failed: npx jest \"tests/05-performance-tests/stress-testing.test.js\" --verbose --json --coverage=false\nFAIL tests/05-performance-tests/stress-testing.test.js\n  ● Test suite failed to run\n\n    Cannot find module '@prisma/client' from 'tests/shared/utilities/testSetup.js'\n\n    Require stack:\n      tests/shared/utilities/testSetup.js\n      tests/05-performance-tests/stress-testing.test.js\n\n      1 | // Test setup utilities for BSG Enterprise Ticketing System\n    > 2 | const { PrismaClient } = require('@prisma/client');\n        |                          ^\n      3 | const jwt = require('jsonwebtoken');\n      4 |\n      5 | class TestSetup {\n\n      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)\n      at Object.require (tests/shared/utilities/testSetup.js:2:26)\n      at Object.require (tests/05-performance-tests/stress-testing.test.js:2:19)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        0.221 s\nRan all test suites matching tests/05-performance-tests/stress-testing.test.js.\n"
         }
       ]
     }
   ],
   "metadata": {
-    "reportGeneratedAt": "2025-07-06T07:10:12.650Z",
+    "reportGeneratedAt": "2025-07-06T11:04:44.033Z",
     "nodeVersion": "v18.20.6",
     "platform": "darwin",
     "architecture": "arm64",

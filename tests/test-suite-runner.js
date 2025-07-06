@@ -32,8 +32,10 @@ class TestSuiteRunner {
         key: 'unitTests',
         description: 'Authentication, user management, and ticket engine unit tests',
         testPaths: [
-          'tests/01-unit-tests/auth-user-management.test.js',
-          'tests/01-unit-tests/ticket-approval-workflow.test.js'
+          'tests/01-unit-tests/authentication.test.js',
+          'tests/01-unit-tests/user-management.test.js',
+          'tests/01-unit-tests/ticket-engine.test.js',
+          'tests/01-unit-tests/approval-workflow.test.js'
         ]
       },
       {
@@ -41,8 +43,8 @@ class TestSuiteRunner {
         key: 'integrationTests',
         description: 'Customer and technician portal integration tests',
         testPaths: [
-          'tests/02-integration-tests/customer-portal-integration.test.js',
-          'tests/02-integration-tests/technician-portal-integration.test.js'
+          'tests/02-integration-tests/customer-portal.test.js',
+          'tests/02-integration-tests/technician-portal.test.js'
         ]
       },
       {
@@ -50,7 +52,7 @@ class TestSuiteRunner {
         key: 'e2eTests',
         description: 'Complete workflow and service-specific E2E tests',
         testPaths: [
-          'tests/03-e2e-workflow-tests/complete-workflow.test.js',
+          'tests/03-e2e-workflow-tests/complete-ticket-lifecycle.test.js',
           'tests/03-e2e-workflow-tests/kasda-bsgdirect-workflow.test.js',
           'tests/03-e2e-workflow-tests/it-elos-workflow.test.js',
           'tests/03-e2e-workflow-tests/multi-branch-approval.test.js'

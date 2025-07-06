@@ -29,6 +29,7 @@ import slaPolicyRoutes from './routes/slaPolicyRoutes'; // Import SLA policy rou
 import businessHoursRoutes from './routes/businessHoursRoutes'; // Import business hours routes
 import holidayCalendarRoutes from './routes/holidayCalendarRoutes'; // Import holiday calendar routes
 import knowledgeBaseRoutes from './routes/knowledgeBaseRoutes'; // Import knowledge base routes
+import ticketAnalyticsRoutes from './routes/ticketAnalyticsRoutes'; // Import ticket analytics routes
 import { startEscalationCronJob } from './services/escalationService'; // Import escalation service
 
 const app: Express = express();
@@ -116,6 +117,9 @@ app.use('/api/holidays', holidayCalendarRoutes); // Holiday calendar management 
 
 // Knowledge Base System
 app.use('/api/knowledge-base', knowledgeBaseRoutes); // Knowledge base articles and categories
+
+// Ticket Analytics System
+app.use('/api/analytics', ticketAnalyticsRoutes); // Ticket analytics and insights
 
 // Legacy routes (for backward compatibility)
 app.use('/api/tickets', ticketRouter); // Mount legacy ticket router
