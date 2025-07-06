@@ -98,7 +98,8 @@
       "Bash(pgrep:*)",
       "mcp__playwright__browser_tab_new",
       "mcp__playwright__browser_handle_dialog",
-      "Bash(compgen:*)"
+      "Bash(compgen:*)",
+      "Bash(git merge:*)"
     ],
     "deny": []
   }
