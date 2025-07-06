@@ -98,7 +98,13 @@
       "Bash(pgrep:*)",
       "mcp__playwright__browser_tab_new",
       "mcp__playwright__browser_handle_dialog",
-      "Bash(compgen:*)"
+      "Bash(compgen:*)",
+      "Bash(if [ -f \"backend/prisma/seed.js\" ])",
+      "Bash([ -f \"backend/seeds\" ])",
+      "Bash([ -f \"backend/migrations\" ])",
+      "Bash(then echo \"Database files found\")",
+      "Bash(else echo \"No database files to backup (using external PostgreSQL)\")",
+      "Bash(fi)"
     ],
     "deny": []
   }
