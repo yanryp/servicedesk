@@ -108,3 +108,29 @@
 ### `POST /master-data/:type/bulk-import`
 - **Description**: Bulk imports multiple master data entities.
 - **Access**: Protected (Admin)
+
+---
+
+## ⚠️ DEPRECATED ENDPOINTS
+
+**Note**: The following endpoints have been deprecated and removed as of July 2025. Use the recommended replacements instead.
+
+### ~~`/categories`~~ → **DEPRECATED** ❌
+**Replacement**: Use `/service-catalog` endpoints instead
+- ~~`GET /categories`~~ → Use `GET /service-catalog/categories`
+- ~~`GET /categories/:id/subcategories`~~ → Use `GET /service-catalog/categories` with hierarchy
+- ~~`GET /categories/items-by-subcategory/:id`~~ → Use `GET /service-catalog/templates/:categoryId`
+
+### ~~`/templates`~~ → **DEPRECATED** ❌  
+**Replacement**: Use `/bsg-templates` or `/template-management` endpoints instead
+- ~~`POST /templates`~~ → Use `POST /template-management/templates`
+- ~~`GET /templates`~~ → Use `GET /template-management/templates`
+- ~~`GET /templates/:id`~~ → Use `GET /template-management/templates/:id/fields`
+- ~~`PUT /templates/:id`~~ → Use `PUT /template-management/templates/:id`
+- ~~`DELETE /templates/:id`~~ → Use `DELETE /template-management/templates/:id`
+- ~~`POST /templates/:id/fields`~~ → Use `POST /template-management/templates/:id/fields`
+
+**Migration Guide**: 
+- For BSG-specific templates, use the `/bsg-templates` endpoints
+- For general service templates, use the `/template-management` endpoints  
+- For service catalog integration, use the `/service-catalog` endpoints
