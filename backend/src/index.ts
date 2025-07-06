@@ -14,8 +14,7 @@ import categorizationRouter from './routes/categorizationRoutes'; // Import cate
 import categorizationAnalyticsRouter from './routes/categorizationAnalyticsRoutes'; // Import analytics router
 import reportingRoutes from './routes/reportingRoutes'; // Import reporting router
 import testRoutes from './routes/testRoutes';
-import categoryRoutes from './routes/categoryRoutes'; // Import category routes
-import templateRoutes from './routes/templateRoutes'; // Import template routes
+// DEPRECATED: categoryRoutes and templateRoutes removed - replaced by service catalogs and BSG templates
 import departmentRoutes from './routes/departmentRoutes'; // Import department routes
 import masterDataRoutes from './routes/masterDataRoutes'; // Import master data routes
 import fieldTypeRoutes from './routes/fieldTypeRoutes'; // Import field type routes
@@ -120,8 +119,7 @@ app.use('/api/knowledge-base', knowledgeBaseRoutes); // Knowledge base articles 
 
 // Legacy routes (for backward compatibility)
 app.use('/api/tickets', ticketRouter); // Mount legacy ticket router
-app.use('/api/categories', categoryRoutes); // Use category routes
-app.use('/api/templates', templateRoutes); // Use template routes
+// DEPRECATED: /api/categories and /api/templates routes removed - use /api/service-catalog and /api/bsg-templates instead
 
 // Other routes
 app.use('/api/reports', reportingRoutes);

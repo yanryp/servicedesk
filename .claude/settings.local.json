@@ -104,7 +104,18 @@
       "Bash([ -f \"backend/migrations\" ])",
       "Bash(then echo \"Database files found\")",
       "Bash(else echo \"No database files to backup (using external PostgreSQL)\")",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(for file in *.js)",
+      "Bash(do if [[ \"$file\" == *test* ]])",
+      "Bash([[ \"$file\" == *e2e* ]])",
+      "Bash([[ \"$file\" == *spec* ]])",
+      "Bash(then mv \"$file\" tests/legacy-files/)",
+      "Bash(echo \"Moved: $file\")",
+      "Bash(done)",
+      "Bash(for file in *.md)",
+      "Bash(do if [[ \"$file\" == *TEST* ]])",
+      "Bash([[ \"$file\" == *SUMMARY* ]])",
+      "Bash([[ \"$file\" == *COMMIT* ]])"
     ],
     "deny": []
   }

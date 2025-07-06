@@ -1,1 +1,0 @@
-SELECT name, description FROM "service_catalog" ORDER BY name LIMIT 10;
