@@ -1,7 +1,7 @@
 // Simple Playwright configuration
 module.exports = {
   testDir: '.', 
-  testMatch: ['bsg-workflow.spec.js', 'service-catalog-focus-test.spec.js', 'test-focus-loss.spec.js', 'focus-test-simple.spec.js'],
+  testMatch: ['bsg-workflow.spec.js', 'service-catalog-focus-test.spec.js', 'test-focus-loss.spec.js', 'focus-test-simple.spec.js', 'e2e-technician-portal-test.spec.js'],
   testIgnore: ['**/backend/**', '**/frontend/**', '**/node_modules/**'],
   timeout: 120000,
   use: {
