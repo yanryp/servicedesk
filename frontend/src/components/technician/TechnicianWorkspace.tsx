@@ -3,8 +3,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { ticketsService, categoriesService, serviceCatalogService } from '../../services';
-import { Ticket as TicketType, Category } from '../../types';
+import { ticketsService, serviceCatalogService } from '../../services';
+import { Ticket as TicketType } from '../../types';
 import { ServiceCategory } from '../../services/serviceCatalog';
 import ThemeToggle from '../common/ThemeToggle';
 import ViewToggle, { ViewMode } from '../ui/ViewToggle';
@@ -88,7 +88,6 @@ const TechnicianWorkspace: React.FC = () => {
   // Category filtering state - now for sidebar sections
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['status']));
   const [activeCategoryTags, setActiveCategoryTags] = useState<Set<string>>(new Set());
-  const [categories, setCategories] = useState<Category[]>([]);
   const [serviceCategories, setServiceCategories] = useState<ServiceCategory[]>([]);
   const [categoryTagCounts, setCategoryTagCounts] = useState<Record<string, number>>({});
 
@@ -161,11 +160,7 @@ const TechnicianWorkspace: React.FC = () => {
   // Load catalog data for filtering
   const loadCatalogData = useCallback(async () => {
     try {
-      const [categoriesData, serviceCategoriesData] = await Promise.all([
-        categoriesService.getCategories(),
-        serviceCatalogService.getCategories()
-      ]);
-      setCategories(categoriesData);
+      const serviceCategoriesData = await serviceCatalogService.getCategories();
       setServiceCategories(serviceCategoriesData);
     } catch (error) {
       console.error('Failed to load catalog data:', error);
