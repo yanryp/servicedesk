@@ -117,7 +117,8 @@
       "Bash(do if [[ \"$file\" == *TEST* ]])",
       "Bash([[ \"$file\" == *SUMMARY* ]])",
       "Bash([[ \"$file\" == *COMMIT* ]])",
-      "Bash(npx jest:*)"
+      "Bash(npx jest:*)",
+      "Bash(./create-deployment-package.sh:*)"
     ],
     "deny": []
   }
