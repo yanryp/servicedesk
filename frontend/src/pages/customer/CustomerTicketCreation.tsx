@@ -532,7 +532,12 @@ const CustomerTicketCreation: React.FC = () => {
     // Load dynamic fields if service has template
     if (service.hasTemplate && service.templateId) {
       await loadDynamicFields(service.templateId, service.fields || []);
+    } else if (service.hasTemplate && service.fields && service.fields.length > 0) {
+      // For services with fields but no single templateId (multi-template services)
+      console.log(`🔧 Loading fields for multi-template service: ${service.name}`, service.fields);
+      await loadDynamicFields(parseInt(service.id), service.fields);
     } else {
+      console.log(`📝 No template or fields for service: ${service.name}`);
       setDynamicFields([]);
       setMasterData({});
     }
