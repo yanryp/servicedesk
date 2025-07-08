@@ -118,7 +118,8 @@
       "Bash([[ \"$file\" == *SUMMARY* ]])",
       "Bash([[ \"$file\" == *COMMIT* ]])",
       "Bash(npx jest:*)",
-      "Bash(./create-deployment-package.sh:*)"
+      "Bash(./create-deployment-package.sh:*)",
+      "mcp__playwright__browser_tab_list"
     ],
     "deny": []
   }
