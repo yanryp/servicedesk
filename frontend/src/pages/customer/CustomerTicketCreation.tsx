@@ -121,6 +121,9 @@ const CustomerTicketCreation: React.FC = () => {
   // Ref for scrolling to services section
   const servicesRef = useRef<HTMLDivElement>(null);
   
+  // Ref for scrolling to details step
+  const detailsStepRef = useRef<HTMLDivElement>(null);
+  
   // Determine if user needs contact info step (only for external customers)
   const isAuthenticatedUser = user && user.id;
   const needsContactStep = !isAuthenticatedUser;
@@ -404,16 +407,41 @@ const CustomerTicketCreation: React.FC = () => {
 
   const nextStep = () => {
     const maxStep = needsContactStep ? 4 : 4; // Keep maxStep as 4 for consistent logic
+    let nextStepNumber: number;
+    
     if (needsContactStep) {
-      setCurrentStep(prev => Math.min(prev + 1, maxStep));
+      nextStepNumber = Math.min(currentStep + 1, maxStep);
+      setCurrentStep(nextStepNumber);
     } else {
       // Skip step 2 for authenticated users
-      setCurrentStep(prev => {
-        if (prev === 1) return 3; // Service -> Details
-        if (prev === 3) return 4; // Details -> Review
-        return Math.min(prev + 1, maxStep);
-      });
+      if (currentStep === 1) {
+        nextStepNumber = 3; // Service -> Details
+      } else if (currentStep === 3) {
+        nextStepNumber = 4; // Details -> Review
+      } else {
+        nextStepNumber = Math.min(currentStep + 1, maxStep);
+      }
+      setCurrentStep(nextStepNumber);
     }
+    
+    // Add focus management for step transitions (with delay for state update)
+    setTimeout(() => {
+      if (nextStepNumber === 2) {
+        // Contact step - focus on name field
+        const nameInput = document.querySelector('input[name="customerName"]') as HTMLElement;
+        nameInput?.focus();
+      } else if (nextStepNumber === 3) {
+        // Details step - focus on priority buttons (handled by handleServiceSelection for service selection flow)
+        // Only handle manual next button clicks here
+        if (currentStep !== 1) {
+          const firstPriorityButton = document.querySelector('button[data-priority]') as HTMLElement;
+          firstPriorityButton?.focus();
+        }
+      } else if (nextStepNumber === 4) {
+        // Review step - scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 100);
   };
   
   const prevStep = () => {
@@ -447,8 +475,25 @@ const CustomerTicketCreation: React.FC = () => {
       setMasterData({});
     }
     
-    // Skip contact step for authenticated users
+    // Skip contact step for authenticated users and advance to details
     nextStep();
+    
+    // Focus on the details step after a short delay to allow state update
+    setTimeout(() => {
+      detailsStepRef.current?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start',
+        inline: 'nearest'
+      });
+      
+      // Focus on the first interactive element in the details step
+      setTimeout(() => {
+        const firstInput = document.querySelector('button[data-priority], input[name="subject"], textarea[name="description"]') as HTMLElement;
+        if (firstInput) {
+          firstInput.focus();
+        }
+      }, 300);
+    }, 100);
   };
 
   if (submitted) {
@@ -822,7 +867,7 @@ const CustomerTicketCreation: React.FC = () => {
 
         {/* Step 3: Request Details */}
         {currentStep === 3 && (
-          <div className="space-y-6">
+          <div ref={detailsStepRef} className="space-y-6">
             <h2 className="text-xl font-bold text-slate-900 mb-6">Request Details</h2>
             
             <div>
@@ -833,6 +878,7 @@ const CustomerTicketCreation: React.FC = () => {
                 {priorityOptions.map((option) => (
                   <button
                     key={option.value}
+                    data-priority={option.value}
                     onClick={() => handleInputChange('priority', option.value)}
                     className={`p-3 rounded-lg border-2 text-left transition-all duration-200 ${
                       formData.priority === option.value
@@ -907,6 +953,59 @@ const CustomerTicketCreation: React.FC = () => {
                 </div>
               </div>
             )}
+
+            {/* Issue Classification Section */}
+            <div className="space-y-6">
+              <div className="border-t border-slate-200 pt-6">
+                <h3 className="text-lg font-medium text-slate-900 mb-4">
+                  🏷️ Issue Classification (Optional)
+                </h3>
+                <p className="text-sm text-slate-600 mb-6">
+                  Help us route your request to the right team faster by providing this information.
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <GlobalStorageField
+                    field={{
+                      id: 999001,
+                      fieldName: 'rootCause',
+                      fieldLabel: 'What caused this issue?',
+                      fieldType: 'dropdown',
+                      isRequired: false,
+                      placeholderText: 'Select root cause...',
+                      helpText: 'Help us understand what you think caused this issue',
+                      sortOrder: 1,
+                      category: 'classification'
+                    }}
+                    masterData={[
+                      { value: 'human_error', label: 'User/Process Error' },
+                      { value: 'system_error', label: 'Technical/System Error' },
+                      { value: 'external_factor', label: 'External Issue' },
+                      { value: 'undetermined', label: 'Not Sure / Need Investigation' }
+                    ]}
+                  />
+                  
+                  <GlobalStorageField
+                    field={{
+                      id: 999002,
+                      fieldName: 'issueCategory',
+                      fieldLabel: 'What type of issue is this?',
+                      fieldType: 'dropdown',
+                      isRequired: false,
+                      placeholderText: 'Select issue type...',
+                      helpText: 'Choose the category that best describes your issue',
+                      sortOrder: 2,
+                      category: 'classification'
+                    }}
+                    masterData={[
+                      { value: 'request', label: 'Service Request - I need something new' },
+                      { value: 'complaint', label: 'Service Complaint - Quality issue' },
+                      { value: 'problem', label: 'Technical Problem - Something is broken' }
+                    ]}
+                  />
+                </div>
+              </div>
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
