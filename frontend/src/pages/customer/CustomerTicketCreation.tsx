@@ -117,6 +117,7 @@ const CustomerTicketCreation: React.FC = () => {
   const [loadingBranches, setLoadingBranches] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [ticketId, setTicketId] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   
   // Ref for scrolling to services section
   const servicesRef = useRef<HTMLDivElement>(null);
@@ -340,9 +341,11 @@ const CustomerTicketCreation: React.FC = () => {
             }
             
             console.log(`📡 Loading master data for field "${field.fieldLabel}" with data type "${dataType}"`);
-            const response = await api.get(`/api/master-data/${dataType}`);
-            masterDataResults[field.fieldName] = response.data || [];
-            console.log(`✅ Loaded ${response.data?.length || 0} options for ${field.fieldLabel}`);
+            const response = await api.get(`/bsg-templates/master-data/${dataType}`);
+            // Extract data from API response format: { success: true, data: [...], meta: {...} }
+            const options = Array.isArray(response?.data) ? response.data : [];
+            masterDataResults[field.fieldName] = options;
+            console.log(`✅ Loaded ${options.length} options for ${field.fieldLabel}`);
           } catch (error) {
             console.warn(`⚠️ Failed to load master data for field ${field.fieldLabel}:`, error);
             masterDataResults[field.fieldName] = [];
@@ -361,9 +364,68 @@ const CustomerTicketCreation: React.FC = () => {
     }
   };
 
+  // Validate required fields (matching ServiceCatalogPage implementation)
+  const validateFields = (): boolean => {
+    const errors: Record<string, string> = {};
+    
+    // Debug: Log current global storage values
+    const currentFieldValues = globalFieldStorage.getAllValues();
+    console.log('🔍 Customer Portal - Current global storage values:', currentFieldValues);
+    
+    // Validate basic form fields
+    if (!formData.subject.trim()) {
+      errors.subject = 'Subject is required';
+    }
+    
+    if (!formData.description.trim()) {
+      errors.description = 'Description is required';
+    }
+
+    // Validate dynamic template fields using global storage values
+    if (dynamicFields.length > 0) {
+      dynamicFields.forEach(field => {
+        if (field.isRequired) {
+          // Check global storage using field.fieldName
+          const value = currentFieldValues[field.fieldName];
+          console.log(`🔍 Validating field "${field.fieldName}" (${field.fieldLabel}): value = "${value}", required = ${field.isRequired}`);
+          if (!value || (typeof value === 'string' && !value.trim())) {
+            errors[field.fieldName] = `${field.fieldLabel} is required`;
+            console.log(`❌ Field "${field.fieldName}" failed validation`);
+          } else {
+            console.log(`✅ Field "${field.fieldName}" passed validation`);
+          }
+        }
+      });
+    }
+
+    setFieldErrors(errors);
+    const isValid = Object.keys(errors).length === 0;
+    
+    if (!isValid) {
+      console.log('❌ Form validation failed:', errors);
+      // Scroll to first error field
+      setTimeout(() => {
+        const firstErrorField = document.querySelector(`input[name="${Object.keys(errors)[0]}"], textarea[name="${Object.keys(errors)[0]}"]`) as HTMLElement;
+        if (firstErrorField) {
+          firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          firstErrorField.focus();
+        }
+      }, 100);
+    } else {
+      console.log('✅ Form validation passed');
+    }
+    
+    return isValid;
+  };
+
   const handleSubmit = async () => {
     if (!formData.serviceId) {
       console.error('No service selected');
+      return;
+    }
+    
+    // Validate all fields before submission
+    if (!validateFields()) {
       return;
     }
     
@@ -902,11 +964,17 @@ const CustomerTicketCreation: React.FC = () => {
               </label>
               <input
                 type="text"
+                name="subject"
                 value={formData.subject}
                 onChange={(e) => handleInputChange('subject', e.target.value)}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  fieldErrors.subject ? 'border-red-500' : 'border-slate-300'
+                }`}
                 placeholder="Brief description of your issue"
               />
+              {fieldErrors.subject && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.subject}</p>
+              )}
             </div>
 
             <div>
@@ -914,12 +982,18 @@ const CustomerTicketCreation: React.FC = () => {
                 Detailed Description *
               </label>
               <textarea
+                name="description"
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 rows={4}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  fieldErrors.description ? 'border-red-500' : 'border-slate-300'
+                }`}
                 placeholder="Please provide as much detail as possible about your issue, including any error messages, steps you've tried, and when the problem occurs..."
               />
+              {fieldErrors.description && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.description}</p>
+              )}
             </div>
 
             {/* Dynamic Service Fields */}
