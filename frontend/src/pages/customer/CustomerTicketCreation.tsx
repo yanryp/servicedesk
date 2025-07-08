@@ -998,9 +998,9 @@ const CustomerTicketCreation: React.FC = () => {
                       category: 'classification'
                     }}
                     masterData={[
-                      { value: 'request', label: 'Service Request - I need something new' },
-                      { value: 'complaint', label: 'Service Complaint - Quality issue' },
-                      { value: 'problem', label: 'Technical Problem - Something is broken' }
+                      { value: 'request', label: 'Service Request - I need something new or changed' },
+                      { value: 'complaint', label: 'Service Complaint - I\'m not satisfied with service quality' },
+                      { value: 'problem', label: 'Technical Problem - Something is broken or not working' }
                     ]}
                   />
                 </div>
