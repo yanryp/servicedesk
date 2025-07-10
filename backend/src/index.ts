@@ -13,6 +13,8 @@ import serviceCatalogAdminRouter from './routes/serviceCatalogAdminRoutes'; // I
 import categorizationRouter from './routes/categorizationRoutes'; // Import categorization router
 import categorizationAnalyticsRouter from './routes/categorizationAnalyticsRoutes'; // Import analytics router
 import reportingRoutes from './routes/reportingRoutes'; // Import reporting router
+import userAccessReports from './routes/userAccessReports'; // Import user access reports
+import serviceAnalytics from './routes/serviceAnalytics'; // Import service analytics
 import testRoutes from './routes/testRoutes';
 // DEPRECATED: categoryRoutes and templateRoutes removed - replaced by service catalogs and BSG templates
 import departmentRoutes from './routes/departmentRoutes'; // Import department routes
@@ -127,6 +129,8 @@ app.use('/api/tickets', ticketRouter); // Mount legacy ticket router
 
 // Other routes
 app.use('/api/reports', reportingRoutes);
+app.use('/api/reports', userAccessReports); // User access and deprovisioning reports
+app.use('/api/analytics', serviceAnalytics); // Service performance analytics
 app.use('/api/departments', departmentRoutes); // Use department routes
 app.use('/api/test', testRoutes); // Mount test routes
 
