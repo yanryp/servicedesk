@@ -177,42 +177,143 @@ const GlobalStorageField: React.FC<GlobalStorageFieldProps> = ({
         inputElement.maxLength = field.maxLength || 1000;
         break;
 
+      case 'checkbox':
+        // Create a container for checkboxes
+        const checkboxContainer = document.createElement('div');
+        checkboxContainer.className = 'space-y-2';
+        checkboxContainer.id = safeFieldName;
+        
+        if (field.options && Array.isArray(field.options) && field.options.length > 0) {
+          field.options.forEach((option, index) => {
+            const checkboxWrapper = document.createElement('label');
+            checkboxWrapper.className = 'flex items-center cursor-pointer';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = safeFieldName;
+            checkbox.value = option.value || '';
+            checkbox.className = 'h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500';
+            
+            const label = document.createElement('span');
+            label.className = 'ml-2 text-sm text-gray-700';
+            label.textContent = option.label || option.displayName || '';
+            
+            checkboxWrapper.appendChild(checkbox);
+            checkboxWrapper.appendChild(label);
+            checkboxContainer.appendChild(checkboxWrapper);
+            
+            // Handle checkbox changes
+            checkbox.addEventListener('change', () => {
+              const checkedBoxes = checkboxContainer.querySelectorAll('input[type="checkbox"]:checked');
+              const values = Array.from(checkedBoxes).map((cb: any) => cb.value);
+              globalFieldStorage.setValue(field.fieldName, values.join(','));
+            });
+          });
+        }
+        
+        fieldWrapper.appendChild(checkboxContainer);
+        inputElement = checkboxContainer as any; // Type assertion for compatibility
+        break;
+
+      case 'radio':
+        // Create a container for radio buttons
+        const radioContainer = document.createElement('div');
+        radioContainer.className = 'space-y-2';
+        radioContainer.id = safeFieldName;
+        
+        if (field.options && field.options.length > 0) {
+          field.options.forEach((option, index) => {
+            const radioWrapper = document.createElement('label');
+            radioWrapper.className = 'flex items-center cursor-pointer';
+            
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.name = safeFieldName;
+            radio.value = option.value || '';
+            radio.className = 'h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500';
+            
+            const label = document.createElement('span');
+            label.className = 'ml-2 text-sm text-gray-700';
+            label.textContent = option.label || option.displayName || '';
+            
+            radioWrapper.appendChild(radio);
+            radioWrapper.appendChild(label);
+            radioContainer.appendChild(radioWrapper);
+            
+            // Handle radio changes
+            radio.addEventListener('change', () => {
+              if (radio.checked) {
+                globalFieldStorage.setValue(field.fieldName, radio.value);
+              }
+            });
+          });
+        }
+        
+        fieldWrapper.appendChild(radioContainer);
+        inputElement = radioContainer as any; // Type assertion for compatibility
+        break;
+
       default:
         inputElement = document.createElement('input');
         inputElement.type = 'text';
         break;
     }
 
-    // Set common properties
-    inputElement.id = safeFieldName;
-    inputElement.disabled = disabled;
-    
-    // Get initial value from global storage or set default for date fields
-    let initialValue = globalFieldStorage.getValue(field.fieldName) || '';
-    
-    // Set today's date as default for date and datetime fields if no value exists
-    if (!initialValue && (field.fieldType === 'date' || field.fieldType === 'datetime')) {
-      if (field.fieldType === 'date') {
-        initialValue = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-      } else if (field.fieldType === 'datetime') {
-        initialValue = new Date().toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM format
+    // Set common properties - only for actual input elements, not containers
+    if (field.fieldType !== 'checkbox' && field.fieldType !== 'radio') {
+      inputElement.id = safeFieldName;
+      inputElement.disabled = disabled;
+      
+      // Get initial value from global storage or set default for date fields
+      let initialValue = globalFieldStorage.getValue(field.fieldName) || '';
+      
+      // Set today's date as default for date and datetime fields if no value exists
+      if (!initialValue && (field.fieldType === 'date' || field.fieldType === 'datetime')) {
+        if (field.fieldType === 'date') {
+          initialValue = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        } else if (field.fieldType === 'datetime') {
+          initialValue = new Date().toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM format
+        }
+        
+        // Store the default value in global storage
+        globalFieldStorage.setValue(field.fieldName, initialValue);
+        console.log(`📅 Set default date for ${field.fieldName}: ${initialValue}`);
       }
       
-      // Store the default value in global storage
-      globalFieldStorage.setValue(field.fieldName, initialValue);
-      console.log(`📅 Set default date for ${field.fieldName}: ${initialValue}`);
-    }
-    
-    inputElement.value = initialValue;
-    
-    // Set placeholder only for input and textarea elements
-    if (inputElement instanceof HTMLInputElement || inputElement instanceof HTMLTextAreaElement) {
-      inputElement.placeholder = field.placeholderText || '';
-    }
-    
-    // Apply classes if not already set
-    if (!inputElement.className) {
-      inputElement.className = baseClasses;
+      inputElement.value = initialValue;
+      
+      // Set placeholder only for input and textarea elements
+      if (inputElement instanceof HTMLInputElement || inputElement instanceof HTMLTextAreaElement) {
+        inputElement.placeholder = field.placeholderText || '';
+      }
+      
+      // Apply classes if not already set
+      if (!inputElement.className) {
+        inputElement.className = baseClasses;
+      }
+    } else {
+      // For checkbox and radio containers, just set the ID
+      inputElement.id = safeFieldName;
+      
+      // Handle initial values for checkbox and radio fields
+      const initialValue = globalFieldStorage.getValue(field.fieldName) || '';
+      
+      if (field.fieldType === 'checkbox' && initialValue) {
+        // Set initial checkbox values
+        const selectedValues = initialValue.split(',');
+        const checkboxes = (inputElement as HTMLElement).querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach((checkbox: any) => {
+          if (selectedValues.includes(checkbox.value)) {
+            checkbox.checked = true;
+          }
+        });
+      } else if (field.fieldType === 'radio' && initialValue) {
+        // Set initial radio value
+        const radioButton = (inputElement as HTMLElement).querySelector(`input[type="radio"][value="${initialValue}"]`) as HTMLInputElement;
+        if (radioButton) {
+          radioButton.checked = true;
+        }
+      }
     }
 
     // Add change listener that stores to global storage
@@ -225,11 +326,42 @@ const GlobalStorageField: React.FC<GlobalStorageFieldProps> = ({
       // Store in global storage
       globalFieldStorage.setValue(field.fieldName, newValue);
       
-      console.log(`💾 Stored ${field.fieldName}: "${newValue}"`);
+      // Verify storage was successful
+      const storedValue = globalFieldStorage.getValue(field.fieldName);
+      console.log(`💾 Stored ${field.fieldName}: "${newValue}" | Verified: "${storedValue}"`);
+      
+      // Additional verification for debugging
+      if (storedValue !== newValue) {
+        console.warn(`⚠️ Storage mismatch for ${field.fieldName}: expected "${newValue}", got "${storedValue}"`);
+      }
     };
 
-    inputElement.addEventListener('input', handleChange);
-    inputElement.addEventListener('change', handleChange);
+    // Add event listeners for all field types except checkbox and radio containers
+    if (field.fieldType !== 'checkbox' && field.fieldType !== 'radio') {
+      // Add multiple event types to ensure we capture value changes
+      const eventTypes = ['input', 'change', 'blur', 'keyup'];
+      
+      eventTypes.forEach(eventType => {
+        inputElement.addEventListener(eventType, handleChange);
+        console.log(`🎯 Added "${eventType}" listener to field: ${field.fieldName} (${field.fieldType})`);
+      });
+      
+      // Additional verification: Set up a periodic check to ensure storage is in sync
+      const verifyInterval = setInterval(() => {
+        const currentDOMValue = inputElement.value || '';
+        const currentStorageValue = globalFieldStorage.getValue(field.fieldName) || '';
+        
+        if (currentDOMValue !== currentStorageValue && currentDOMValue.trim() !== '') {
+          console.log(`🔄 Sync Detected: Storing DOM value "${currentDOMValue}" for field "${field.fieldName}"`);
+          globalFieldStorage.setValue(field.fieldName, currentDOMValue);
+        }
+      }, 1000); // Check every second
+      
+      // Clean up interval when component unmounts
+      setTimeout(() => {
+        clearInterval(verifyInterval);
+      }, 300000); // Stop after 5 minutes
+    }
     
     console.log(`✅ Successfully created and attached listeners for field: ${field.fieldName} (${field.fieldType})`);
 
@@ -237,7 +369,7 @@ const GlobalStorageField: React.FC<GlobalStorageFieldProps> = ({
     inputElementRef.current = inputElement;
 
     // Add to DOM
-    if (field.fieldType !== 'currency' && field.fieldType !== 'date') {
+    if (field.fieldType !== 'currency' && field.fieldType !== 'date' && field.fieldType !== 'checkbox' && field.fieldType !== 'radio') {
       fieldWrapper.appendChild(inputElement);
     }
     container.appendChild(fieldWrapper);
@@ -271,9 +403,11 @@ const GlobalStorageField: React.FC<GlobalStorageFieldProps> = ({
     // Cleanup function
     return () => {
       console.log(`🧹 Cleaning up field: ${field.fieldName}`);
-      if (inputElementRef.current) {
-        inputElementRef.current.removeEventListener('input', handleChange);
-        inputElementRef.current.removeEventListener('change', handleChange);
+      if (inputElementRef.current && field.fieldType !== 'checkbox' && field.fieldType !== 'radio') {
+        const eventTypes = ['input', 'change', 'blur', 'keyup'];
+        eventTypes.forEach(eventType => {
+          inputElementRef.current!.removeEventListener(eventType, handleChange);
+        });
       }
     };
   }, []); // Only run once, never again!

@@ -18,7 +18,8 @@ import {
   UserGroupIcon,
   BookOpenIcon,
   WrenchScrewdriverIcon,
-  DocumentMagnifyingGlassIcon
+  DocumentMagnifyingGlassIcon,
+  CubeIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 
@@ -126,6 +127,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           href: '/manager',
           icon: CheckCircleIcon,
           roles: ['manager', 'admin']
+        },
+        {
+          name: 'Asset Management',
+          href: '/assets',
+          icon: CubeIcon,
+          roles: ['technician', 'manager', 'admin']
         }
       ]
     },

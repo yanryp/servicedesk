@@ -141,6 +141,15 @@ const ServiceCatalogPage: React.FC = () => {
       // Set smart defaults after ensuring DOM elements are ready
       setTimeout(() => {
         setSmartDefaults(template, service);
+        
+        // Focus on the first form field after setting defaults
+        setTimeout(() => {
+          const firstField = document.querySelector('input[type="text"], textarea, select');
+          if (firstField) {
+            (firstField as HTMLElement).focus();
+            console.log('🎯 Set focus to first form field after service selection');
+          }
+        }, 100); // Small delay to ensure defaults are set
       }, 500); // Increased delay to ensure GlobalStorageField components have created DOM elements
     } catch (error) {
       console.error('Error loading service template:', error);
@@ -166,14 +175,14 @@ const ServiceCatalogPage: React.FC = () => {
       errors.description = 'Description is required';
     }
 
-    // Validate template fields using global storage values
+    // Validate template fields using both field values and global storage
     if (selectedTemplate?.fields) {
       selectedTemplate.fields.forEach(field => {
         if (field.required) {
-          // Check global storage using field.name (which becomes fieldName in transformation)
-          const value = currentFieldValues[field.name];
-          console.log(`🔍 Validating field "${field.name}" (${field.label}): value = "${value}", required = ${field.required}`);
-          if (!value || (typeof value === 'string' && !value.trim())) {
+          // Check both fieldValues state and global storage
+          const fieldValue = fieldValues[field.name] || currentFieldValues[field.name];
+          console.log(`🔍 Validating field "${field.name}" (${field.label}): value = "${fieldValue}", required = ${field.required}`);
+          if (!fieldValue || (typeof fieldValue === 'string' && !fieldValue.trim())) {
             errors[field.name] = `${field.label} is required`;
             console.log(`❌ Field "${field.name}" failed validation`);
           } else {
@@ -375,16 +384,22 @@ const ServiceCatalogPage: React.FC = () => {
       // Get current field values from global storage
       const currentFieldValues = globalFieldStorage.getAllValues();
       
-      // Extract issue classification from global storage (for all service catalog templates)
-      const rootCauseValue = currentFieldValues['rootCause'] as RootCauseType;
-      const issueCategoryValue = currentFieldValues['issueCategory'] as IssueCategoryType;
+      // Merge field values from both sources
+      const mergedFieldValues = {
+        ...currentFieldValues,
+        ...fieldValues
+      };
+      
+      // Extract issue classification from merged field values
+      const rootCauseValue = mergedFieldValues['rootCause'] as RootCauseType;
+      const issueCategoryValue = mergedFieldValues['issueCategory'] as IssueCategoryType;
       
       const response = await serviceCatalogService.createTicket({
         serviceId: selectedService.id,
         title: ticketTitle,
         description: ticketDescription,
         priority: ticketPriority,
-        fieldValues: currentFieldValues,
+        fieldValues: mergedFieldValues,
         attachments: attachments,
         rootCause: rootCauseValue || undefined,
         issueCategory: issueCategoryValue || undefined
@@ -771,10 +786,19 @@ const ServiceCatalogPage: React.FC = () => {
                       key={`template-${selectedTemplate.templateId || 0}`}
                       templateId={selectedTemplate.templateId || 0}
                       fields={transformedFields}
-                      values={{}} // Not used by GlobalStorageField
-                      onChange={() => {}} // Not used by GlobalStorageField  
-                      errors={{}} // Not used by GlobalStorageField
+                      values={fieldValues}
+                      onChange={handleFieldChange}
+                      errors={fieldErrors}
                       showCategories={true}
+                      onMasterDataLoaded={(masterData) => {
+                        console.log('🔄 Master data loaded for customer portal:', masterData);
+                        // Set smart defaults with master data
+                        if (selectedTemplate && selectedService) {
+                          setTimeout(() => {
+                            setSmartDefaults(selectedTemplate, selectedService);
+                          }, 200);
+                        }
+                      }}
                     />
                   ) : (
                     <div className="text-center py-8 text-gray-500">

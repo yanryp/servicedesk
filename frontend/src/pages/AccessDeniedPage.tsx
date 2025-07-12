@@ -69,10 +69,9 @@ const AccessDeniedPage: React.FC = () => {
             onClick={() => window.history.back()}
             variant="primary"
             size="lg"
-            icon={ArrowLeftIcon}
-            iconPosition="left"
             fullWidth
           >
+            <ArrowLeftIcon className="w-5 h-5 mr-2" />
             Go Back
           </Button>
           
@@ -80,10 +79,9 @@ const AccessDeniedPage: React.FC = () => {
             <Button
               variant="outline"
               size="lg"
-              icon={HomeIcon}
-              iconPosition="left"
               fullWidth
             >
+              <HomeIcon className="w-5 h-5 mr-2" />
               Return to Dashboard
             </Button>
           </Link>

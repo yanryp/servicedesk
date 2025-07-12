@@ -1,6 +1,6 @@
 // src/components/ui/EmptyState.tsx
 import React from 'react';
-import Button from './Button';
+import { Button } from './button';
 
 interface EmptyStateProps {
   icon?: React.ComponentType<{ className?: string }>;

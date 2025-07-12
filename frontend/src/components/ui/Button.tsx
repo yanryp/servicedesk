@@ -1,18 +1,13 @@
-// src/components/ui/Button.tsx
 import React from 'react';
-import { ArrowRightIcon } from '@heroicons/react/24/outline';
 
 interface ButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
   type?: 'button' | 'submit' | 'reset';
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'default';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   disabled?: boolean;
   loading?: boolean;
-  icon?: React.ComponentType<{ className?: string }>;
-  iconPosition?: 'left' | 'right';
-  showArrow?: boolean;
   className?: string;
   fullWidth?: boolean;
 }
@@ -21,13 +16,10 @@ const Button: React.FC<ButtonProps> = ({
   children,
   onClick,
   type = 'button',
-  variant = 'primary',
+  variant = 'default',
   size = 'md',
   disabled = false,
   loading = false,
-  icon: Icon,
-  iconPosition = 'left',
-  showArrow = false,
   className = '',
   fullWidth = false
 }) => {
@@ -39,7 +31,8 @@ const Button: React.FC<ButtonProps> = ({
     outline: 'bg-transparent text-blue-600 border border-blue-200 hover:bg-blue-50 hover:border-blue-300 focus:ring-blue-500 active:scale-95',
     ghost: 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-700 focus:ring-slate-500 active:scale-95',
     danger: 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg hover:from-red-700 hover:to-red-800 hover:shadow-xl focus:ring-red-500 active:scale-95',
-    success: 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg hover:from-green-700 hover:to-emerald-700 hover:shadow-xl focus:ring-green-500 active:scale-95'
+    success: 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg hover:from-green-700 hover:to-emerald-700 hover:shadow-xl focus:ring-green-500 active:scale-95',
+    default: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500 active:scale-95'
   };
 
   const sizeClasses = {
@@ -51,29 +44,12 @@ const Button: React.FC<ButtonProps> = ({
 
   const widthClasses = fullWidth ? 'w-full' : '';
 
-  const renderIcon = (position: 'left' | 'right') => {
-    if (loading && position === 'left') {
-      return <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />;
-    }
-    
-    if (Icon && iconPosition === position) {
-      return <Icon className="w-4 h-4" />;
-    }
-    
-    if (showArrow && position === 'right') {
-      return <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />;
-    }
-    
-    return null;
-  };
-
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
       className={`
-        group
         ${baseClasses}
         ${variantClasses[variant]}
         ${sizeClasses[size]}
@@ -81,11 +57,13 @@ const Button: React.FC<ButtonProps> = ({
         ${className}
       `}
     >
-      {renderIcon('left')}
-      <span>{children}</span>
-      {renderIcon('right')}
+      {loading && (
+        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2" />
+      )}
+      {children}
     </button>
   );
 };
 
+export { Button };
 export default Button;

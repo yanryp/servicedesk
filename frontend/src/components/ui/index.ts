@@ -1,6 +1,6 @@
 // src/components/ui/index.ts
-export { default as Card } from './Card';
-export { default as Button } from './Button';
+export { Card } from './card';
+export { Button } from './button';
 export { default as StatusBadge } from './StatusBadge';
 export { default as PriorityBadge } from './PriorityBadge';
 export { default as ProgressBar } from './ProgressBar';

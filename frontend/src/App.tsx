@@ -35,6 +35,7 @@ import CategoryManagementPage from './pages/admin/CategoryManagementPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
 import CustomerPortalPage from './pages/customer/CustomerPortalPage';
+import AssetManagementPage from './pages/AssetManagementPage';
 
 function App() {
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -358,6 +359,10 @@ function App() {
             <Route path="/categorization/analytics" element={<ProtectedRoute roles={['admin', 'manager']}><div className="container mx-auto p-6 max-w-7xl"><CategorizationAnalyticsPage /></div></ProtectedRoute>} />
             <Route path="/categorization/queue" element={<ProtectedRoute roles={['admin', 'technician']}><div className="container mx-auto p-6 max-w-7xl"><UncategorizedTicketsPage /></div></ProtectedRoute>} />
             <Route path="/technician/tickets" element={<ProtectedRoute roles={['technician', 'manager', 'admin']}><div className="container mx-auto p-6 max-w-7xl"><TechnicianTicketsPage /></div></ProtectedRoute>} />
+            
+            {/* Asset Management Routes */}
+            <Route path="/assets" element={<ProtectedRoute roles={['technician', 'manager', 'admin']}><AssetManagementPage /></ProtectedRoute>} />
+            
             {/* Catch-all redirect to home for authenticated users */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

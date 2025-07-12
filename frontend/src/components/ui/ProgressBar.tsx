@@ -2,7 +2,9 @@
 import React from 'react';
 
 interface ProgressBarProps {
-  progress: number; // 0-100
+  progress?: number; // 0-100
+  value?: number; // Alternative to progress - raw value
+  max?: number; // Max value to calculate percentage
   status?: string;
   size?: 'sm' | 'md' | 'lg';
   variant?: 'default' | 'success' | 'warning' | 'danger';
@@ -15,6 +17,8 @@ interface ProgressBarProps {
 
 const ProgressBar: React.FC<ProgressBarProps> = ({
   progress,
+  value,
+  max,
   status,
   size = 'md',
   variant = 'default',
@@ -24,6 +28,12 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   animated = false,
   className = ''
 }) => {
+  // Calculate progress from value/max if progress not provided
+  const calculatedProgress = progress !== undefined 
+    ? progress 
+    : (value !== undefined && max !== undefined && max > 0) 
+      ? (value / max) * 100 
+      : 0;
   const sizeClasses = {
     sm: 'h-1',
     md: 'h-2',
@@ -64,7 +74,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
         <div className="flex items-center justify-between mb-2">
           {(label || showLabel) && (
             <span className="text-sm font-medium text-gray-700">
-              {label || `Progress: ${Math.round(progress)}%`}
+              {label || `Progress: ${Math.round(calculatedProgress)}%`}
             </span>
           )}
           {description && (
@@ -81,7 +91,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
             ${animationClass}
             rounded-full
           `}
-          style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+          style={{ width: `${Math.min(100, Math.max(0, calculatedProgress))}%` }}
         />
       </div>
     </div>

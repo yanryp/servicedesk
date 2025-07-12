@@ -381,12 +381,42 @@ const CustomerTicketCreation: React.FC = () => {
       errors.description = 'Description is required';
     }
 
-    // Validate dynamic template fields using global storage values
+    // Validate dynamic template fields using global storage values with DOM fallback
     if (dynamicFields.length > 0) {
       dynamicFields.forEach(field => {
         if (field.isRequired) {
           // Check global storage using field.fieldName
-          const value = currentFieldValues[field.fieldName];
+          let value = currentFieldValues[field.fieldName];
+          
+          // Fallback: if storage is empty, try to read from DOM element directly
+          if (!value || (typeof value === 'string' && !value.trim())) {
+            const escapeFieldName = (name: string) => name.replace(/[\/\s\.\[\]#:]/g, '_');
+            const safeFieldName = escapeFieldName(field.fieldName);
+            const domElement = document.getElementById(safeFieldName) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+            
+            if (domElement) {
+              if (field.fieldType === 'checkbox') {
+                // For checkboxes, collect all checked values
+                const checkboxes = domElement.querySelectorAll('input[type="checkbox"]:checked');
+                const values = Array.from(checkboxes).map((cb: any) => cb.value);
+                value = values.join(',');
+              } else if (field.fieldType === 'radio') {
+                // For radio buttons, get the selected value
+                const selectedRadio = domElement.querySelector('input[type="radio"]:checked') as HTMLInputElement;
+                value = selectedRadio ? selectedRadio.value : '';
+              } else {
+                // For other field types, get the value directly
+                value = domElement.value || '';
+              }
+              
+              // Store the DOM value back to global storage for consistency
+              if (value) {
+                globalFieldStorage.setValue(field.fieldName, value);
+                console.log(`🔄 DOM Fallback: Stored "${field.fieldName}" = "${value}" from DOM to global storage`);
+              }
+            }
+          }
+          
           console.log(`🔍 Validating field "${field.fieldName}" (${field.fieldLabel}): value = "${value}", required = ${field.isRequired}`);
           if (!value || (typeof value === 'string' && !value.trim())) {
             errors[field.fieldName] = `${field.fieldLabel} is required`;
@@ -519,6 +549,134 @@ const CustomerTicketCreation: React.FC = () => {
     }
   };
   
+  // Set smart default values based on service and category (same logic as service catalog admin)
+  const setSmartDefaults = (service: Service, category: ServiceCategory) => {
+    const categoryName = category.name?.toLowerCase() || '';
+    const serviceName = service.name.toLowerCase();
+    
+    console.log(`🎯 Analyzing service for smart defaults:`);
+    console.log(`   📂 Category: "${categoryName}"`);
+    console.log(`   📋 Service: "${serviceName}"`);
+    
+    let defaultRootCause = '';
+    let defaultIssueCategory = '';
+    let reasonMatched = '';
+    
+    // Smart mapping based on service/category characteristics (same logic as admin service catalog)
+    if (
+      categoryName.includes('hardware') || 
+      categoryName.includes('infrastructure') ||
+      categoryName.includes('network') ||
+      categoryName.includes('technical') ||
+      categoryName.includes('atm') ||
+      serviceName.includes('hardware') ||
+      serviceName.includes('network') ||
+      serviceName.includes('server') ||
+      serviceName.includes('printer') ||
+      serviceName.includes('computer') ||
+      serviceName.includes('technical') ||
+      serviceName.includes('atm')
+    ) {
+      defaultRootCause = 'system_error';
+      defaultIssueCategory = 'problem';
+      reasonMatched = 'Hardware/Infrastructure/Network related';
+    } else if (
+      categoryName.includes('user') || 
+      categoryName.includes('account') ||
+      categoryName.includes('access') ||
+      categoryName.includes('permission') ||
+      categoryName.includes('olibs') ||
+      serviceName.includes('user') ||
+      serviceName.includes('account') ||
+      serviceName.includes('password') ||
+      serviceName.includes('login') ||
+      serviceName.includes('access') ||
+      serviceName.includes('permission') ||
+      serviceName.includes('olibs') ||
+      serviceName.includes('pendaftaran') ||
+      serviceName.includes('mutasi')
+    ) {
+      defaultRootCause = 'human_error';
+      defaultIssueCategory = 'request';
+      reasonMatched = 'User/Account/Access related';
+    } else if (
+      categoryName.includes('software') || 
+      categoryName.includes('application') ||
+      categoryName.includes('system') ||
+      categoryName.includes('qris') ||
+      categoryName.includes('bsgtouch') ||
+      serviceName.includes('software') ||
+      serviceName.includes('application') ||
+      serviceName.includes('system') ||
+      serviceName.includes('app') ||
+      serviceName.includes('qris') ||
+      serviceName.includes('bsgtouch')
+    ) {
+      defaultRootCause = 'system_error';
+      defaultIssueCategory = 'problem';
+      reasonMatched = 'Software/Application/System related';
+    } else if (
+      categoryName.includes('request') ||
+      categoryName.includes('service') ||
+      categoryName.includes('klaim') ||
+      categoryName.includes('claims') ||
+      categoryName.includes('transfer') ||
+      categoryName.includes('transaksi') ||
+      serviceName.includes('request') ||
+      serviceName.includes('service') ||
+      serviceName.includes('klaim') ||
+      serviceName.includes('transfer') ||
+      serviceName.includes('transaksi')
+    ) {
+      defaultRootCause = 'external_factor';
+      defaultIssueCategory = 'request';
+      reasonMatched = 'Service Request/Claims/Transfer related';
+    } else if (
+      categoryName.includes('banking') ||
+      categoryName.includes('government') ||
+      categoryName.includes('kasda') ||
+      serviceName.includes('banking') ||
+      serviceName.includes('government') ||
+      serviceName.includes('kasda')
+    ) {
+      defaultRootCause = 'external_factor';
+      defaultIssueCategory = 'request';
+      reasonMatched = 'Banking/Government related';
+    } else {
+      console.log(`ℹ️  No pattern match found - leaving issue classification blank for user choice`);
+      return;
+    }
+    
+    // Set defaults in global storage if we have them (same approach as admin service catalog)
+    if (defaultRootCause && reasonMatched) {
+      globalFieldStorage.setValue('rootCause', defaultRootCause);
+      console.log(`✅ Set default root cause: "${defaultRootCause}" (${reasonMatched})`);
+      
+      // Verify DOM element was updated
+      setTimeout(() => {
+        const element = document.getElementById('rootCause');
+        if (element && (element as HTMLSelectElement).value !== defaultRootCause) {
+          console.log(`🔄 Retrying root cause update - DOM element not ready initially`);
+          globalFieldStorage.setValue('rootCause', defaultRootCause);
+        }
+      }, 200);
+    }
+    
+    if (defaultIssueCategory && reasonMatched) {
+      globalFieldStorage.setValue('issueCategory', defaultIssueCategory);
+      console.log(`✅ Set default issue category: "${defaultIssueCategory}" (${reasonMatched})`);
+      
+      // Verify DOM element was updated
+      setTimeout(() => {
+        const element = document.getElementById('issueCategory');
+        if (element && (element as HTMLSelectElement).value !== defaultIssueCategory) {
+          console.log(`🔄 Retrying issue category update - DOM element not ready initially`);
+          globalFieldStorage.setValue('issueCategory', defaultIssueCategory);
+        }
+      }, 200);
+    }
+  };
+  
   const handleServiceSelection = async (category: ServiceCategory, service: Service) => {
     setSelectedCategory(category);
     setSelectedService(service);
@@ -541,6 +699,9 @@ const CustomerTicketCreation: React.FC = () => {
       setDynamicFields([]);
       setMasterData({});
     }
+    
+    // Set smart defaults for issue classification (following admin service catalog behavior)
+    setSmartDefaults(service, category);
     
     // Skip contact step for authenticated users and advance to details
     nextStep();
