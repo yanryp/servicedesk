@@ -1,0 +1,4768 @@
+{
+  "timestamp": "2025-07-12T05:49:49.815Z",
+  "description": "Database data export for dynamic fields and master data",
+  "version": "1.0.0",
+  "serviceFieldDefinitions": [
+    {
+      "serviceItemName": "New Employee Account Setup",
+      "fieldName": "employee_name",
+      "fieldLabel": "Employee Full Name",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Enter employee full name",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "New Employee Account Setup",
+      "fieldName": "employee_id",
+      "fieldLabel": "Employee ID",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Enter employee ID number",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": {
+        "pattern": "^[A-Z]{3}[0-9]{6}$",
+        "helpText": "Format: 3 letters followed by 6 digits (e.g., BSG123456)"
+      }
+    },
+    {
+      "serviceItemName": "New Employee Account Setup",
+      "fieldName": "department",
+      "fieldLabel": "Department",
+      "fieldType": "dropdown",
+      "isRequired": true,
+      "placeholder": null,
+      "options": [
+        {
+          "label": "Information Technology",
+          "value": "it"
+        },
+        {
+          "label": "Human Resources",
+          "value": "hr"
+        },
+        {
+          "label": "Finance & Accounting",
+          "value": "finance"
+        },
+        {
+          "label": "Operations",
+          "value": "operations"
+        },
+        {
+          "label": "Marketing",
+          "value": "marketing"
+        },
+        {
+          "label": "Customer Service",
+          "value": "customer_service"
+        }
+      ],
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "New Employee Account Setup",
+      "fieldName": "start_date",
+      "fieldLabel": "Start Date",
+      "fieldType": "date",
+      "isRequired": true,
+      "placeholder": null,
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": {
+        "helpText": "Employee start date"
+      }
+    },
+    {
+      "serviceItemName": "New Employee Account Setup",
+      "fieldName": "systems_access",
+      "fieldLabel": "Required System Access",
+      "fieldType": "checkbox",
+      "isRequired": true,
+      "placeholder": null,
+      "options": [
+        {
+          "label": "Email Account",
+          "value": "email"
+        },
+        {
+          "label": "KASDA System",
+          "value": "kasda"
+        },
+        {
+          "label": "BSGDirect",
+          "value": "bsgdirect"
+        },
+        {
+          "label": "Core Banking System",
+          "value": "core_banking"
+        },
+        {
+          "label": "HR Management System",
+          "value": "hr_system"
+        },
+        {
+          "label": "File Share Access",
+          "value": "file_share"
+        }
+      ],
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "New Employee Account Setup",
+      "fieldName": "mobile_number",
+      "fieldLabel": "Mobile Phone Number",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "+62-xxx-xxxx-xxxx",
+      "options": null,
+      "sortOrder": 6,
+      "defaultValue": null,
+      "validationRules": {
+        "pattern": "^\\+62[0-9]{9,12}$"
+      }
+    },
+    {
+      "serviceItemName": "New Employee Account Setup",
+      "fieldName": "office_location",
+      "fieldLabel": "Office Location",
+      "fieldType": "radio",
+      "isRequired": true,
+      "placeholder": null,
+      "options": [
+        {
+          "label": "Headquarters - Manado",
+          "value": "hq"
+        },
+        {
+          "label": "Branch Office",
+          "value": "branch"
+        },
+        {
+          "label": "Remote Worker",
+          "value": "remote"
+        }
+      ],
+      "sortOrder": 7,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "New Employee Account Setup",
+      "fieldName": "computer_required",
+      "fieldLabel": "Computer Required?",
+      "fieldType": "radio",
+      "isRequired": true,
+      "placeholder": null,
+      "options": [
+        {
+          "label": "Yes - Desktop",
+          "value": "yes"
+        },
+        {
+          "label": "Yes - Laptop",
+          "value": "laptop"
+        },
+        {
+          "label": "No - Using existing",
+          "value": "no"
+        }
+      ],
+      "sortOrder": 8,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "New Employee Account Setup",
+      "fieldName": "special_notes",
+      "fieldLabel": "Special Requirements or Notes",
+      "fieldType": "textarea",
+      "isRequired": false,
+      "placeholder": "Any special access requirements or notes",
+      "options": null,
+      "sortOrder": 9,
+      "defaultValue": null,
+      "validationRules": {
+        "rows": 4
+      }
+    },
+    {
+      "serviceItemName": "OLIBs - BE Error",
+      "fieldName": "nama_lengkap",
+      "fieldLabel": "Nama Lengkap",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap user",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - BE Error",
+      "fieldName": "nip_pegawai",
+      "fieldLabel": "NIP/ID Pegawai",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor Induk Pegawai",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - BE Error",
+      "fieldName": "jabatan",
+      "fieldLabel": "Jabatan",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Jabatan pegawai",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - BE Error",
+      "fieldName": "unit_kerja",
+      "fieldLabel": "Unit Kerja/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit kerja atau cabang",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - BE Error",
+      "fieldName": "tanggal_berlaku",
+      "fieldLabel": "Tanggal Berlaku",
+      "fieldType": "date",
+      "isRequired": true,
+      "placeholder": "Tanggal berlaku perubahan",
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Buka Blokir",
+      "fieldName": "nama_lengkap",
+      "fieldLabel": "Nama Lengkap",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap user",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Buka Blokir",
+      "fieldName": "nip_pegawai",
+      "fieldLabel": "NIP/ID Pegawai",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor Induk Pegawai",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Buka Blokir",
+      "fieldName": "jabatan",
+      "fieldLabel": "Jabatan",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Jabatan pegawai",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Buka Blokir",
+      "fieldName": "unit_kerja",
+      "fieldLabel": "Unit Kerja/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit kerja atau cabang",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Buka Blokir",
+      "fieldName": "tanggal_berlaku",
+      "fieldLabel": "Tanggal Berlaku",
+      "fieldType": "date",
+      "isRequired": true,
+      "placeholder": "Tanggal berlaku perubahan",
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Error Deposito",
+      "fieldName": "nama_lengkap",
+      "fieldLabel": "Nama Lengkap",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap user",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Error Deposito",
+      "fieldName": "nip_pegawai",
+      "fieldLabel": "NIP/ID Pegawai",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor Induk Pegawai",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Error Deposito",
+      "fieldName": "jabatan",
+      "fieldLabel": "Jabatan",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Jabatan pegawai",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Error Deposito",
+      "fieldName": "unit_kerja",
+      "fieldLabel": "Unit Kerja/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit kerja atau cabang",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Error Deposito",
+      "fieldName": "tanggal_berlaku",
+      "fieldLabel": "Tanggal Berlaku",
+      "fieldType": "date",
+      "isRequired": true,
+      "placeholder": "Tanggal berlaku perubahan",
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Error Giro",
+      "fieldName": "nama_lengkap",
+      "fieldLabel": "Nama Lengkap",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap user",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Error Giro",
+      "fieldName": "nip_pegawai",
+      "fieldLabel": "NIP/ID Pegawai",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor Induk Pegawai",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Error Giro",
+      "fieldName": "jabatan",
+      "fieldLabel": "Jabatan",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Jabatan pegawai",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Error Giro",
+      "fieldName": "unit_kerja",
+      "fieldLabel": "Unit Kerja/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit kerja atau cabang",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Error Giro",
+      "fieldName": "tanggal_berlaku",
+      "fieldLabel": "Tanggal Berlaku",
+      "fieldType": "date",
+      "isRequired": true,
+      "placeholder": "Tanggal berlaku perubahan",
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Error Kredit",
+      "fieldName": "nama_lengkap",
+      "fieldLabel": "Nama Lengkap",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap user",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Error Kredit",
+      "fieldName": "nip_pegawai",
+      "fieldLabel": "NIP/ID Pegawai",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor Induk Pegawai",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Error Kredit",
+      "fieldName": "jabatan",
+      "fieldLabel": "Jabatan",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Jabatan pegawai",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Error Kredit",
+      "fieldName": "unit_kerja",
+      "fieldLabel": "Unit Kerja/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit kerja atau cabang",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Error Kredit",
+      "fieldName": "tanggal_berlaku",
+      "fieldLabel": "Tanggal Berlaku",
+      "fieldType": "date",
+      "isRequired": true,
+      "placeholder": "Tanggal berlaku perubahan",
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Pendaftaran User Baru",
+      "fieldName": "nama_lengkap",
+      "fieldLabel": "Nama Lengkap",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Masukkan nama lengkap pengguna",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Pendaftaran User Baru",
+      "fieldName": "nip",
+      "fieldLabel": "NIP (Nomor Induk Pegawai)",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Masukkan NIP",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Pendaftaran User Baru",
+      "fieldName": "jabatan",
+      "fieldLabel": "Jabatan",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Masukkan jabatan",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Pendaftaran User Baru",
+      "fieldName": "unit_kerja",
+      "fieldLabel": "Unit Kerja",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Masukkan unit kerja",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Pendaftaran User Baru",
+      "fieldName": "jenis_akses",
+      "fieldLabel": "Jenis Akses yang Diperlukan",
+      "fieldType": "dropdown",
+      "isRequired": true,
+      "placeholder": null,
+      "options": [
+        {
+          "label": "View Only",
+          "value": "view_only",
+          "sortOrder": 1
+        },
+        {
+          "label": "Input Transaksi",
+          "value": "input_transaksi",
+          "sortOrder": 2
+        },
+        {
+          "label": "Supervisor/Approval",
+          "value": "supervisor",
+          "sortOrder": 3
+        }
+      ],
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "OLIBs - Pendaftaran User Baru",
+      "fieldName": "modul_akses",
+      "fieldLabel": "Modul yang Diakses",
+      "fieldType": "checkbox",
+      "isRequired": true,
+      "placeholder": null,
+      "options": "[{\"value\":\"deposito\",\"label\":\"Deposito\"},{\"value\":\"tabungan\",\"label\":\"Tabungan\"},{\"value\":\"kredit\",\"label\":\"Kredit\"},{\"value\":\"giro\",\"label\":\"Giro\"},{\"value\":\"laporan\",\"label\":\"Laporan\"}]",
+      "sortOrder": 6,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "Antasena - Error Proses Aplikasi",
+      "fieldName": "nama_pelapor",
+      "fieldLabel": "Nama Pelapor",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap pelapor",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "Antasena - Error Proses Aplikasi",
+      "fieldName": "unit_cabang",
+      "fieldLabel": "Unit/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit atau cabang pelapor",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "Antasena - Error Proses Aplikasi",
+      "fieldName": "nomor_kontak",
+      "fieldLabel": "Nomor Kontak",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP/telepon",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "Antasena - Error Proses Aplikasi",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "Antasena - Error Proses Aplikasi",
+      "fieldName": "ip_address",
+      "fieldLabel": "IP Address/Server",
+      "fieldType": "text",
+      "isRequired": false,
+      "placeholder": "IP address atau nama server",
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "Antasena - Error Proses Aplikasi",
+      "fieldName": "error_message",
+      "fieldLabel": "Pesan Error",
+      "fieldType": "textarea",
+      "isRequired": false,
+      "placeholder": "Pesan error yang muncul",
+      "options": null,
+      "sortOrder": 6,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSG QRIS - Error Transaksi/Aplikasi",
+      "fieldName": "merchant_name",
+      "fieldLabel": "Nama Merchant",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama merchant QRIS",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSG QRIS - Error Transaksi/Aplikasi",
+      "fieldName": "qris_id",
+      "fieldLabel": "ID QRIS/Terminal",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "ID QRIS atau terminal",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSG QRIS - Error Transaksi/Aplikasi",
+      "fieldName": "nominal_transaksi",
+      "fieldLabel": "Nominal Transaksi",
+      "fieldType": "number",
+      "isRequired": true,
+      "placeholder": "Jumlah transaksi",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSG QRIS - Error Transaksi/Aplikasi",
+      "fieldName": "waktu_transaksi",
+      "fieldLabel": "Waktu Transaksi",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan transaksi dilakukan",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM - Cassette Supply/Persediaan Kaset",
+      "fieldName": "lokasi_atm",
+      "fieldLabel": "Lokasi ATM",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Lokasi ATM (cabang/alamat)",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM - Cassette Supply/Persediaan Kaset",
+      "fieldName": "nomor_kartu",
+      "fieldLabel": "Nomor Kartu (4 digit terakhir)",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Contoh: xxxx1234",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM - Cassette Supply/Persediaan Kaset",
+      "fieldName": "waktu_transaksi",
+      "fieldLabel": "Waktu Transaksi",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan transaksi dilakukan",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM - Cassette Supply/Persediaan Kaset",
+      "fieldName": "nominal_transaksi",
+      "fieldLabel": "Nominal Transaksi",
+      "fieldType": "number",
+      "isRequired": false,
+      "placeholder": "Jumlah transaksi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM - Cassette Supply/Persediaan Kaset",
+      "fieldName": "jenis_masalah",
+      "fieldLabel": "Jenis Masalah",
+      "fieldType": "dropdown",
+      "isRequired": true,
+      "placeholder": "Pilih jenis masalah",
+      "options": [
+        {
+          "label": "Kartu Tertelan",
+          "value": "kartu_tertelan",
+          "sortOrder": 1
+        },
+        {
+          "label": "Uang Tidak Keluar",
+          "value": "uang_tidak_keluar",
+          "sortOrder": 2
+        },
+        {
+          "label": "Struk Tidak Keluar",
+          "value": "struk_tidak_keluar",
+          "sortOrder": 3
+        },
+        {
+          "label": "Saldo Terpotong Tanpa Uang Keluar",
+          "value": "saldo_terpotong",
+          "sortOrder": 4
+        },
+        {
+          "label": "Transaksi Gagal/Error",
+          "value": "transaksi_gagal",
+          "sortOrder": 5
+        }
+      ],
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM - MCRW Fatal",
+      "fieldName": "lokasi_atm",
+      "fieldLabel": "Lokasi ATM",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Lokasi ATM (cabang/alamat)",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM - MCRW Fatal",
+      "fieldName": "nomor_kartu",
+      "fieldLabel": "Nomor Kartu (4 digit terakhir)",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Contoh: xxxx1234",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM - MCRW Fatal",
+      "fieldName": "waktu_transaksi",
+      "fieldLabel": "Waktu Transaksi",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan transaksi dilakukan",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM - MCRW Fatal",
+      "fieldName": "nominal_transaksi",
+      "fieldLabel": "Nominal Transaksi",
+      "fieldType": "number",
+      "isRequired": false,
+      "placeholder": "Jumlah transaksi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM - MCRW Fatal",
+      "fieldName": "jenis_masalah",
+      "fieldLabel": "Jenis Masalah",
+      "fieldType": "dropdown",
+      "isRequired": true,
+      "placeholder": "Pilih jenis masalah",
+      "options": [
+        {
+          "label": "Kartu Tertelan",
+          "value": "kartu_tertelan",
+          "sortOrder": 1
+        },
+        {
+          "label": "Uang Tidak Keluar",
+          "value": "uang_tidak_keluar",
+          "sortOrder": 2
+        },
+        {
+          "label": "Struk Tidak Keluar",
+          "value": "struk_tidak_keluar",
+          "sortOrder": 3
+        },
+        {
+          "label": "Saldo Terpotong Tanpa Uang Keluar",
+          "value": "saldo_terpotong",
+          "sortOrder": 4
+        },
+        {
+          "label": "Transaksi Gagal/Error",
+          "value": "transaksi_gagal",
+          "sortOrder": 5
+        }
+      ],
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pendaftaran Terminal Baru",
+      "fieldName": "nama_pelapor",
+      "fieldLabel": "Nama Pelapor",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap pelapor",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pendaftaran Terminal Baru",
+      "fieldName": "unit_cabang",
+      "fieldLabel": "Unit/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit atau cabang pelapor",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pendaftaran Terminal Baru",
+      "fieldName": "nomor_kontak",
+      "fieldLabel": "Nomor Kontak",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP/telepon",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pendaftaran Terminal Baru",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pengiriman Log Jurnal",
+      "fieldName": "nama_pelapor",
+      "fieldLabel": "Nama Pelapor",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap pelapor",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pengiriman Log Jurnal",
+      "fieldName": "unit_cabang",
+      "fieldLabel": "Unit/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit atau cabang pelapor",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pengiriman Log Jurnal",
+      "fieldName": "nomor_kontak",
+      "fieldLabel": "Nomor Kontak",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP/telepon",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pengiriman Log Jurnal",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Permasalahan Teknis",
+      "fieldName": "lokasi_atm",
+      "fieldLabel": "Lokasi ATM",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Masukkan lokasi ATM",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Permasalahan Teknis",
+      "fieldName": "terminal_id",
+      "fieldLabel": "Terminal ID",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Masukkan Terminal ID",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Permasalahan Teknis",
+      "fieldName": "jenis_masalah",
+      "fieldLabel": "Jenis Masalah",
+      "fieldType": "dropdown",
+      "isRequired": true,
+      "placeholder": null,
+      "options": [
+        {
+          "label": "Kartu Tertelan",
+          "value": "kartu_tertelan",
+          "sortOrder": 1
+        },
+        {
+          "label": "Uang Tidak Keluar",
+          "value": "uang_tidak_keluar",
+          "sortOrder": 2
+        },
+        {
+          "label": "Mesin Error/Hang",
+          "value": "mesin_error",
+          "sortOrder": 3
+        },
+        {
+          "label": "Kertas Struk Habis",
+          "value": "kertas_habis",
+          "sortOrder": 4
+        },
+        {
+          "label": "Jaringan Offline",
+          "value": "jaringan_offline",
+          "sortOrder": 5
+        },
+        {
+          "label": "Lainnya",
+          "value": "lainnya",
+          "sortOrder": 6
+        }
+      ],
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Permasalahan Teknis",
+      "fieldName": "deskripsi_masalah",
+      "fieldLabel": "Deskripsi Detail Masalah",
+      "fieldType": "textarea",
+      "isRequired": true,
+      "placeholder": "Jelaskan masalah secara detail",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Permasalahan Teknis",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": null,
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Permasalahan Teknis",
+      "fieldName": "dampak_layanan",
+      "fieldLabel": "Dampak terhadap Layanan",
+      "fieldType": "radio",
+      "isRequired": true,
+      "placeholder": null,
+      "options": [
+        {
+          "label": "ATM Tidak Bisa Digunakan",
+          "value": "high",
+          "sortOrder": 1
+        },
+        {
+          "label": "Layanan Terganggu Sebagian",
+          "value": "medium",
+          "sortOrder": 2
+        },
+        {
+          "label": "Masalah Minor",
+          "value": "low",
+          "sortOrder": 3
+        }
+      ],
+      "sortOrder": 6,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Permintaan Log Switching",
+      "fieldName": "lokasi_atm",
+      "fieldLabel": "Lokasi ATM",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Lokasi ATM (cabang/alamat)",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Permintaan Log Switching",
+      "fieldName": "nomor_kartu",
+      "fieldLabel": "Nomor Kartu (4 digit terakhir)",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Contoh: xxxx1234",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Permintaan Log Switching",
+      "fieldName": "waktu_transaksi",
+      "fieldLabel": "Waktu Transaksi",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan transaksi dilakukan",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Permintaan Log Switching",
+      "fieldName": "nominal_transaksi",
+      "fieldLabel": "Nominal Transaksi",
+      "fieldType": "number",
+      "isRequired": false,
+      "placeholder": "Jumlah transaksi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Permintaan Log Switching",
+      "fieldName": "jenis_masalah",
+      "fieldLabel": "Jenis Masalah",
+      "fieldType": "dropdown",
+      "isRequired": true,
+      "placeholder": "Pilih jenis masalah",
+      "options": [
+        {
+          "label": "Kartu Tertelan",
+          "value": "kartu_tertelan",
+          "sortOrder": 1
+        },
+        {
+          "label": "Uang Tidak Keluar",
+          "value": "uang_tidak_keluar",
+          "sortOrder": 2
+        },
+        {
+          "label": "Struk Tidak Keluar",
+          "value": "struk_tidak_keluar",
+          "sortOrder": 3
+        },
+        {
+          "label": "Saldo Terpotong Tanpa Uang Keluar",
+          "value": "saldo_terpotong",
+          "sortOrder": 4
+        },
+        {
+          "label": "Transaksi Gagal/Error",
+          "value": "transaksi_gagal",
+          "sortOrder": 5
+        }
+      ],
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Perubahan IP",
+      "fieldName": "nama_pelapor",
+      "fieldLabel": "Nama Pelapor",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap pelapor",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Perubahan IP",
+      "fieldName": "unit_cabang",
+      "fieldLabel": "Unit/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit atau cabang pelapor",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Perubahan IP",
+      "fieldName": "nomor_kontak",
+      "fieldLabel": "Nomor Kontak",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP/telepon",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Perubahan IP",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Perubahan Profil",
+      "fieldName": "nama_pelapor",
+      "fieldLabel": "Nama Pelapor",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap pelapor",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Perubahan Profil",
+      "fieldName": "unit_cabang",
+      "fieldLabel": "Unit/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit atau cabang pelapor",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Perubahan Profil",
+      "fieldName": "nomor_kontak",
+      "fieldLabel": "Nomor Kontak",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP/telepon",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Perubahan Profil",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "Ms. Office 365 - Error",
+      "fieldName": "nama_pegawai",
+      "fieldLabel": "Nama Pegawai",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap pegawai",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "Ms. Office 365 - Error",
+      "fieldName": "nip",
+      "fieldLabel": "NIP",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor Induk Pegawai",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "Ms. Office 365 - Error",
+      "fieldName": "unit_kerja",
+      "fieldLabel": "Unit Kerja",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit kerja/departemen",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "Ms. Office 365 - Error",
+      "fieldName": "jenis_permintaan",
+      "fieldLabel": "Jenis Permintaan",
+      "fieldType": "dropdown",
+      "isRequired": true,
+      "placeholder": "Pilih jenis permintaan",
+      "options": [
+        {
+          "label": "Pembuatan Akun Baru",
+          "value": "akun_baru",
+          "sortOrder": 1
+        },
+        {
+          "label": "Reset Password",
+          "value": "reset_password",
+          "sortOrder": 2
+        },
+        {
+          "label": "Perubahan Hak Akses",
+          "value": "perubahan_akses",
+          "sortOrder": 3
+        },
+        {
+          "label": "Nonaktifkan Akun",
+          "value": "nonaktif_akun",
+          "sortOrder": 4
+        }
+      ],
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "Card Center - Laporan Penerimaan PIN ATM di Cabang",
+      "fieldName": "lokasi_atm",
+      "fieldLabel": "Lokasi ATM",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Lokasi ATM (cabang/alamat)",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "Card Center - Laporan Penerimaan PIN ATM di Cabang",
+      "fieldName": "nomor_kartu",
+      "fieldLabel": "Nomor Kartu (4 digit terakhir)",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Contoh: xxxx1234",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "Card Center - Laporan Penerimaan PIN ATM di Cabang",
+      "fieldName": "waktu_transaksi",
+      "fieldLabel": "Waktu Transaksi",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan transaksi dilakukan",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "Card Center - Laporan Penerimaan PIN ATM di Cabang",
+      "fieldName": "nominal_transaksi",
+      "fieldLabel": "Nominal Transaksi",
+      "fieldType": "number",
+      "isRequired": false,
+      "placeholder": "Jumlah transaksi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "Card Center - Laporan Penerimaan PIN ATM di Cabang",
+      "fieldName": "jenis_masalah",
+      "fieldLabel": "Jenis Masalah",
+      "fieldType": "dropdown",
+      "isRequired": true,
+      "placeholder": "Pilih jenis masalah",
+      "options": [
+        {
+          "label": "Kartu Tertelan",
+          "value": "kartu_tertelan",
+          "sortOrder": 1
+        },
+        {
+          "label": "Uang Tidak Keluar",
+          "value": "uang_tidak_keluar",
+          "sortOrder": 2
+        },
+        {
+          "label": "Struk Tidak Keluar",
+          "value": "struk_tidak_keluar",
+          "sortOrder": 3
+        },
+        {
+          "label": "Saldo Terpotong Tanpa Uang Keluar",
+          "value": "saldo_terpotong",
+          "sortOrder": 4
+        },
+        {
+          "label": "Transaksi Gagal/Error",
+          "value": "transaksi_gagal",
+          "sortOrder": 5
+        }
+      ],
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembayaran Tagihan BigTV",
+      "fieldName": "nama_pelapor",
+      "fieldLabel": "Nama Pelapor",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap pelapor",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembayaran Tagihan BigTV",
+      "fieldName": "unit_cabang",
+      "fieldLabel": "Unit/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit atau cabang pelapor",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembayaran Tagihan BigTV",
+      "fieldName": "nomor_kontak",
+      "fieldLabel": "Nomor Kontak",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP/telepon",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembayaran Tagihan BigTV",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembayaran Tagihan BigTV",
+      "fieldName": "nomor_referensi",
+      "fieldLabel": "Nomor Referensi",
+      "fieldType": "text",
+      "isRequired": false,
+      "placeholder": "Nomor referensi transaksi",
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembayaran Tagihan BigTV",
+      "fieldName": "nominal",
+      "fieldLabel": "Nominal",
+      "fieldType": "number",
+      "isRequired": false,
+      "placeholder": "Jumlah nominal",
+      "options": null,
+      "sortOrder": 6,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembayaran Tagihan PLN",
+      "fieldName": "nama_pelapor",
+      "fieldLabel": "Nama Pelapor",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap pelapor",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembayaran Tagihan PLN",
+      "fieldName": "unit_cabang",
+      "fieldLabel": "Unit/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit atau cabang pelapor",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembayaran Tagihan PLN",
+      "fieldName": "nomor_kontak",
+      "fieldLabel": "Nomor Kontak",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP/telepon",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembayaran Tagihan PLN",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembayaran Tagihan PLN",
+      "fieldName": "nomor_referensi",
+      "fieldLabel": "Nomor Referensi",
+      "fieldType": "text",
+      "isRequired": false,
+      "placeholder": "Nomor referensi transaksi",
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembayaran Tagihan PLN",
+      "fieldName": "nominal",
+      "fieldLabel": "Nominal",
+      "fieldType": "number",
+      "isRequired": false,
+      "placeholder": "Jumlah nominal",
+      "options": null,
+      "sortOrder": 6,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembayaran Tagihan PSTN",
+      "fieldName": "nama_pelapor",
+      "fieldLabel": "Nama Pelapor",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap pelapor",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembayaran Tagihan PSTN",
+      "fieldName": "unit_cabang",
+      "fieldLabel": "Unit/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit atau cabang pelapor",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembayaran Tagihan PSTN",
+      "fieldName": "nomor_kontak",
+      "fieldLabel": "Nomor Kontak",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP/telepon",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembayaran Tagihan PSTN",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembayaran Tagihan PSTN",
+      "fieldName": "nomor_referensi",
+      "fieldLabel": "Nomor Referensi",
+      "fieldType": "text",
+      "isRequired": false,
+      "placeholder": "Nomor referensi transaksi",
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembayaran Tagihan PSTN",
+      "fieldName": "nominal",
+      "fieldLabel": "Nominal",
+      "fieldType": "number",
+      "isRequired": false,
+      "placeholder": "Jumlah nominal",
+      "options": null,
+      "sortOrder": 6,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Pulsa Indosat",
+      "fieldName": "nama_pelapor",
+      "fieldLabel": "Nama Pelapor",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap pelapor",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Pulsa Indosat",
+      "fieldName": "unit_cabang",
+      "fieldLabel": "Unit/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit atau cabang pelapor",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Pulsa Indosat",
+      "fieldName": "nomor_kontak",
+      "fieldLabel": "Nomor Kontak",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP/telepon",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Pulsa Indosat",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Pulsa Telkomsel",
+      "fieldName": "lokasi_atm",
+      "fieldLabel": "Lokasi ATM",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Lokasi ATM (cabang/alamat)",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Pulsa Telkomsel",
+      "fieldName": "nomor_kartu",
+      "fieldLabel": "Nomor Kartu (4 digit terakhir)",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Contoh: xxxx1234",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Pulsa Telkomsel",
+      "fieldName": "waktu_transaksi",
+      "fieldLabel": "Waktu Transaksi",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan transaksi dilakukan",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Pulsa Telkomsel",
+      "fieldName": "nominal_transaksi",
+      "fieldLabel": "Nominal Transaksi",
+      "fieldType": "number",
+      "isRequired": false,
+      "placeholder": "Jumlah transaksi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Pulsa Telkomsel",
+      "fieldName": "jenis_masalah",
+      "fieldLabel": "Jenis Masalah",
+      "fieldType": "dropdown",
+      "isRequired": true,
+      "placeholder": "Pilih jenis masalah",
+      "options": [
+        {
+          "label": "Kartu Tertelan",
+          "value": "kartu_tertelan",
+          "sortOrder": 1
+        },
+        {
+          "label": "Uang Tidak Keluar",
+          "value": "uang_tidak_keluar",
+          "sortOrder": 2
+        },
+        {
+          "label": "Struk Tidak Keluar",
+          "value": "struk_tidak_keluar",
+          "sortOrder": 3
+        },
+        {
+          "label": "Saldo Terpotong Tanpa Uang Keluar",
+          "value": "saldo_terpotong",
+          "sortOrder": 4
+        },
+        {
+          "label": "Transaksi Gagal/Error",
+          "value": "transaksi_gagal",
+          "sortOrder": 5
+        }
+      ],
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Pulsa Three",
+      "fieldName": "nama_pelapor",
+      "fieldLabel": "Nama Pelapor",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap pelapor",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Pulsa Three",
+      "fieldName": "unit_cabang",
+      "fieldLabel": "Unit/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit atau cabang pelapor",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Pulsa Three",
+      "fieldName": "nomor_kontak",
+      "fieldLabel": "Nomor Kontak",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP/telepon",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Pulsa Three",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Pulsa XL",
+      "fieldName": "lokasi_atm",
+      "fieldLabel": "Lokasi ATM",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Lokasi ATM (cabang/alamat)",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Pulsa XL",
+      "fieldName": "nomor_kartu",
+      "fieldLabel": "Nomor Kartu (4 digit terakhir)",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Contoh: xxxx1234",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Pulsa XL",
+      "fieldName": "waktu_transaksi",
+      "fieldLabel": "Waktu Transaksi",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan transaksi dilakukan",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Pulsa XL",
+      "fieldName": "nominal_transaksi",
+      "fieldLabel": "Nominal Transaksi",
+      "fieldType": "number",
+      "isRequired": false,
+      "placeholder": "Jumlah transaksi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Pulsa XL",
+      "fieldName": "jenis_masalah",
+      "fieldLabel": "Jenis Masalah",
+      "fieldType": "dropdown",
+      "isRequired": true,
+      "placeholder": "Pilih jenis masalah",
+      "options": [
+        {
+          "label": "Kartu Tertelan",
+          "value": "kartu_tertelan",
+          "sortOrder": 1
+        },
+        {
+          "label": "Uang Tidak Keluar",
+          "value": "uang_tidak_keluar",
+          "sortOrder": 2
+        },
+        {
+          "label": "Struk Tidak Keluar",
+          "value": "struk_tidak_keluar",
+          "sortOrder": 3
+        },
+        {
+          "label": "Saldo Terpotong Tanpa Uang Keluar",
+          "value": "saldo_terpotong",
+          "sortOrder": 4
+        },
+        {
+          "label": "Transaksi Gagal/Error",
+          "value": "transaksi_gagal",
+          "sortOrder": 5
+        }
+      ],
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Token PLN",
+      "fieldName": "nama_pelapor",
+      "fieldLabel": "Nama Pelapor",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap pelapor",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Token PLN",
+      "fieldName": "unit_cabang",
+      "fieldLabel": "Unit/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit atau cabang pelapor",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Token PLN",
+      "fieldName": "nomor_kontak",
+      "fieldLabel": "Nomor Kontak",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP/telepon",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Pembelian Token PLN",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Penarikan ATM Bank Lain",
+      "fieldName": "nama_pelapor",
+      "fieldLabel": "Nama Pelapor",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap pelapor",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Penarikan ATM Bank Lain",
+      "fieldName": "unit_cabang",
+      "fieldLabel": "Unit/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit atau cabang pelapor",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Penarikan ATM Bank Lain",
+      "fieldName": "nomor_kontak",
+      "fieldLabel": "Nomor Kontak",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP/telepon",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Penarikan ATM Bank Lain",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Penarikan ATM Bank Lain >75 Hari",
+      "fieldName": "lokasi_atm",
+      "fieldLabel": "Lokasi ATM",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Lokasi ATM (cabang/alamat)",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Penarikan ATM Bank Lain >75 Hari",
+      "fieldName": "nomor_kartu",
+      "fieldLabel": "Nomor Kartu (4 digit terakhir)",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Contoh: xxxx1234",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Penarikan ATM Bank Lain >75 Hari",
+      "fieldName": "waktu_transaksi",
+      "fieldLabel": "Waktu Transaksi",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan transaksi dilakukan",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Penarikan ATM Bank Lain >75 Hari",
+      "fieldName": "nominal_transaksi",
+      "fieldLabel": "Nominal Transaksi",
+      "fieldType": "number",
+      "isRequired": false,
+      "placeholder": "Jumlah transaksi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Penarikan ATM Bank Lain >75 Hari",
+      "fieldName": "jenis_masalah",
+      "fieldLabel": "Jenis Masalah",
+      "fieldType": "dropdown",
+      "isRequired": true,
+      "placeholder": "Pilih jenis masalah",
+      "options": [
+        {
+          "label": "Kartu Tertelan",
+          "value": "kartu_tertelan",
+          "sortOrder": 1
+        },
+        {
+          "label": "Uang Tidak Keluar",
+          "value": "uang_tidak_keluar",
+          "sortOrder": 2
+        },
+        {
+          "label": "Struk Tidak Keluar",
+          "value": "struk_tidak_keluar",
+          "sortOrder": 3
+        },
+        {
+          "label": "Saldo Terpotong Tanpa Uang Keluar",
+          "value": "saldo_terpotong",
+          "sortOrder": 4
+        },
+        {
+          "label": "Transaksi Gagal/Error",
+          "value": "transaksi_gagal",
+          "sortOrder": 5
+        }
+      ],
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Penyelesaian Re-Klaim Bank Lain",
+      "fieldName": "nama_pelapor",
+      "fieldLabel": "Nama Pelapor",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap pelapor",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Penyelesaian Re-Klaim Bank Lain",
+      "fieldName": "unit_cabang",
+      "fieldLabel": "Unit/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit atau cabang pelapor",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Penyelesaian Re-Klaim Bank Lain",
+      "fieldName": "nomor_kontak",
+      "fieldLabel": "Nomor Kontak",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP/telepon",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Penyelesaian Re-Klaim Bank Lain",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Transfer ATM Bank Lain",
+      "fieldName": "nama_pelapor",
+      "fieldLabel": "Nama Pelapor",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap pelapor",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Transfer ATM Bank Lain",
+      "fieldName": "unit_cabang",
+      "fieldLabel": "Unit/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit atau cabang pelapor",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Transfer ATM Bank Lain",
+      "fieldName": "nomor_kontak",
+      "fieldLabel": "Nomor Kontak",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP/telepon",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Transfer ATM Bank Lain",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Transfer ATM Bank Lain",
+      "fieldName": "nomor_referensi",
+      "fieldLabel": "Nomor Referensi",
+      "fieldType": "text",
+      "isRequired": false,
+      "placeholder": "Nomor referensi transaksi",
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Transfer ATM Bank Lain",
+      "fieldName": "nominal",
+      "fieldLabel": "Nominal",
+      "fieldType": "number",
+      "isRequired": false,
+      "placeholder": "Jumlah nominal",
+      "options": null,
+      "sortOrder": 6,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Transfer Bank Lain > 75 Hari",
+      "fieldName": "nama_pelapor",
+      "fieldLabel": "Nama Pelapor",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap pelapor",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Transfer Bank Lain > 75 Hari",
+      "fieldName": "unit_cabang",
+      "fieldLabel": "Unit/Cabang",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Unit atau cabang pelapor",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Transfer Bank Lain > 75 Hari",
+      "fieldName": "nomor_kontak",
+      "fieldLabel": "Nomor Kontak",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP/telepon",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Transfer Bank Lain > 75 Hari",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Transfer Bank Lain > 75 Hari",
+      "fieldName": "nomor_referensi",
+      "fieldLabel": "Nomor Referensi",
+      "fieldType": "text",
+      "isRequired": false,
+      "placeholder": "Nomor referensi transaksi",
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "ATM-Transfer Bank Lain > 75 Hari",
+      "fieldName": "nominal",
+      "fieldLabel": "Nominal",
+      "fieldType": "number",
+      "isRequired": false,
+      "placeholder": "Jumlah nominal",
+      "options": null,
+      "sortOrder": 6,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGtouch - Pembayaran Tagihan PDAM",
+      "fieldName": "nama_nasabah",
+      "fieldLabel": "Nama Nasabah",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap nasabah",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGtouch - Pembayaran Tagihan PDAM",
+      "fieldName": "nomor_rekening",
+      "fieldLabel": "Nomor Rekening",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor rekening nasabah",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGtouch - Pembayaran Tagihan PDAM",
+      "fieldName": "nomor_hp",
+      "fieldLabel": "Nomor HP Terdaftar",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP yang terdaftar di BSGTouch",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGtouch - Pembayaran Tagihan PDAM",
+      "fieldName": "nominal_transaksi",
+      "fieldLabel": "Nominal Transaksi",
+      "fieldType": "number",
+      "isRequired": false,
+      "placeholder": "Nominal transaksi (jika ada)",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGtouch - Pembayaran Tagihan PDAM",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGTouch - Pembelian Pulsa Telkomsel",
+      "fieldName": "nama_nasabah",
+      "fieldLabel": "Nama Nasabah",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap nasabah",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGTouch - Pembelian Pulsa Telkomsel",
+      "fieldName": "nomor_rekening",
+      "fieldLabel": "Nomor Rekening",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor rekening nasabah",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGTouch - Pembelian Pulsa Telkomsel",
+      "fieldName": "nomor_hp",
+      "fieldLabel": "Nomor HP Terdaftar",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP yang terdaftar di BSGTouch",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGTouch - Pembelian Pulsa Telkomsel",
+      "fieldName": "nominal_transaksi",
+      "fieldLabel": "Nominal Transaksi",
+      "fieldType": "number",
+      "isRequired": false,
+      "placeholder": "Nominal transaksi (jika ada)",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGTouch - Pembelian Pulsa Telkomsel",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGTouch - Pembelian Pulsa Three",
+      "fieldName": "nama_nasabah",
+      "fieldLabel": "Nama Nasabah",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap nasabah",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGTouch - Pembelian Pulsa Three",
+      "fieldName": "nomor_rekening",
+      "fieldLabel": "Nomor Rekening",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor rekening nasabah",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGTouch - Pembelian Pulsa Three",
+      "fieldName": "nomor_hp",
+      "fieldLabel": "Nomor HP Terdaftar",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP yang terdaftar di BSGTouch",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGTouch - Pembelian Pulsa Three",
+      "fieldName": "nominal_transaksi",
+      "fieldLabel": "Nominal Transaksi",
+      "fieldType": "number",
+      "isRequired": false,
+      "placeholder": "Nominal transaksi (jika ada)",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGTouch - Pembelian Pulsa Three",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGTouch - Transfer Antar Bank",
+      "fieldName": "nama_nasabah",
+      "fieldLabel": "Nama Nasabah",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap nasabah",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGTouch - Transfer Antar Bank",
+      "fieldName": "nomor_rekening",
+      "fieldLabel": "Nomor Rekening",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor rekening nasabah",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGTouch - Transfer Antar Bank",
+      "fieldName": "nomor_hp",
+      "fieldLabel": "Nomor HP Terdaftar",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP yang terdaftar di BSGTouch",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGTouch - Transfer Antar Bank",
+      "fieldName": "nominal_transaksi",
+      "fieldLabel": "Nominal Transaksi",
+      "fieldType": "number",
+      "isRequired": false,
+      "placeholder": "Nominal transaksi (jika ada)",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "BSGTouch - Transfer Antar Bank",
+      "fieldName": "waktu_kejadian",
+      "fieldLabel": "Waktu Kejadian",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan masalah terjadi",
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "SMSBanking-Pembelian Pulsa Telkomsel",
+      "fieldName": "nama_nasabah",
+      "fieldLabel": "Nama Nasabah",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap nasabah",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "SMSBanking-Pembelian Pulsa Telkomsel",
+      "fieldName": "nomor_hp",
+      "fieldLabel": "Nomor HP",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP yang terdaftar",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "SMSBanking-Pembelian Pulsa Telkomsel",
+      "fieldName": "kode_transaksi",
+      "fieldLabel": "Kode Transaksi",
+      "fieldType": "text",
+      "isRequired": false,
+      "placeholder": "Kode transaksi yang digunakan",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "SMSBanking-Pembelian Pulsa Telkomsel",
+      "fieldName": "waktu_transaksi",
+      "fieldLabel": "Waktu Transaksi",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan transaksi dilakukan",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "SMSBanking-Pembelian Pulsa XL",
+      "fieldName": "nama_nasabah",
+      "fieldLabel": "Nama Nasabah",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap nasabah",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "SMSBanking-Pembelian Pulsa XL",
+      "fieldName": "nomor_hp",
+      "fieldLabel": "Nomor HP",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor HP yang terdaftar",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "SMSBanking-Pembelian Pulsa XL",
+      "fieldName": "kode_transaksi",
+      "fieldLabel": "Kode Transaksi",
+      "fieldType": "text",
+      "isRequired": false,
+      "placeholder": "Kode transaksi yang digunakan",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "serviceItemName": "SMSBanking-Pembelian Pulsa XL",
+      "fieldName": "waktu_transaksi",
+      "fieldLabel": "Waktu Transaksi",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Kapan transaksi dilakukan",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": null
+    },
+    {
+      "fieldName": "tanggal_berlaku",
+      "fieldLabel": "Tanggal berlaku",
+      "fieldType": "date",
+      "isRequired": true,
+      "placeholder": "Pilih tanggal berlaku perubahan menu",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": {
+        "minDate": "today",
+        "errorMessage": "Tanggal berlaku tidak boleh di masa lalu"
+      }
+    },
+    {
+      "fieldName": "nama_nasabah",
+      "fieldLabel": "Nama Nasabah",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama nasabah pengirim transaksi",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": {
+        "pattern": "^[a-zA-Z\\s]+$",
+        "maxLength": 100,
+        "errorMessage": "Nama nasabah hanya boleh berisi huruf dan spasi"
+      }
+    },
+    {
+      "fieldName": "tanggal_berlaku",
+      "fieldLabel": "Tanggal berlaku",
+      "fieldType": "date",
+      "isRequired": true,
+      "placeholder": "Pilih tanggal berlaku perubahan menu user",
+      "options": null,
+      "sortOrder": 1,
+      "defaultValue": null,
+      "validationRules": {
+        "minDate": "today"
+      }
+    },
+    {
+      "fieldName": "nomor_rekening",
+      "fieldLabel": "Nomor Rekening",
+      "fieldType": "number",
+      "isRequired": true,
+      "placeholder": "Nomor rekening pengirim transaksi",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": {
+        "pattern": "^[0-9]+$",
+        "maxLength": 16,
+        "minLength": 10,
+        "errorMessage": "Nomor rekening harus 10-16 digit angka"
+      }
+    },
+    {
+      "fieldName": "cabang_capem",
+      "fieldLabel": "Cabang / Capem",
+      "fieldType": "dropdown",
+      "isRequired": true,
+      "placeholder": "Pilih cabang/capem requester",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": {
+        "type": "branch",
+        "source": "master_data"
+      }
+    },
+    {
+      "fieldName": "cabang_capem",
+      "fieldLabel": "Cabang / Capem",
+      "fieldType": "dropdown",
+      "isRequired": true,
+      "placeholder": "Pilih cabang/capem requester",
+      "options": null,
+      "sortOrder": 2,
+      "defaultValue": null,
+      "validationRules": {
+        "type": "branch",
+        "source": "master_data",
+        "errorMessage": "Cabang/Capem wajib dipilih"
+      }
+    },
+    {
+      "fieldName": "kantor_kas",
+      "fieldLabel": "Kantor Kas",
+      "fieldType": "text",
+      "isRequired": false,
+      "placeholder": "Nama kantor kas dari user",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": {
+        "maxLength": 100
+      }
+    },
+    {
+      "fieldName": "nomor_kartu",
+      "fieldLabel": "Nomor Kartu",
+      "fieldType": "text",
+      "isRequired": false,
+      "placeholder": "Nomor kartu nasabah (16 digit)",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": {
+        "length": 16,
+        "pattern": "^[0-9]+$",
+        "errorMessage": "Nomor kartu harus 16 digit angka"
+      }
+    },
+    {
+      "fieldName": "kantor_kas",
+      "fieldLabel": "Kantor Kas",
+      "fieldType": "text",
+      "isRequired": false,
+      "placeholder": "Kantor kas dari user",
+      "options": null,
+      "sortOrder": 3,
+      "defaultValue": null,
+      "validationRules": {
+        "maxLength": 100
+      }
+    },
+    {
+      "fieldName": "nominal_transaksi",
+      "fieldLabel": "Nominal Transaksi",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nominal per transaksi yang diklaim, sudah ditambahkan dengan fee transaksi",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": {
+        "type": "currency",
+        "currency": "IDR",
+        "maxValue": 1000000000,
+        "minValue": 1000,
+        "errorMessage": "Nominal transaksi minimum Rp 1.000 dan maksimum Rp 1.000.000.000"
+      }
+    },
+    {
+      "fieldName": "kode_user",
+      "fieldLabel": "Kode User",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Maksimal 5 karakter",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": {
+        "pattern": "^[A-Z0-9]+$",
+        "maxLength": 5
+      }
+    },
+    {
+      "fieldName": "kode_user",
+      "fieldLabel": "Kode User",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Maksimal 5 karakter",
+      "options": null,
+      "sortOrder": 4,
+      "defaultValue": null,
+      "validationRules": {
+        "pattern": "^[A-Z0-9]+$",
+        "maxLength": 5,
+        "errorMessage": "Kode user maksimal 5 karakter (huruf besar dan angka)"
+      }
+    },
+    {
+      "fieldName": "nama_user",
+      "fieldLabel": "Nama User",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama lengkap user requester",
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": {
+        "pattern": "^[a-zA-Z\\s]+$",
+        "maxLength": 100,
+        "errorMessage": "Nama user hanya boleh berisi huruf dan spasi"
+      }
+    },
+    {
+      "fieldName": "nama_user",
+      "fieldLabel": "Nama User",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nama user requester",
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": {
+        "pattern": "^[a-zA-Z\\s]+$",
+        "maxLength": 100
+      }
+    },
+    {
+      "fieldName": "tanggal_transaksi",
+      "fieldLabel": "Tanggal transaksi",
+      "fieldType": "datetime",
+      "isRequired": true,
+      "placeholder": "Tanggal transaksi dilakukan",
+      "options": null,
+      "sortOrder": 5,
+      "defaultValue": null,
+      "validationRules": {
+        "maxDate": "today",
+        "minDate": "-90days",
+        "errorMessage": "Tanggal transaksi tidak boleh lebih dari 90 hari yang lalu"
+      }
+    },
+    {
+      "fieldName": "nomor_arsip",
+      "fieldLabel": "Nomor Arsip",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Nomor arsip transaksi",
+      "options": null,
+      "sortOrder": 6,
+      "defaultValue": null,
+      "validationRules": {
+        "pattern": "^[A-Z0-9\\-]+$",
+        "maxLength": 50,
+        "errorMessage": "Nomor arsip hanya boleh berisi huruf besar, angka, dan tanda strip"
+      }
+    },
+    {
+      "fieldName": "jabatan",
+      "fieldLabel": "Jabatan",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Jabatan dari user requester",
+      "options": null,
+      "sortOrder": 6,
+      "defaultValue": null,
+      "validationRules": {
+        "maxLength": 100
+      }
+    },
+    {
+      "fieldName": "jabatan",
+      "fieldLabel": "Jabatan",
+      "fieldType": "text",
+      "isRequired": true,
+      "placeholder": "Jabatan dari user requester",
+      "options": null,
+      "sortOrder": 6,
+      "defaultValue": null,
+      "validationRules": {
+        "maxLength": 100
+      }
+    },
+    {
+      "fieldName": "mutasi_dari",
+      "fieldLabel": "Mutasi dari",
+      "fieldType": "dropdown",
+      "isRequired": false,
+      "placeholder": "Cabang/capem asal dari requester",
+      "options": null,
+      "sortOrder": 7,
+      "defaultValue": null,
+      "validationRules": {
+        "type": "branch",
+        "source": "master_data"
+      }
+    },
+    {
+      "fieldName": "program_fasilitas_olibs",
+      "fieldLabel": "Program Fasilitas OLIBS",
+      "fieldType": "dropdown",
+      "isRequired": true,
+      "placeholder": "Pilih wewenang menu permintaan user",
+      "options": null,
+      "sortOrder": 7,
+      "defaultValue": null,
+      "validationRules": {
+        "type": "olibs_menu",
+        "source": "master_data",
+        "errorMessage": "Program Fasilitas OLIBS wajib dipilih"
+      }
+    },
+    {
+      "fieldName": "mutasi_ke_kk",
+      "fieldLabel": "Mutasi ke KK",
+      "fieldType": "text",
+      "isRequired": false,
+      "placeholder": "Kantor kas tujuan apabila hanya terjadi mutasi internal user",
+      "options": null,
+      "sortOrder": 8,
+      "defaultValue": null,
+      "validationRules": {
+        "maxLength": 100
+      }
+    },
+    {
+      "fieldName": "program_fasilitas_olibs",
+      "fieldLabel": "Program Fasilitas OLIBS",
+      "fieldType": "dropdown",
+      "isRequired": true,
+      "placeholder": "Pilih wewenang menu permintaan user",
+      "options": null,
+      "sortOrder": 9,
+      "defaultValue": null,
+      "validationRules": {
+        "type": "olibs_menu",
+        "source": "master_data"
+      }
+    }
+  ],
+  "bsgMasterData": [
+    {
+      "dataType": "atm",
+      "code": "ATM_006",
+      "name": "AIRMADIDI - Outdoor",
+      "displayName": "AIRMADIDI - Outdoor",
+      "metadata": {
+        "location": "Minahasa"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_003",
+      "name": "BSG JAKARTA - Lobby",
+      "displayName": "BSG JAKARTA - Lobby",
+      "metadata": {
+        "location": "Jakarta"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_002",
+      "name": "BSG UTAMA - Drive Thru",
+      "displayName": "BSG UTAMA - Drive Thru",
+      "metadata": {
+        "location": "Manado"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_001",
+      "name": "BSG UTAMA - Lobby",
+      "displayName": "BSG UTAMA - Lobby",
+      "metadata": {
+        "location": "Manado"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_004",
+      "name": "KELAPA GADING - Outdoor",
+      "displayName": "KELAPA GADING - Outdoor",
+      "metadata": {
+        "location": "Jakarta"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_005",
+      "name": "TUMINTING - Indoor",
+      "displayName": "TUMINTING - Indoor",
+      "metadata": {
+        "location": "Manado"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "AIR",
+      "name": "AIRMADIDI",
+      "displayName": "AIRMADIDI (CAPEM)",
+      "metadata": {
+        "type": "CAPEM"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "GTO",
+      "name": "BSG GORONTALO",
+      "displayName": "BSG GORONTALO (CABANG)",
+      "metadata": {
+        "type": "CABANG"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "JKT",
+      "name": "BSG JAKARTA",
+      "displayName": "BSG JAKARTA (CABANG)",
+      "metadata": {
+        "type": "CABANG"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "UTAMA",
+      "name": "BSG UTAMA",
+      "displayName": "BSG UTAMA (CABANG)",
+      "metadata": {
+        "type": "CABANG"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "KG",
+      "name": "KELAPA GADING",
+      "displayName": "KELAPA GADING (CAPEM)",
+      "metadata": {
+        "type": "CAPEM"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "TUM",
+      "name": "TUMINTING",
+      "displayName": "TUMINTING (CAPEM)",
+      "metadata": {
+        "type": "CAPEM"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "generic",
+      "code": "view_only",
+      "name": "View Only",
+      "displayName": "View Only - Akses untuk melihat data saja",
+      "metadata": {
+        "category": "olibs_access",
+        "fieldType": "dropdown",
+        "description": "OLIBS access type: View Only"
+      },
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "dataType": "generic",
+      "code": "input_operator",
+      "name": "Input Operator",
+      "displayName": "Input Operator - Akses input transaksi harian",
+      "metadata": {
+        "category": "olibs_access",
+        "fieldType": "dropdown",
+        "description": "OLIBS access type: Input Operator"
+      },
+      "sortOrder": 2,
+      "isActive": true
+    },
+    {
+      "dataType": "generic",
+      "code": "supervisor",
+      "name": "Supervisor",
+      "displayName": "Supervisor - Akses penuh termasuk approval",
+      "metadata": {
+        "category": "olibs_access",
+        "fieldType": "dropdown",
+        "description": "OLIBS access type: Supervisor"
+      },
+      "sortOrder": 3,
+      "isActive": true
+    },
+    {
+      "dataType": "generic",
+      "code": "card_reader_error",
+      "name": "Card Reader Error",
+      "displayName": "Card Reader Error - Masalah pembacaan kartu",
+      "metadata": {
+        "category": "atm_problems",
+        "fieldType": "dropdown",
+        "description": "ATM problem type: Card Reader Error"
+      },
+      "sortOrder": 10,
+      "isActive": true
+    },
+    {
+      "dataType": "generic",
+      "code": "cash_dispenser_jam",
+      "name": "Cash Dispenser Jam",
+      "displayName": "Cash Dispenser Jam - Uang macet di mesin",
+      "metadata": {
+        "category": "atm_problems",
+        "fieldType": "dropdown",
+        "description": "ATM problem type: Cash Dispenser Jam"
+      },
+      "sortOrder": 11,
+      "isActive": true
+    },
+    {
+      "dataType": "generic",
+      "code": "network_connection",
+      "name": "Network Connection",
+      "displayName": "Network Connection - Tidak ada koneksi jaringan",
+      "metadata": {
+        "category": "atm_problems",
+        "fieldType": "dropdown",
+        "description": "ATM problem type: Network Connection"
+      },
+      "sortOrder": 12,
+      "isActive": true
+    },
+    {
+      "dataType": "generic",
+      "code": "receipt_printer_error",
+      "name": "Receipt Printer Error",
+      "displayName": "Receipt Printer Error - Printer struk bermasalah",
+      "metadata": {
+        "category": "atm_problems",
+        "fieldType": "dropdown",
+        "description": "ATM problem type: Receipt Printer Error"
+      },
+      "sortOrder": 13,
+      "isActive": true
+    },
+    {
+      "dataType": "generic",
+      "code": "screen_display_issue",
+      "name": "Screen Display Issue",
+      "displayName": "Screen Display Issue - Layar tidak berfungsi normal",
+      "metadata": {
+        "category": "atm_problems",
+        "fieldType": "dropdown",
+        "description": "ATM problem type: Screen Display Issue"
+      },
+      "sortOrder": 14,
+      "isActive": true
+    },
+    {
+      "dataType": "generic",
+      "code": "transaction_timeout",
+      "name": "Transaction Timeout",
+      "displayName": "Transaction Timeout - Transaksi terputus/timeout",
+      "metadata": {
+        "category": "atm_problems",
+        "fieldType": "dropdown",
+        "description": "ATM problem type: Transaction Timeout"
+      },
+      "sortOrder": 15,
+      "isActive": true
+    },
+    {
+      "dataType": "olibs_menu",
+      "code": "deposito_buka",
+      "name": "Deposito - Buka Rekening",
+      "displayName": "Deposito - Buka Rekening",
+      "metadata": {
+        "category": "deposito"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "olibs_menu",
+      "code": "deposito_perpanjang",
+      "name": "Deposito - Perpanjangan",
+      "displayName": "Deposito - Perpanjangan",
+      "metadata": {
+        "category": "deposito"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "olibs_menu",
+      "code": "giro_buka",
+      "name": "Giro - Buka Rekening",
+      "displayName": "Giro - Buka Rekening",
+      "metadata": {
+        "category": "giro"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "olibs_menu",
+      "code": "giro_tutup",
+      "name": "Giro - Tutup Rekening",
+      "displayName": "Giro - Tutup Rekening",
+      "metadata": {
+        "category": "giro"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "olibs_menu",
+      "code": "kredit_aplikasi",
+      "name": "Kredit - Input Aplikasi",
+      "displayName": "Kredit - Input Aplikasi",
+      "metadata": {
+        "category": "kredit"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "olibs_menu",
+      "code": "kredit_pencairan",
+      "name": "Kredit - Pencairan",
+      "displayName": "Kredit - Pencairan",
+      "metadata": {
+        "category": "kredit"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "olibs_menu",
+      "code": "report_bulanan",
+      "name": "Report Bulanan",
+      "displayName": "Report Bulanan",
+      "metadata": {
+        "category": "report"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "olibs_menu",
+      "code": "report_harian",
+      "name": "Report Harian",
+      "displayName": "Report Harian",
+      "metadata": {
+        "category": "report"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "olibs_menu",
+      "code": "tabungan_buka",
+      "name": "Tabungan - Buka Rekening",
+      "displayName": "Tabungan - Buka Rekening",
+      "metadata": {
+        "category": "tabungan"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "olibs_menu",
+      "code": "tabungan_transfer",
+      "name": "Tabungan - Transfer",
+      "displayName": "Tabungan - Transfer",
+      "metadata": {
+        "category": "tabungan"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "olibs_menu",
+      "code": "tabungan_tutup",
+      "name": "Tabungan - Tutup Rekening",
+      "displayName": "Tabungan - Tutup Rekening",
+      "metadata": {
+        "category": "tabungan"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    }
+  ],
+  "serviceItemsSummary": [
+    {
+      "name": "ARS73 - Error Aplikasi",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "ARS73 - Mutasi User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "ARS73 - Pendaftaran User Baru",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "ARS73 - Perubahan User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "ARS73 -Buka Blokir",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "ATM - ATMB Error Transfer Antar Bank",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "ATM - Cash Handler",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "ATM - Cassette Supply/Persediaan Kaset",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 5,
+      "hasFields": true
+    },
+    {
+      "name": "ATM - Communication Offline",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "ATM - Door Contact Sensor Abnormal",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "ATM - Gagal Cash in/Cash out",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "ATM - MCRW Fatal",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 5,
+      "hasFields": true
+    },
+    {
+      "name": "ATM - Receipt Paper Media Out",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "ATM-Pembayaran Citilink",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "ATM-Pembayaran PBB",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "ATM-Pembayaran Samsat",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "ATM-Pembayaran Tagihan BPJS",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "ATM-Pembayaran Tagihan BigTV",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 6,
+      "hasFields": true
+    },
+    {
+      "name": "ATM-Pembayaran Tagihan PLN",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 6,
+      "hasFields": true
+    },
+    {
+      "name": "ATM-Pembayaran Tagihan PSTN",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 6,
+      "hasFields": true
+    },
+    {
+      "name": "ATM-Pembelian Pulsa Indosat",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 4,
+      "hasFields": true
+    },
+    {
+      "name": "ATM-Pembelian Pulsa Telkomsel",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 5,
+      "hasFields": true
+    },
+    {
+      "name": "ATM-Pembelian Pulsa Three",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 4,
+      "hasFields": true
+    },
+    {
+      "name": "ATM-Pembelian Pulsa XL",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 5,
+      "hasFields": true
+    },
+    {
+      "name": "ATM-Pembelian Token PLN",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 4,
+      "hasFields": true
+    },
+    {
+      "name": "ATM-Penarikan ATM Bank Lain",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 4,
+      "hasFields": true
+    },
+    {
+      "name": "ATM-Penarikan ATM Bank Lain >75 Hari",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 5,
+      "hasFields": true
+    },
+    {
+      "name": "ATM-Pendaftaran Terminal Baru",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 4,
+      "hasFields": true
+    },
+    {
+      "name": "ATM-Pengiriman Log Jurnal",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 4,
+      "hasFields": true
+    },
+    {
+      "name": "ATM-Penyelesaian Re-Klaim Bank Lain",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 4,
+      "hasFields": true
+    },
+    {
+      "name": "ATM-Permasalahan Teknis",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 6,
+      "hasFields": true
+    },
+    {
+      "name": "ATM-Permintaan Log Switching",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 5,
+      "hasFields": true
+    },
+    {
+      "name": "ATM-Perubahan IP",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 4,
+      "hasFields": true
+    },
+    {
+      "name": "ATM-Perubahan Profil",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 4,
+      "hasFields": true
+    },
+    {
+      "name": "ATM-Transfer ATM Bank Lain",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 6,
+      "hasFields": true
+    },
+    {
+      "name": "ATM-Transfer Bank Lain > 75 Hari",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 6,
+      "hasFields": true
+    },
+    {
+      "name": "Antasena - Error Proses Aplikasi",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 6,
+      "hasFields": true
+    },
+    {
+      "name": "Antasena - Pendaftaran User",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Antasena - Reset Password",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Antasena - User Expire",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BI Fast - Error",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BI RTGS - Error Aplikasi",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSG QRIS - Buka Blokir & Reset Password",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSG QRIS - Error Transaksi/Aplikasi",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 4,
+      "hasFields": true
+    },
+    {
+      "name": "BSG QRIS - Klaim BI Fast",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSG QRIS - Klaim Gagal Transaksi",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSG QRIS - Mutasi User",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSG QRIS - Pembelian Data Telkomsel",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSG QRIS - Pembelian Pulsa Telkomsel",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSG QRIS - Pendaftaran User",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSG QRIS - Perpanjang Masa Berlaku",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSG QRIS - Perubahan User",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSG sprint TNP - Error",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGDebit/EDC - Pembayaran",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGDebit/EDC - Permintaan Salinan Bukti Transaksi",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGDirect - Error Aplikasi",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGDirect - Error Transaksi",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGDirect - User Management",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGTouch (Android) - Buka Blokir dan Reset Password",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGTouch (Android) - Error Registrasi BSGtouch",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGTouch (Android) - Mutasi User",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGTouch (Android) - Pendaftaran User Baru",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGTouch (Android) - Perpanjang Masa Berlaku",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGTouch (Android) - Perubahan User",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGTouch (Android/Ios) - Error Aplikasi",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGTouch (Android/iOS) - Permintaan Pengiriman SMS Aktivasi",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGTouch (iOS) - Error Registrasi BSGtouch (iOS)",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGTouch (iOS) - SMS Aktivasi tidak terkirim",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGTouch - Pembelian Pulsa Indosat",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGTouch - Pembelian Pulsa Telkomsel",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 5,
+      "hasFields": true
+    },
+    {
+      "name": "BSGTouch - Pembelian Pulsa Three",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 5,
+      "hasFields": true
+    },
+    {
+      "name": "BSGTouch - Pembelian Pulsa XL",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGTouch - Pembelian Token PLN",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGTouch - Penutupan Akun BSGTouch",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGTouch - Top-Up BSGcash",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGTouch - Transfer Antar Bank",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 5,
+      "hasFields": true
+    },
+    {
+      "name": "BSGbrocade - Error",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGtouch - Error Transaksi",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGtouch - Pembayaran PBB",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGtouch - Pembayaran Samsat",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGtouch - Pembayaran Tagihan BPJS",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGtouch - Pembayaran Tagihan Kartu Halo",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGtouch - Pembayaran Tagihan PDAM",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 5,
+      "hasFields": true
+    },
+    {
+      "name": "BSGtouch - Pembayaran Tagihan PLN",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "BSGtouch - Pembayaran Tagihan PSTN",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Brocade (Broker) - Mutasi User",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Brocade (Broker) - Pendaftaran User Baru",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Brocade (Broker) - Perubahan User",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Brocade (Broker) - Reset Password",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Card Center - Laporan Penerimaan Kartu ATM di Cabang",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Card Center - Laporan Penerimaan PIN ATM di Cabang",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 5,
+      "hasFields": true
+    },
+    {
+      "name": "Card Center - Laporan Persediaan Kartu ATM",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Default Request",
+      "categoryName": "General & Default Services",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Digital Dashboard - Mutasi user",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Digital Dashboard - Pendaftaran User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Digital Dashboard - Perpanjangan Masa Berlaku",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Digital Dashboard - Perubahan User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Digital Dashboard - Reset Password User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Domain - Pendaftaran/Perubahan User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Domain - Reset Password",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "E-Dapem - Error Transaksi",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Error - Error Middleware",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Error - Rintis PaymentProd",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Error Aplikasi",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Error GoAML - Error Proses",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Error Pinpad",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Finnet - Error",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Formulir Serah Terima Komputer",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Gangguan Ekstranet BI",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Gangguan Internet",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Gangguan LAN",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Gangguan WAN",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "HRMS - Gagal Koneksi",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "HRMS - Pengaktifan dan Reset Password User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "HRMS - Perubahan IP PC",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "HRMS - User Error",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Hasil Rekonsiliasi",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "KMS - Reset Password",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Kasda Online - Error Approval Maker",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Kasda Online - Error Approval Transaksi",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Kasda Online - Error Cek Transaksi/Saldo Rekening",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Kasda Online - Error Lainnya",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Kasda Online - Error Login",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Kasda Online - Error Permintaan Token Transaksi",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Kasda Online - Error Tarik Data SP2D (Kasda FMIS)",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Kasda Online - Gagal Pembayaran",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Kasda Online - Gagal Transfer",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Kasda Online - User Management",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Kasda Online BUD - Error",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Keamanan Informasi",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "MIS - Error MIS",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "MPN - Error Transaksi",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Maintenance Komputer",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Maintenance Printer",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Memo ke Divisi TI",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Ms. Office 365 - Error",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 4,
+      "hasFields": true
+    },
+    {
+      "name": "Ms. Office 365 - Pendaftaran Email Baru",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Ms. Office 365 - Reset Password",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Network - Permintaan Pemasangan Jaringan",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "New Employee Account Setup",
+      "categoryName": "User Account Management",
+      "fieldCount": 9,
+      "hasFields": true
+    },
+    {
+      "name": "OBOX - Error Aplikasi",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "OLIBs - BE Error",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 5,
+      "hasFields": true
+    },
+    {
+      "name": "OLIBs - Buka Blokir",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 5,
+      "hasFields": true
+    },
+    {
+      "name": "OLIBs - Error Deposito",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 5,
+      "hasFields": true
+    },
+    {
+      "name": "OLIBs - Error Giro",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 5,
+      "hasFields": true
+    },
+    {
+      "name": "OLIBs - Error Kredit",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 5,
+      "hasFields": true
+    },
+    {
+      "name": "OLIBs - Error PRK",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "OLIBs - Error Tabungan",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "OLIBs - Error User",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "OLIBs - FE Error",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "OLIBs - Gagal Close Operasional",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "OLIBs - Mutasi User Pegawai",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "OLIBs - Non Aktif User",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "OLIBs - Override Password",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "OLIBs - Pendaftaran User Baru",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 6,
+      "hasFields": true
+    },
+    {
+      "name": "OLIBs - Perubahan Menu dan Limit Transaksi",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "OLIBs - Selisih Pembukuan",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "PSAK 71 - Error Aplikasi",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Payroll - Error Proses",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Payroll - Pendaftaran User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Payroll - Perubahan User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Payroll - Reset Batas Koneksi",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Pendaftaran Terminal Komputer Baru",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Penggantian Kartu",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Penggantian Mesin",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Penggantian PIN - Call Center",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Penutupan Kartu",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Permintaan - Penyelesaian Selisih ATM",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Permintaan - Upload Data DHN",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Permintaan Akses Flashdisk/Harddisk/SSD",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Permintaan Data Lain",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Permintaan Data Softcopy Rekening Koran",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Permintaan Lainnya",
+      "categoryName": "General & Default Services",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Permintaan Pengembangan Aplikasi",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Permintaan Perubahan Nomor PK Kredit",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Permintaan Softcopy RC",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Perubahan Denom",
+      "categoryName": "ATM, EDC & Branch Hardware",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Portal - IT Hepldesk - Pendaftaran User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Report Viewer 724 - Error",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Report Viewer 724 - Selisih",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SIKP - Error",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SIKP - Error Aplikasi",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SIKP - Pendaftaran user",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SKNBI - Error Aplikasi",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SKNBI - Mutasi User",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SKNBI - Pendaftaran User",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SKNBI - Perubahan User",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SKNBI - Reset Password",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SLIK - Error",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SMS Banking - Error",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SMS Banking - Mutasi user",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SMS Banking - Pendaftaran User",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SMS Banking - Perubahan User",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SMS Banking - Reset Password",
+      "categoryName": "Digital Channels & Customer Applications",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SMSBanking-Pembayaran PBB",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SMSBanking-Pembayaran Samsat",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SMSBanking-Pembayaran Tagihan BigTV",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SMSBanking-Pembayaran Tagihan Kartu Halo",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SMSBanking-Pembayaran Tagihan PLN",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SMSBanking-Pembayaran Tagihan PSTN",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SMSBanking-Pembelian Pulsa Indosat",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SMSBanking-Pembelian Pulsa Telkomsel",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 4,
+      "hasFields": true
+    },
+    {
+      "name": "SMSBanking-Pembelian Pulsa Three",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SMSBanking-Pembelian Pulsa XL",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 4,
+      "hasFields": true
+    },
+    {
+      "name": "SMSBanking-Pembelian Token PLN",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SMSBanking-Transfer Bank Lain",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "SMSBanking-Transfer Bank Lain >75 Hari",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Samsat - Error Transaksi",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Surat ke Divisi TI",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Switching - Error Transaksi",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Switching - Permintaan Pendaftaran Prefiks Bank",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Switching - Permintaan Penghapusan Prefiks Bank",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Switching - Permintaan Penyesuaian Prefiks Bank",
+      "categoryName": "Core Banking & Financial Systems",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Technical Problem",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Teller App / Reporting - Gagal Connect",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Teller App / Reporting - Gagal Transaksi",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Teller App / Reporting - Mutasi User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Teller App / Reporting - Pendaftaran User Baru",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Teller App / Reporting - Perubahan User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Teller App / Reporting - Reset Batas Koneksi",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "Teller App-Pembayaran Samsat",
+      "categoryName": "Claims & Disputes",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "XCARD - Buka Blokir dan Reset Password",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "XCARD - Error Aplikasi",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "XCARD - Mutasi User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "XCARD - Pendaftaran User Baru",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "XCARD - Penggantian PIN",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "XCARD - Perubahan Menu",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "XLink - Error",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "XMonitoring ATM - Buka Blokir & Reset Password",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "XMonitoring ATM - Error Aplikasi",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "XMonitoring ATM - Mutasi User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "XMonitoring ATM - Pendaftaran User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "XMonitoring ATM - Perubahan User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "XReport - Pendaftaran User Baru",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "eLOS - Mutasi User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "eLOS - Pendaftaran Akses VPN",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "eLOS - Pendaftaran User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "eLOS - Perubahan User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "eLOS - Reset Akses User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    },
+    {
+      "name": "eLOS - Reset Password User",
+      "categoryName": "Corporate IT & Employee Support",
+      "fieldCount": 0,
+      "hasFields": false
+    }
+  ],
+  "statistics": {
+    "totalServices": 240,
+    "servicesWithFields": 38,
+    "servicesWithoutFields": 202,
+    "totalFieldDefinitions": 211,
+    "totalMasterDataEntries": 32,
+    "masterDataByType": {
+      "atm": 6,
+      "branch": 6,
+      "generic": 9,
+      "olibs_menu": 11
+    }
+  }
+}
