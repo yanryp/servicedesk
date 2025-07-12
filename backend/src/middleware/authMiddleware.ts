@@ -16,6 +16,7 @@ export interface AuthenticatedRequest extends Request {
     id: number; 
     role: string; 
     email: string; 
+    name?: string;
     departmentId?: number;
     unitId?: number;
     username?: string;
@@ -38,6 +39,7 @@ export const protect = (req: AuthenticatedRequest, res: Response, next: NextFunc
         id: number; 
         role: string; 
         email: string; 
+        name?: string;
         departmentId?: number;
         unitId?: number;
         username?: string;

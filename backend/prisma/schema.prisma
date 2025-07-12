@@ -10,28 +10,48 @@ datasource db {
 model User {
   id                       Int                         @id @default(autoincrement())
   username                 String                      @unique @db.VarChar(255)
-  name                     String?                     @db.VarChar(255)
   passwordHash             String                      @map("password_hash") @db.VarChar(255)
   email                    String                      @unique @db.VarChar(255)
   role                     String                      @db.VarChar(50)
   createdAt                DateTime?                   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt                DateTime?                   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   managerId                Int?                        @map("manager_id")
-  unitId                   Int?                        @map("unit_id")
   currentWorkload          Int                         @default(0) @map("current_workload")
   departmentId             Int?                        @map("department_id")
   experienceLevel          String?                     @map("experience_level") @db.VarChar(50)
   isAvailable              Boolean                     @default(true) @map("is_available")
   isBusinessReviewer       Boolean                     @default(false) @map("is_business_reviewer")
   isKasdaUser              Boolean                     @default(false) @map("is_kasda_user")
+  name                     String?                     @db.VarChar(255)
   primarySkill             String?                     @map("primary_skill") @db.VarChar(100)
   secondarySkills          String?                     @map("secondary_skills")
+  unitId                   Int?                        @map("unit_id")
   workloadCapacity         Int                         @default(10) @map("workload_capacity")
   createdApiTokens         ApiToken[]                  @relation("ApiTokenCreator")
+  assetAudits              AssetAudit[]                @relation("AssetAuditor")
+  assetContracts           AssetContract[]             @relation("AssetContractCreator")
+  assetLifecycleEvents     AssetLifecycleEvent[]       @relation("AssetLifecycleUser")
+  assetMaintenanceRecords  AssetMaintenance[]          @relation("AssetMaintenanceCreator")
+  assetTransferApprovals   AssetTransfer[]             @relation("AssetTransferApprover")
+  assetTransfersFrom       AssetTransfer[]             @relation("AssetTransferFromUser")
+  assetTransferRequests    AssetTransfer[]             @relation("AssetTransferRequester")
+  assetTransfersTo         AssetTransfer[]             @relation("AssetTransferToUser")
+  assignedAssets           Asset[]                     @relation("AssetAssignedUser")
+  createdAssets            Asset[]                     @relation("AssetCreator")
   bsgTemplateUsageLogs     BSGTemplateUsageLog[]       @relation("BSGTemplateUsageUser")
   businessApprovals        BusinessApproval[]          @relation("BusinessApprovalReviewer")
+  ciChangeApprovals        CIChange[]                  @relation("CIChangeApprover")
+  ciChangeRequests         CIChange[]                  @relation("CIChangeRequester")
   commentNotifications     CommentNotification[]       @relation("NotificationRecipient")
+  createdCIs               ConfigurationItem[]         @relation("CICreator")
+  ownedCIs                 ConfigurationItem[]         @relation("CIOwner")
   kasdaProfile             KasdaUserProfile?
+  articleFeedbacks         KnowledgeArticleFeedback[]  @relation("ArticleFeedbackUser")
+  articleViews             KnowledgeArticleView[]      @relation("ArticleViewer")
+  authoredArticles         KnowledgeArticle[]          @relation("ArticleAuthor")
+  editedArticles           KnowledgeArticle[]          @relation("ArticleEditor")
+  knowledgeLinks           KnowledgeTicketLink[]       @relation("KnowledgeLinkCreator")
+  softwareInstallations    SoftwareInstallation[]      @relation("SoftwareInstallationUser")
   approvedTemplates        TemplateMetadata[]          @relation("TemplateApprover")
   createdTemplates         TemplateMetadata[]          @relation("TemplateCreator")
   templateUsageLogs        TemplateUsageLog[]
@@ -50,13 +70,6 @@ model User {
   manager                  User?                       @relation("UserManager", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   subordinates             User[]                      @relation("UserManager")
   unit                     Unit?                       @relation(fields: [unitId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  
-  // Knowledge Base relations
-  authoredArticles         KnowledgeArticle[]          @relation("ArticleAuthor")
-  editedArticles           KnowledgeArticle[]          @relation("ArticleEditor")
-  articleViews             KnowledgeArticleView[]      @relation("ArticleViewer")
-  knowledgeLinks           KnowledgeTicketLink[]       @relation("KnowledgeLinkCreator")
-  articleFeedbacks         KnowledgeArticleFeedback[]  @relation("ArticleFeedbackUser")
 
   @@map("users")
 }
@@ -69,15 +82,18 @@ model Department {
   isServiceOwner       Boolean               @default(false) @map("is_service_owner")
   createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt            DateTime              @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  assetTransfersFrom   AssetTransfer[]       @relation("AssetTransferFromDept")
+  assetTransfersTo     AssetTransfer[]       @relation("AssetTransferToDept")
+  assignedAssets       Asset[]               @relation("AssetAssignedDept")
   autoAssignmentRules  AutoAssignmentRule[]
   bsgTemplateUsageLogs BSGTemplateUsageLog[] @relation("BSGTemplateUsageDept")
+  businessHours        BusinessHoursConfig[]
   categories           Category[]
   slaPolicy            DepartmentSlaPolicy[]
-  slaPolices           SlaPolicy[]
-  businessHours        BusinessHoursConfig[]
   holidays             HolidayCalendar[]
   masterDataEntities   MasterDataEntity[]
   serviceCatalog       ServiceCatalog[]
+  slaPolices           SlaPolicy[]
   templateCategories   TemplateCategory[]
   templateMetadata     TemplateMetadata[]
   templateUsageLogs    TemplateUsageLog[]
@@ -88,29 +104,33 @@ model Department {
 }
 
 model Unit {
-  id           Int         @id @default(autoincrement())
-  code         String      @unique @db.VarChar(50)
-  name         String      @db.VarChar(255)
-  displayName  String?     @map("display_name") @db.VarChar(255)
-  unitType     String      @default("branch") @map("unit_type") @db.VarChar(50)
-  parentId     Int?        @map("parent_id")
-  departmentId Int?        @map("department_id")
-  isActive     Boolean     @default(true) @map("is_active")
-  sortOrder    Int         @default(0) @map("sort_order")
-  metadata     Json?
-  address      String?
-  phone        String?     @db.VarChar(100)
-  fax          String?     @db.VarChar(100)
-  region       String?     @db.VarChar(100)
-  province     String?     @db.VarChar(100)
-  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  department   Department? @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  parent       Unit?       @relation("UnitHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children     Unit[]      @relation("UnitHierarchy")
-  users        User[]
-  businessHours BusinessHoursConfig[]
-  holidays     HolidayCalendar[]
+  id                 Int                   @id @default(autoincrement())
+  code               String                @unique @db.VarChar(50)
+  name               String                @db.VarChar(255)
+  displayName        String?               @map("display_name") @db.VarChar(255)
+  unitType           String                @default("branch") @map("unit_type") @db.VarChar(50)
+  parentId           Int?                  @map("parent_id")
+  departmentId       Int?                  @map("department_id")
+  isActive           Boolean               @default(true) @map("is_active")
+  sortOrder          Int                   @default(0) @map("sort_order")
+  metadata           Json?
+  address            String?
+  phone              String?               @db.VarChar(100)
+  fax                String?               @db.VarChar(100)
+  region             String?               @db.VarChar(100)
+  province           String?               @db.VarChar(100)
+  createdAt          DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime              @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  assetTransfersFrom AssetTransfer[]       @relation("AssetTransferFromLocation")
+  assetTransfersTo   AssetTransfer[]       @relation("AssetTransferToLocation")
+  assets             Asset[]               @relation("AssetLocation")
+  businessHours      BusinessHoursConfig[]
+  configurationItems ConfigurationItem[]   @relation("CILocation")
+  holidays           HolidayCalendar[]
+  department         Department?           @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parent             Unit?                 @relation("UnitHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children           Unit[]                @relation("UnitHierarchy")
+  users              User[]
 
   @@index([unitType, isActive])
   @@index([parentId])
@@ -224,6 +244,9 @@ model Ticket {
   bsgUsageLogs             BSGTemplateUsageLog[]       @relation("BSGTemplateUsageTicket")
   bsgFieldValues           BSGTicketFieldValue[]       @relation("TicketBSGFieldValues")
   businessApproval         BusinessApproval?
+  ciIncidents              CIIncident[]
+  escalationInstances      EscalationInstance[]
+  knowledgeLinks           KnowledgeTicketLink[]
   templateUsageLogs        TemplateUsageLog[]
   assignmentLogs           TicketAssignmentLog[]
   attachments              TicketAttachment[]
@@ -231,7 +254,6 @@ model Ticket {
   comments                 TicketComment[]
   customFieldValues        TicketCustomFieldValue[]
   serviceFieldValues       TicketServiceFieldValue[]
-  escalationInstances      EscalationInstance[]
   assignedTo               User?                       @relation("TicketAssignee", fields: [assignedToUserId], references: [id], onUpdate: NoAction)
   createdBy                User                        @relation("TicketCreator", fields: [createdByUserId], references: [id], onUpdate: NoAction)
   governmentEntity         GovernmentEntity?           @relation("GovernmentEntityTickets", fields: [governmentEntityId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -241,7 +263,7 @@ model Ticket {
   serviceTemplate          ServiceTemplate?            @relation("ServiceTemplateTickets", fields: [serviceTemplateId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   techCategorizedByUser    User?                       @relation("TechCategorizer", fields: [techCategorizedBy], references: [id], onUpdate: NoAction)
   template                 TicketTemplate?             @relation(fields: [templateId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  knowledgeLinks           KnowledgeTicketLink[]
+  relatedAssets            Asset[]                     @relation("TicketAsset")
 
   @@map("tickets")
 }
@@ -293,8 +315,8 @@ model ServiceCatalog {
   parent           ServiceCatalog?  @relation("ServiceHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   children         ServiceCatalog[] @relation("ServiceHierarchy")
   serviceItems     ServiceItem[]
-  tickets          Ticket[]         @relation("ServiceCatalogTickets")
   slaPolicies      SlaPolicy[]
+  tickets          Ticket[]         @relation("ServiceCatalogTickets")
 
   @@unique([departmentId, name])
   @@map("service_catalog")
@@ -315,8 +337,8 @@ model ServiceItem {
   service_field_definitions ServiceFieldDefinition[]
   serviceCatalog            ServiceCatalog           @relation(fields: [serviceCatalogId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   templates                 ServiceTemplate[]
-  tickets                   Ticket[]                 @relation("ServiceItemTickets")
   slaPolicies               SlaPolicy[]
+  tickets                   Ticket[]                 @relation("ServiceItemTickets")
 
   @@unique([serviceCatalogId, name])
   @@map("service_items")
@@ -445,18 +467,18 @@ model DepartmentSlaPolicy {
 }
 
 model BusinessHoursConfig {
-  id              Int      @id @default(autoincrement())
-  departmentId    Int?     @map("department_id")
-  unitId          Int?     @map("unit_id")
-  dayOfWeek       Int      @map("day_of_week") // 0 = Sunday, 1 = Monday, etc.
-  startTime       String   @map("start_time") @db.VarChar(5) // HH:mm format
-  endTime         String   @map("end_time") @db.VarChar(5)   // HH:mm format
-  isActive        Boolean  @default(true) @map("is_active")
-  timezone        String   @default("Asia/Jakarta") @db.VarChar(50)
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  department      Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  unit            Unit?       @relation(fields: [unitId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id           Int         @id @default(autoincrement())
+  departmentId Int?        @map("department_id")
+  unitId       Int?        @map("unit_id")
+  dayOfWeek    Int         @map("day_of_week")
+  startTime    String      @map("start_time") @db.VarChar(5)
+  endTime      String      @map("end_time") @db.VarChar(5)
+  isActive     Boolean     @default(true) @map("is_active")
+  timezone     String      @default("Asia/Jakarta") @db.VarChar(50)
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  unit         Unit?       @relation(fields: [unitId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([departmentId, unitId, dayOfWeek])
   @@index([departmentId])
@@ -465,19 +487,19 @@ model BusinessHoursConfig {
 }
 
 model HolidayCalendar {
-  id              Int      @id @default(autoincrement())
-  name            String   @db.VarChar(255)
-  date            DateTime @db.Date
-  description     String?
-  isRecurring     Boolean  @default(false) @map("is_recurring")
-  recurrenceRule  String?  @map("recurrence_rule") @db.VarChar(255) // RRULE format
-  departmentId    Int?     @map("department_id")
-  unitId          Int?     @map("unit_id")
-  isActive        Boolean  @default(true) @map("is_active")
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  department      Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  unit            Unit?       @relation(fields: [unitId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id             Int         @id @default(autoincrement())
+  name           String      @db.VarChar(255)
+  date           DateTime    @db.Date
+  description    String?
+  isRecurring    Boolean     @default(false) @map("is_recurring")
+  recurrenceRule String?     @map("recurrence_rule") @db.VarChar(255)
+  departmentId   Int?        @map("department_id")
+  unitId         Int?        @map("unit_id")
+  isActive       Boolean     @default(true) @map("is_active")
+  createdAt      DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  department     Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  unit           Unit?       @relation(fields: [unitId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([name, date, departmentId, unitId])
   @@index([date])
@@ -487,28 +509,28 @@ model HolidayCalendar {
 }
 
 model SlaPolicy {
-  id                    Int                @id @default(autoincrement())
-  name                  String             @db.VarChar(255)
+  id                    Int                  @id @default(autoincrement())
+  name                  String               @db.VarChar(255)
   description           String?
-  serviceCatalogId      Int?               @map("service_catalog_id")
-  serviceItemId         Int?               @map("service_item_id")
-  departmentId          Int?               @map("department_id")
+  serviceCatalogId      Int?                 @map("service_catalog_id")
+  serviceItemId         Int?                 @map("service_item_id")
+  departmentId          Int?                 @map("department_id")
   priority              ticket_priority?
-  isKasdaSpecific       Boolean            @default(false) @map("is_kasda_specific")
-  responseTimeMinutes   Int                @map("response_time_minutes")
-  resolutionTimeMinutes Int                @map("resolution_time_minutes")
-  businessHoursOnly     Boolean            @default(true) @map("business_hours_only")
-  escalationMatrix      Json?              @map("escalation_matrix")
-  notificationRules     Json?              @map("notification_rules")
-  isActive              Boolean            @default(true) @map("is_active")
-  effectiveFrom         DateTime           @default(now()) @map("effective_from") @db.Timestamptz(6)
-  effectiveTo           DateTime?          @map("effective_to") @db.Timestamptz(6)
-  createdAt             DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt             DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  serviceCatalog        ServiceCatalog?    @relation(fields: [serviceCatalogId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  serviceItem           ServiceItem?       @relation(fields: [serviceItemId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  department            Department?        @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  isKasdaSpecific       Boolean              @default(false) @map("is_kasda_specific")
+  responseTimeMinutes   Int                  @map("response_time_minutes")
+  resolutionTimeMinutes Int                  @map("resolution_time_minutes")
+  businessHoursOnly     Boolean              @default(true) @map("business_hours_only")
+  escalationMatrix      Json?                @map("escalation_matrix")
+  notificationRules     Json?                @map("notification_rules")
+  isActive              Boolean              @default(true) @map("is_active")
+  effectiveFrom         DateTime             @default(now()) @map("effective_from") @db.Timestamptz(6)
+  effectiveTo           DateTime?            @map("effective_to") @db.Timestamptz(6)
+  createdAt             DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   escalationInstances   EscalationInstance[]
+  department            Department?          @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  serviceCatalog        ServiceCatalog?      @relation(fields: [serviceCatalogId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  serviceItem           ServiceItem?         @relation(fields: [serviceItemId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([serviceCatalogId])
   @@index([serviceItemId])
@@ -519,19 +541,19 @@ model SlaPolicy {
 }
 
 model EscalationInstance {
-  id              Int       @id @default(autoincrement())
-  ticketId        Int       @map("ticket_id")
-  slaPolicyId     Int       @map("sla_policy_id")
-  escalationLevel Int       @map("escalation_level")
-  triggeredAt     DateTime  @map("triggered_at") @db.Timestamptz(6)
-  resolvedAt      DateTime? @map("resolved_at") @db.Timestamptz(6)
-  notifiedUsers   Json?     @map("notified_users") // Array of user IDs
-  escalationData  Json?     @map("escalation_data") // Custom escalation context
+  id              Int               @id @default(autoincrement())
+  ticketId        Int               @map("ticket_id")
+  slaPolicyId     Int               @map("sla_policy_id")
+  escalationLevel Int               @map("escalation_level")
+  triggeredAt     DateTime          @map("triggered_at") @db.Timestamptz(6)
+  resolvedAt      DateTime?         @map("resolved_at") @db.Timestamptz(6)
+  notifiedUsers   Json?             @map("notified_users")
+  escalationData  Json?             @map("escalation_data")
   status          escalation_status @default(active)
-  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  ticket          Ticket    @relation(fields: [ticketId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  slaPolicy       SlaPolicy @relation(fields: [slaPolicyId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  slaPolicy       SlaPolicy         @relation(fields: [slaPolicyId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  ticket          Ticket            @relation(fields: [ticketId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([ticketId])
   @@index([slaPolicyId])
@@ -1004,6 +1026,574 @@ model bsg_global_field_definitions {
   @@index([field_name], map: "idx_global_fields_name")
 }
 
+model AssetType {
+  id                 Int                  @id @default(autoincrement())
+  name               String               @unique @db.VarChar(100)
+  description        String?
+  category           String               @db.VarChar(50)
+  icon               String?              @db.VarChar(50)
+  isActive           Boolean              @default(true) @map("is_active")
+  createdAt          DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  assetAttributes    AssetTypeAttribute[]
+  assets             Asset[]
+  configurationItems ConfigurationItem[]
+
+  @@map("asset_types")
+}
+
+model AssetTypeAttribute {
+  id              Int                   @id @default(autoincrement())
+  assetTypeId     Int                   @map("asset_type_id")
+  name            String                @db.VarChar(100)
+  label           String                @db.VarChar(150)
+  fieldType       field_type            @map("field_type")
+  isRequired      Boolean               @default(false) @map("is_required")
+  options         Json?
+  validation      Json?
+  sortOrder       Int                   @default(0) @map("sort_order")
+  createdAt       DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  assetAttributes AssetAttributeValue[]
+  assetType       AssetType             @relation(fields: [assetTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([assetTypeId, name])
+  @@map("asset_type_attributes")
+}
+
+model Asset {
+  id                    Int                    @id @default(autoincrement())
+  assetTag              String                 @unique @db.VarChar(50)
+  name                  String                 @db.VarChar(255)
+  description           String?
+  assetTypeId           Int                    @map("asset_type_id")
+  serialNumber          String?                @db.VarChar(100)
+  model                 String?                @db.VarChar(100)
+  manufacturer          String?                @db.VarChar(100)
+  status                asset_status           @default(received)
+  condition             asset_condition        @default(new)
+  locationId            Int?                   @map("location_id")
+  assignedToUserId      Int?                   @map("assigned_to_user_id")
+  assignedToDeptId      Int?                   @map("assigned_to_dept_id")
+  purchasePrice         Decimal?               @map("purchase_price") @db.Decimal(12, 2)
+  purchaseDate          DateTime?              @map("purchase_date") @db.Date
+  warrantyExpiry        DateTime?              @map("warranty_expiry") @db.Date
+  depreciationRate      Decimal?               @map("depreciation_rate") @db.Decimal(5, 2)
+  currentValue          Decimal?               @map("current_value") @db.Decimal(12, 2)
+  vendorId              Int?                   @map("vendor_id")
+  purchaseOrderNum      String?                @map("purchase_order_num") @db.VarChar(50)
+  deploymentDate        DateTime?              @map("deployment_date") @db.Date
+  retirementDate        DateTime?              @map("retirement_date") @db.Date
+  disposalDate          DateTime?              @map("disposal_date") @db.Date
+  notes                 String?
+  customFields          Json?                  @map("custom_fields")
+  createdByUserId       Int                    @map("created_by_user_id")
+  createdAt             DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  assetAttributes       AssetAttributeValue[]
+  audits                AssetAudit[]
+  contracts             AssetContract[]
+  lifecycleEvents       AssetLifecycleEvent[]
+  maintenanceRecords    AssetMaintenance[]
+  childRelationships    AssetRelationship[]    @relation("AssetChild")
+  relationships         AssetRelationship[]    @relation("AssetParent")
+  transfers             AssetTransfer[]
+  assetType             AssetType              @relation(fields: [assetTypeId], references: [id])
+  assignedToDept        Department?            @relation("AssetAssignedDept", fields: [assignedToDeptId], references: [id])
+  assignedToUser        User?                  @relation("AssetAssignedUser", fields: [assignedToUserId], references: [id])
+  createdBy             User                   @relation("AssetCreator", fields: [createdByUserId], references: [id])
+  location              Unit?                  @relation("AssetLocation", fields: [locationId], references: [id])
+  vendor                AssetVendor?           @relation(fields: [vendorId], references: [id])
+  configurationItems    ConfigurationItem[]
+  softwareAssets        SoftwareAsset[]
+  softwareInstallations SoftwareInstallation[]
+  tickets               Ticket[]               @relation("TicketAsset")
+
+  @@index([assetTag])
+  @@index([status])
+  @@index([assetTypeId])
+  @@index([locationId])
+  @@index([assignedToUserId])
+  @@map("assets")
+}
+
+model AssetAttributeValue {
+  id          Int                @id @default(autoincrement())
+  assetId     Int                @map("asset_id")
+  attributeId Int                @map("attribute_id")
+  value       String?
+  createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  asset       Asset              @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  attribute   AssetTypeAttribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+
+  @@unique([assetId, attributeId])
+  @@map("asset_attribute_values")
+}
+
+model AssetVendor {
+  id               Int               @id @default(autoincrement())
+  name             String            @db.VarChar(255)
+  contactName      String?           @map("contact_name") @db.VarChar(255)
+  email            String?           @db.VarChar(255)
+  phone            String?           @db.VarChar(50)
+  address          String?
+  website          String?           @db.VarChar(255)
+  notes            String?
+  isActive         Boolean           @default(true) @map("is_active")
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  contracts        AssetContract[]
+  assets           Asset[]
+  softwareLicenses SoftwareLicense[]
+
+  @@map("asset_vendors")
+}
+
+model AssetLifecycleEvent {
+  id          Int                   @id @default(autoincrement())
+  assetId     Int                   @map("asset_id")
+  eventType   asset_lifecycle_event @map("event_type")
+  description String?
+  eventDate   DateTime              @map("event_date") @db.Date
+  performedBy Int                   @map("performed_by")
+  notes       String?
+  metadata    Json?
+  createdAt   DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  asset       Asset                 @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  user        User                  @relation("AssetLifecycleUser", fields: [performedBy], references: [id])
+
+  @@index([assetId, eventDate])
+  @@map("asset_lifecycle_events")
+}
+
+model AssetMaintenance {
+  id                Int                    @id @default(autoincrement())
+  assetId           Int                    @map("asset_id")
+  maintenanceType   asset_maintenance_type @map("maintenance_type")
+  title             String                 @db.VarChar(255)
+  description       String?
+  scheduledDate     DateTime               @map("scheduled_date") @db.Date
+  completedDate     DateTime?              @map("completed_date") @db.Date
+  status            maintenance_status     @default(scheduled)
+  cost              Decimal?               @db.Decimal(10, 2)
+  performedBy       String?                @map("performed_by") @db.VarChar(255)
+  notes             String?
+  nextScheduledDate DateTime?              @map("next_scheduled_date") @db.Date
+  createdByUserId   Int                    @map("created_by_user_id")
+  createdAt         DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  asset             Asset                  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  createdBy         User                   @relation("AssetMaintenanceCreator", fields: [createdByUserId], references: [id])
+
+  @@index([assetId, scheduledDate])
+  @@index([status])
+  @@map("asset_maintenance")
+}
+
+model AssetContract {
+  id              Int             @id @default(autoincrement())
+  assetId         Int             @map("asset_id")
+  vendorId        Int             @map("vendor_id")
+  contractType    contract_type   @map("contract_type")
+  title           String          @db.VarChar(255)
+  description     String?
+  contractNumber  String?         @map("contract_number") @db.VarChar(100)
+  startDate       DateTime        @map("start_date") @db.Date
+  endDate         DateTime        @map("end_date") @db.Date
+  cost            Decimal         @db.Decimal(12, 2)
+  renewalDate     DateTime?       @map("renewal_date") @db.Date
+  autoRenewal     Boolean         @default(false) @map("auto_renewal")
+  status          contract_status @default(active)
+  terms           String?
+  createdByUserId Int             @map("created_by_user_id")
+  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  asset           Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  createdBy       User            @relation("AssetContractCreator", fields: [createdByUserId], references: [id])
+  vendor          AssetVendor     @relation(fields: [vendorId], references: [id])
+
+  @@index([assetId])
+  @@index([endDate])
+  @@index([status])
+  @@map("asset_contracts")
+}
+
+model AssetRelationship {
+  id               Int                     @id @default(autoincrement())
+  parentAssetId    Int                     @map("parent_asset_id")
+  childAssetId     Int                     @map("child_asset_id")
+  relationshipType asset_relationship_type @map("relationship_type")
+  description      String?
+  createdAt        DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  childAsset       Asset                   @relation("AssetChild", fields: [childAssetId], references: [id], onDelete: Cascade)
+  parentAsset      Asset                   @relation("AssetParent", fields: [parentAssetId], references: [id], onDelete: Cascade)
+
+  @@unique([parentAssetId, childAssetId, relationshipType])
+  @@map("asset_relationships")
+}
+
+model AssetTransfer {
+  id             Int                 @id @default(autoincrement())
+  assetId        Int                 @map("asset_id")
+  transferType   asset_transfer_type @map("transfer_type")
+  fromUserId     Int?                @map("from_user_id")
+  toUserId       Int?                @map("to_user_id")
+  fromLocationId Int?                @map("from_location_id")
+  toLocationId   Int?                @map("to_location_id")
+  fromDeptId     Int?                @map("from_dept_id")
+  toDeptId       Int?                @map("to_dept_id")
+  transferDate   DateTime            @map("transfer_date") @db.Date
+  reason         String?
+  notes          String?
+  status         transfer_status     @default(pending)
+  requestedBy    Int                 @map("requested_by")
+  approvedBy     Int?                @map("approved_by")
+  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  approver       User?               @relation("AssetTransferApprover", fields: [approvedBy], references: [id])
+  asset          Asset               @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  fromDept       Department?         @relation("AssetTransferFromDept", fields: [fromDeptId], references: [id])
+  fromLocation   Unit?               @relation("AssetTransferFromLocation", fields: [fromLocationId], references: [id])
+  fromUser       User?               @relation("AssetTransferFromUser", fields: [fromUserId], references: [id])
+  requester      User                @relation("AssetTransferRequester", fields: [requestedBy], references: [id])
+  toDept         Department?         @relation("AssetTransferToDept", fields: [toDeptId], references: [id])
+  toLocation     Unit?               @relation("AssetTransferToLocation", fields: [toLocationId], references: [id])
+  toUser         User?               @relation("AssetTransferToUser", fields: [toUserId], references: [id])
+
+  @@index([assetId])
+  @@index([transferDate])
+  @@index([status])
+  @@map("asset_transfers")
+}
+
+model AssetAudit {
+  id              Int          @id @default(autoincrement())
+  assetId         Int          @map("asset_id")
+  auditType       audit_type   @map("audit_type")
+  auditDate       DateTime     @map("audit_date") @db.Date
+  auditedBy       Int          @map("audited_by")
+  findings        String?
+  recommendations String?
+  status          audit_status @default(pending)
+  dueDate         DateTime?    @map("due_date") @db.Date
+  completedDate   DateTime?    @map("completed_date") @db.Date
+  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  asset           Asset        @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  auditor         User         @relation("AssetAuditor", fields: [auditedBy], references: [id])
+
+  @@index([assetId, auditDate])
+  @@index([status])
+  @@map("asset_audits")
+}
+
+model CIType {
+  id                 Int                 @id @default(autoincrement())
+  name               String              @unique @db.VarChar(100)
+  description        String?
+  category           String              @db.VarChar(50)
+  icon               String?             @db.VarChar(50)
+  isActive           Boolean             @default(true) @map("is_active")
+  createdAt          DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  ciAttributes       CITypeAttribute[]
+  configurationItems ConfigurationItem[]
+
+  @@map("ci_types")
+}
+
+model CITypeAttribute {
+  id           Int                @id @default(autoincrement())
+  ciTypeId     Int                @map("ci_type_id")
+  name         String             @db.VarChar(100)
+  label        String             @db.VarChar(150)
+  fieldType    field_type         @map("field_type")
+  isRequired   Boolean            @default(false) @map("is_required")
+  options      Json?
+  validation   Json?
+  sortOrder    Int                @default(0) @map("sort_order")
+  createdAt    DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  ciAttributes CIAttributeValue[]
+  ciType       CIType             @relation(fields: [ciTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([ciTypeId, name])
+  @@map("ci_type_attributes")
+}
+
+model ConfigurationItem {
+  id                  Int                  @id @default(autoincrement())
+  ciId                String               @unique @map("ci_id") @db.VarChar(50)
+  name                String               @db.VarChar(255)
+  description         String?
+  ciTypeId            Int                  @map("ci_type_id")
+  assetTypeId         Int?                 @map("asset_type_id")
+  assetId             Int?                 @map("asset_id")
+  status              ci_status            @default(active)
+  environment         String?              @db.VarChar(50)
+  businessCriticality business_criticality @default(medium) @map("business_criticality")
+  ownerId             Int?                 @map("owner_id")
+  locationId          Int?                 @map("location_id")
+  version             String?              @db.VarChar(50)
+  ipAddress           String?              @map("ip_address") @db.VarChar(45)
+  hostname            String?              @db.VarChar(255)
+  operatingSystem     String?              @map("operating_system") @db.VarChar(100)
+  notes               String?
+  customFields        Json?                @map("custom_fields")
+  discoveredDate      DateTime?            @map("discovered_date") @db.Date
+  lastUpdated         DateTime             @default(now()) @map("last_updated") @db.Timestamptz(6)
+  createdByUserId     Int                  @map("created_by_user_id")
+  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  ciAttributes        CIAttributeValue[]
+  changes             CIChange[]
+  incidents           CIIncident[]
+  childRelationships  CIRelationship[]     @relation("CIChild")
+  relationships       CIRelationship[]     @relation("CIParent")
+  asset               Asset?               @relation(fields: [assetId], references: [id])
+  assetType           AssetType?           @relation(fields: [assetTypeId], references: [id])
+  ciType              CIType               @relation(fields: [ciTypeId], references: [id])
+  createdBy           User                 @relation("CICreator", fields: [createdByUserId], references: [id])
+  location            Unit?                @relation("CILocation", fields: [locationId], references: [id])
+  owner               User?                @relation("CIOwner", fields: [ownerId], references: [id])
+
+  @@index([ciId])
+  @@index([status])
+  @@index([ciTypeId])
+  @@index([assetId])
+  @@map("configuration_items")
+}
+
+model CIAttributeValue {
+  id                Int               @id @default(autoincrement())
+  ciId              Int               @map("ci_id")
+  attributeId       Int               @map("attribute_id")
+  value             String?
+  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  attribute         CITypeAttribute   @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  configurationItem ConfigurationItem @relation(fields: [ciId], references: [id], onDelete: Cascade)
+
+  @@unique([ciId, attributeId])
+  @@map("ci_attribute_values")
+}
+
+model CIRelationship {
+  id               Int                  @id @default(autoincrement())
+  parentCIId       Int                  @map("parent_ci_id")
+  childCIId        Int                  @map("child_ci_id")
+  relationshipType ci_relationship_type @map("relationship_type")
+  description      String?
+  createdAt        DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  childCI          ConfigurationItem    @relation("CIChild", fields: [childCIId], references: [id], onDelete: Cascade)
+  parentCI         ConfigurationItem    @relation("CIParent", fields: [parentCIId], references: [id], onDelete: Cascade)
+
+  @@unique([parentCIId, childCIId, relationshipType])
+  @@map("ci_relationships")
+}
+
+model CIIncident {
+  id                Int               @id @default(autoincrement())
+  ciId              Int               @map("ci_id")
+  ticketId          Int               @map("ticket_id")
+  impact            business_impact   @default(low)
+  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  configurationItem ConfigurationItem @relation(fields: [ciId], references: [id], onDelete: Cascade)
+  ticket            Ticket            @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@unique([ciId, ticketId])
+  @@map("ci_incidents")
+}
+
+model CIChange {
+  id                Int               @id @default(autoincrement())
+  ciId              Int               @map("ci_id")
+  changeType        ci_change_type    @map("change_type")
+  changeDescription String            @map("change_description")
+  plannedDate       DateTime?         @map("planned_date") @db.Date
+  completedDate     DateTime?         @map("completed_date") @db.Date
+  impact            business_impact   @default(low)
+  requestedBy       Int               @map("requested_by")
+  approvedBy        Int?              @map("approved_by")
+  status            change_status     @default(planning)
+  notes             String?
+  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  approver          User?             @relation("CIChangeApprover", fields: [approvedBy], references: [id])
+  configurationItem ConfigurationItem @relation(fields: [ciId], references: [id], onDelete: Cascade)
+  requester         User              @relation("CIChangeRequester", fields: [requestedBy], references: [id])
+
+  @@index([ciId])
+  @@index([status])
+  @@map("ci_changes")
+}
+
+model SoftwareAsset {
+  id               Int                    @id @default(autoincrement())
+  name             String                 @db.VarChar(255)
+  version          String?                @db.VarChar(50)
+  publisher        String?                @db.VarChar(255)
+  category         String                 @db.VarChar(100)
+  assetId          Int?                   @map("asset_id")
+  installationPath String?                @map("installation_path")
+  licenseKey       String?                @map("license_key") @db.VarChar(255)
+  installDate      DateTime?              @map("install_date") @db.Date
+  lastUsed         DateTime?              @map("last_used") @db.Date
+  usageCount       Int                    @default(0) @map("usage_count")
+  isActive         Boolean                @default(true) @map("is_active")
+  notes            String?
+  createdAt        DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  asset            Asset?                 @relation(fields: [assetId], references: [id])
+  installations    SoftwareInstallation[]
+
+  @@index([name, version])
+  @@index([assetId])
+  @@map("software_assets")
+}
+
+model SoftwareLicense {
+  id                Int                    @id @default(autoincrement())
+  name              String                 @db.VarChar(255)
+  licenseType       software_license_type  @map("license_type")
+  totalLicenses     Int                    @map("total_licenses")
+  usedLicenses      Int                    @default(0) @map("used_licenses")
+  availableLicenses Int                    @default(0) @map("available_licenses")
+  vendorId          Int?                   @map("vendor_id")
+  purchaseDate      DateTime?              @map("purchase_date") @db.Date
+  expiryDate        DateTime?              @map("expiry_date") @db.Date
+  maintenanceExpiry DateTime?              @map("maintenance_expiry") @db.Date
+  cost              Decimal?               @db.Decimal(12, 2)
+  isActive          Boolean                @default(true) @map("is_active")
+  notes             String?
+  createdAt         DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  installations     SoftwareInstallation[]
+  vendor            AssetVendor?           @relation(fields: [vendorId], references: [id])
+
+  @@index([name])
+  @@index([expiryDate])
+  @@map("software_licenses")
+}
+
+model SoftwareInstallation {
+  id              Int                 @id @default(autoincrement())
+  softwareAssetId Int                 @map("software_asset_id")
+  licenseId       Int?                @map("license_id")
+  assetId         Int                 @map("asset_id")
+  userId          Int?                @map("user_id")
+  installDate     DateTime            @map("install_date") @db.Date
+  status          installation_status @default(active)
+  version         String?             @db.VarChar(50)
+  licenseKey      String?             @map("license_key") @db.VarChar(255)
+  notes           String?
+  createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  asset           Asset               @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  license         SoftwareLicense?    @relation(fields: [licenseId], references: [id])
+  softwareAsset   SoftwareAsset       @relation(fields: [softwareAssetId], references: [id], onDelete: Cascade)
+  user            User?               @relation("SoftwareInstallationUser", fields: [userId], references: [id])
+
+  @@unique([softwareAssetId, assetId])
+  @@index([assetId])
+  @@index([status])
+  @@map("software_installations")
+}
+
+model KnowledgeCategory {
+  id          Int                 @id @default(autoincrement())
+  name        String              @db.VarChar(100)
+  description String?
+  parentId    Int?                @map("parent_id")
+  icon        String?             @db.VarChar(50)
+  color       String?             @db.VarChar(20)
+  sortOrder   Int                 @default(0) @map("sort_order")
+  isActive    Boolean             @default(true) @map("is_active")
+  createdAt   DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  articles    KnowledgeArticle[]
+  parent      KnowledgeCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction)
+  children    KnowledgeCategory[] @relation("CategoryHierarchy")
+
+  @@unique([name, parentId])
+  @@index([isActive, sortOrder])
+  @@map("knowledge_categories")
+}
+
+model KnowledgeArticle {
+  id              Int                        @id @default(autoincrement())
+  title           String                     @db.VarChar(255)
+  content         String
+  excerpt         String?                    @db.VarChar(500)
+  categoryId      Int?                       @map("category_id")
+  tags            String[]
+  status          knowledge_status           @default(draft)
+  publishedAt     DateTime?                  @map("published_at") @db.Timestamptz(6)
+  authorId        Int                        @map("author_id")
+  editorId        Int?                       @map("editor_id")
+  viewCount       Int                        @default(0) @map("view_count")
+  helpfulCount    Int                        @default(0) @map("helpful_count")
+  notHelpfulCount Int                        @default(0) @map("not_helpful_count")
+  searchKeywords  String?                    @map("search_keywords") @db.VarChar(500)
+  attachments     Json?
+  metadata        Json?
+  createdAt       DateTime                   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime                   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  feedbacks       KnowledgeArticleFeedback[]
+  views           KnowledgeArticleView[]
+  author          User                       @relation("ArticleAuthor", fields: [authorId], references: [id])
+  category        KnowledgeCategory?         @relation(fields: [categoryId], references: [id])
+  editor          User?                      @relation("ArticleEditor", fields: [editorId], references: [id])
+  ticketLinks     KnowledgeTicketLink[]
+
+  @@index([status, publishedAt])
+  @@index([categoryId, status])
+  @@index([authorId])
+  @@index([viewCount])
+  @@map("knowledge_articles")
+}
+
+model KnowledgeArticleView {
+  id        Int              @id @default(autoincrement())
+  articleId Int              @map("article_id")
+  userId    Int?             @map("user_id")
+  ipAddress String?          @map("ip_address") @db.VarChar(45)
+  userAgent String?          @map("user_agent") @db.VarChar(500)
+  viewedAt  DateTime         @default(now()) @map("viewed_at") @db.Timestamptz(6)
+  article   KnowledgeArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user      User?            @relation("ArticleViewer", fields: [userId], references: [id])
+
+  @@index([articleId, viewedAt])
+  @@index([userId])
+  @@map("knowledge_article_views")
+}
+
+model KnowledgeTicketLink {
+  id        Int              @id @default(autoincrement())
+  articleId Int              @map("article_id")
+  ticketId  Int              @map("ticket_id")
+  linkType  kb_link_type     @default(referenced)
+  linkedBy  Int              @map("linked_by")
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  article   KnowledgeArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user      User             @relation("KnowledgeLinkCreator", fields: [linkedBy], references: [id])
+  ticket    Ticket           @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, ticketId, linkType])
+  @@index([ticketId])
+  @@index([articleId])
+  @@map("knowledge_ticket_links")
+}
+
+model KnowledgeArticleFeedback {
+  id        Int              @id @default(autoincrement())
+  articleId Int              @map("article_id")
+  userId    Int?             @map("user_id")
+  isHelpful Boolean          @map("is_helpful")
+  comment   String?
+  ipAddress String?          @map("ip_address") @db.VarChar(45)
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  article   KnowledgeArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user      User?            @relation("ArticleFeedbackUser", fields: [userId], references: [id])
+
+  @@unique([articleId, userId, ipAddress])
+  @@index([articleId, isHelpful])
+  @@map("knowledge_article_feedback")
+}
+
 enum ticket_priority {
   low
   medium
@@ -1117,119 +1707,187 @@ enum escalation_status {
   failed
 }
 
-// Knowledge Base Models
-model KnowledgeCategory {
-  id          Int               @id @default(autoincrement())
-  name        String            @db.VarChar(100)
-  description String?
-  parentId    Int?              @map("parent_id")
-  icon        String?           @db.VarChar(50)
-  color       String?           @db.VarChar(20)
-  sortOrder   Int               @default(0) @map("sort_order")
-  isActive    Boolean           @default(true) @map("is_active")
-  createdAt   DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  
-  // Relations
-  parent      KnowledgeCategory? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction)
-  children    KnowledgeCategory[] @relation("CategoryHierarchy")
-  articles    KnowledgeArticle[]
-
-  @@unique([name, parentId])
-  @@index([isActive, sortOrder])
-  @@map("knowledge_categories")
+enum asset_status {
+  requested
+  ordered
+  received
+  deployed
+  active
+  inactive
+  maintenance
+  retired
+  disposed
+  lost
+  stolen
 }
 
-model KnowledgeArticle {
-  id               Int                    @id @default(autoincrement())
-  title            String                 @db.VarChar(255)
-  content          String                 // Rich text content
-  excerpt          String?                @db.VarChar(500) // Short summary
-  categoryId       Int?                   @map("category_id")
-  tags             String[]               // Array of tags for search
-  status           knowledge_status       @default(draft)
-  publishedAt      DateTime?              @map("published_at") @db.Timestamptz(6)
-  authorId         Int                    @map("author_id")
-  editorId         Int?                   @map("editor_id") // Last person who edited
-  viewCount        Int                    @default(0) @map("view_count")
-  helpfulCount     Int                    @default(0) @map("helpful_count") // User feedback
-  notHelpfulCount  Int                    @default(0) @map("not_helpful_count")
-  searchKeywords   String?                @map("search_keywords") @db.VarChar(500)
-  attachments      Json?                  // File attachments metadata
-  metadata         Json?                  // Additional structured data
-  createdAt        DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt        DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  
-  // Relations
-  category         KnowledgeCategory?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  author           User                   @relation("ArticleAuthor", fields: [authorId], references: [id])
-  editor           User?                  @relation("ArticleEditor", fields: [editorId], references: [id])
-  views            KnowledgeArticleView[]
-  ticketLinks      KnowledgeTicketLink[]
-  feedbacks        KnowledgeArticleFeedback[]
-
-  @@index([status, publishedAt])
-  @@index([categoryId, status])
-  @@index([authorId])
-  @@index([viewCount])
-  @@map("knowledge_articles")
+enum asset_condition {
+  new
+  excellent
+  good
+  fair
+  poor
+  damaged
+  non_functional
 }
 
-model KnowledgeArticleView {
-  id         Int              @id @default(autoincrement())
-  articleId  Int              @map("article_id")
-  userId     Int?             @map("user_id") // Null for anonymous views
-  ipAddress  String?          @map("ip_address") @db.VarChar(45)
-  userAgent  String?          @map("user_agent") @db.VarChar(500)
-  viewedAt   DateTime         @default(now()) @map("viewed_at") @db.Timestamptz(6)
-  
-  // Relations
-  article    KnowledgeArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  user       User?            @relation("ArticleViewer", fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([articleId, viewedAt])
-  @@index([userId])
-  @@map("knowledge_article_views")
+enum asset_lifecycle_event {
+  requested
+  ordered
+  received
+  deployed
+  transferred
+  upgraded
+  maintained
+  retired
+  disposed
 }
 
-model KnowledgeTicketLink {
-  id          Int              @id @default(autoincrement())
-  articleId   Int              @map("article_id")
-  ticketId    Int              @map("ticket_id")
-  linkType    kb_link_type     @default(referenced) // referenced, resolved_with, related_to
-  linkedBy    Int              @map("linked_by") // User who created the link
-  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
-  
-  // Relations
-  article     KnowledgeArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  ticket      Ticket           @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  user        User             @relation("KnowledgeLinkCreator", fields: [linkedBy], references: [id])
-
-  @@unique([articleId, ticketId, linkType])
-  @@index([ticketId])
-  @@index([articleId])
-  @@map("knowledge_ticket_links")
+enum asset_maintenance_type {
+  preventive
+  corrective
+  emergency
+  upgrade
+  calibration
+  inspection
 }
 
-model KnowledgeArticleFeedback {
-  id         Int              @id @default(autoincrement())
-  articleId  Int              @map("article_id")
-  userId     Int?             @map("user_id") // Null for anonymous feedback
-  isHelpful  Boolean          @map("is_helpful")
-  comment    String?          // Optional feedback comment
-  ipAddress  String?          @map("ip_address") @db.VarChar(45)
-  createdAt  DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
-  
-  // Relations
-  article    KnowledgeArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  user       User?            @relation("ArticleFeedbackUser", fields: [userId], references: [id], onDelete: SetNull)
-
-  @@unique([articleId, userId, ipAddress]) // Prevent duplicate feedback
-  @@index([articleId, isHelpful])
-  @@map("knowledge_article_feedback")
+enum maintenance_status {
+  scheduled
+  in_progress
+  completed
+  cancelled
+  overdue
 }
 
-// Knowledge Base Enums
+enum contract_type {
+  warranty
+  maintenance
+  support
+  lease
+  rental
+  insurance
+}
+
+enum contract_status {
+  active
+  expired
+  cancelled
+  suspended
+  pending
+}
+
+enum asset_relationship_type {
+  contains
+  depends_on
+  connects_to
+  uses
+  installed_on
+  powers
+  backs_up
+  clusters_with
+}
+
+enum asset_transfer_type {
+  assignment
+  relocation
+  temporary_loan
+  permanent_transfer
+  return
+}
+
+enum transfer_status {
+  pending
+  approved
+  in_transit
+  completed
+  cancelled
+  rejected
+}
+
+enum audit_type {
+  physical
+  financial
+  compliance
+  security
+  lifecycle
+  performance
+}
+
+enum audit_status {
+  pending
+  in_progress
+  completed
+  cancelled
+  overdue
+}
+
+enum ci_status {
+  active
+  inactive
+  retired
+  under_change
+  failed
+  unknown
+}
+
+enum business_criticality {
+  low
+  medium
+  high
+  critical
+}
+
+enum ci_relationship_type {
+  depends_on
+  hosted_on
+  connected_to
+  uses
+  part_of
+  installed_on
+  runs_on
+  communicates_with
+}
+
+enum ci_change_type {
+  add
+  modify
+  remove
+  relocate
+  upgrade
+  downgrade
+}
+
+enum change_status {
+  planning
+  approved
+  implementing
+  completed
+  cancelled
+  failed
+  rolled_back
+}
+
+enum software_license_type {
+  perpetual
+  subscription
+  concurrent
+  named_user
+  device_based
+  enterprise
+  oem
+  volume
+  site_license
+}
+
+enum installation_status {
+  active
+  inactive
+  pending
+  failed
+  uninstalled
+}
+
 enum knowledge_status {
   draft
   published
@@ -1237,7 +1895,7 @@ enum knowledge_status {
 }
 
 enum kb_link_type {
-  referenced       // Article was referenced during ticket resolution
-  resolved_with    // Ticket was resolved using this article
-  related_to       // Article is related to the ticket topic
+  referenced
+  resolved_with
+  related_to
 }

@@ -120,20 +120,143 @@ const getIconForServiceCatalog = (catalogName: string): string => {
   return iconMap[catalogName] || 'document-text';
 };
 
+// Extract application name from service name based on template.csv patterns
+const extractApplicationName = (serviceName: string, categoryName: string): string => {
+  const name = serviceName.toLowerCase();
+  const category = categoryName.toLowerCase();
+  
+  // Direct application matches from template.csv
+  if (name.includes('olibs') || category.includes('olibs')) return 'OLIBS';
+  if (name.includes('xcard') || category.includes('xcard')) return 'XCARD';
+  if (name.includes('bsg qris') || name.includes('qris') || category.includes('qris')) return 'BSG QRIS';
+  if (name.includes('bsgtouch') || name.includes('bsg touch') || category.includes('bsgtouch')) return 'BSGTouch';
+  if (name.includes('tellerapp') || name.includes('teller app') || name.includes('reporting') || category.includes('teller')) return 'TellerApp/Reporting';
+  if (name.includes('sms banking') || name.includes('sms bank') || category.includes('sms')) return 'SMS BANKING';
+  if (name.includes('klaim') || category.includes('klaim')) return 'KLAIM';
+  if (name.includes('atm') || category.includes('atm')) return 'ATM';
+  if (name.includes('perpanjangan operasional') || name.includes('operasional')) return 'Permintaan Perpanjangan operasional';
+  
+  // Fallback to category name
+  return categoryName || 'Unknown Application';
+};
+
 // Transform BSG Templates to Services
 const transformBSGTemplatesToServices = (bsgTemplates: any[]) => {
-  return bsgTemplates.map(template => ({
-    id: `bsg_template_${template.id}`,
-    name: template.displayName || template.name,
-    description: template.description || `${template.name} service request`,
-    categoryId: `bsg_${template.categoryId}`,
-    templateId: template.id,
-    popularity: template.popularityScore || 0,
-    usageCount: template.usageCount || 0,
-    hasFields: template._count?.fields > 0,
-    fieldCount: template._count?.fields || 0,
-    type: 'bsg_service'
-  }));
+  return bsgTemplates.map(template => {
+    // Extract application name for user access tracking
+    const applicationName = extractApplicationName(
+      template.displayName || template.name, 
+      template.category?.displayName || template.category?.name || ''
+    );
+    
+    // Transform template fields to service catalog format
+    const transformedFields = template.fields?.map((field: any) => ({
+      id: field.id,
+      name: field.fieldName,
+      label: field.fieldLabel,
+      type: field.fieldType?.name || field.fieldType,
+      required: field.isRequired,
+      description: field.fieldDescription,
+      placeholder: field.placeholderText,
+      helpText: field.helpText,
+      maxLength: field.maxLength,
+      validationRules: field.validationRules,
+      options: field.options?.map((opt: any) => ({
+        value: opt.optionValue,
+        label: opt.optionLabel,
+        isDefault: opt.isDefault
+      })) || [],
+      originalFieldType: field.fieldType?.name || field.fieldType,
+      isDropdownField: (field.fieldType?.name || field.fieldType)?.includes('dropdown')
+    })) || [];
+    
+    // Add application name field for user access tracking
+    const applicationNameField = {
+      id: -1, // Special ID for generated field
+      name: 'applicationName',
+      label: 'Aplikasi/Application',
+      type: 'dropdown',
+      required: true,
+      description: 'Nama aplikasi terkait untuk tracking akses user',
+      placeholder: 'Pilih aplikasi',
+      helpText: 'Aplikasi yang terkait dengan permintaan ini',
+      maxLength: null,
+      validationRules: null,
+      options: [
+        { value: 'OLIBS', label: 'OLIBS', isDefault: applicationName === 'OLIBS' },
+        { value: 'XCARD', label: 'XCARD', isDefault: applicationName === 'XCARD' },
+        { value: 'BSG QRIS', label: 'BSG QRIS', isDefault: applicationName === 'BSG QRIS' },
+        { value: 'BSGTouch', label: 'BSGTouch', isDefault: applicationName === 'BSGTouch' },
+        { value: 'TellerApp/Reporting', label: 'TellerApp/Reporting', isDefault: applicationName === 'TellerApp/Reporting' },
+        { value: 'SMS BANKING', label: 'SMS BANKING', isDefault: applicationName === 'SMS BANKING' },
+        { value: 'KLAIM', label: 'KLAIM', isDefault: applicationName === 'KLAIM' },
+        { value: 'ATM', label: 'ATM', isDefault: applicationName === 'ATM' },
+        { value: 'Permintaan Perpanjangan operasional', label: 'Permintaan Perpanjangan operasional', isDefault: applicationName === 'Permintaan Perpanjangan operasional' }
+      ],
+      originalFieldType: 'dropdown',
+      isDropdownField: true
+    };
+    
+    // Add user identification fields for tracking (if not already present)
+    const hasUserCodeField = transformedFields.some((f: any) => f.name.toLowerCase().includes('kode user') || f.name.toLowerCase().includes('usercode'));
+    const hasUserNameField = transformedFields.some((f: any) => f.name.toLowerCase().includes('nama user') || f.name.toLowerCase().includes('username'));
+    
+    const additionalFields = [];
+    
+    if (!hasUserCodeField) {
+      additionalFields.push({
+        id: -2,
+        name: 'kodeUser',
+        label: 'Kode User',
+        type: 'text',
+        required: true,
+        description: 'Kode user untuk tracking akses aplikasi',
+        placeholder: 'Maksimal 5 karakter',
+        helpText: 'Kode user yang akan digunakan untuk akses aplikasi',
+        maxLength: 5,
+        validationRules: null,
+        options: [],
+        originalFieldType: 'text',
+        isDropdownField: false
+      });
+    }
+    
+    if (!hasUserNameField) {
+      additionalFields.push({
+        id: -3,
+        name: 'namaUser',
+        label: 'Nama User',
+        type: 'text',
+        required: true,
+        description: 'Nama lengkap user untuk tracking akses aplikasi',
+        placeholder: 'Nama lengkap user',
+        helpText: 'Nama lengkap user yang akan menggunakan aplikasi',
+        maxLength: 100,
+        validationRules: null,
+        options: [],
+        originalFieldType: 'text',
+        isDropdownField: false
+      });
+    }
+    
+    // Combine all fields: application name first, then user fields, then original fields
+    const allFields = [applicationNameField, ...additionalFields, ...transformedFields];
+
+    return {
+      id: `bsg_template_${template.id}`,
+      name: template.displayName || template.name,
+      description: template.description || `${template.name} service request`,
+      categoryId: `bsg_${template.categoryId}`,
+      templateId: template.id,
+      popularity: template.popularityScore || 0,
+      usageCount: template.usageCount || 0,
+      hasFields: allFields.length > 0,
+      fieldCount: allFields.length,
+      hasTemplate: allFields.length > 0, // Customer portal checks this
+      fields: allFields, // Include application name, user fields, and original fields
+      type: 'bsg_service'
+    };
+  });
 };
 
 // @route   GET /api/service-catalog/categories
@@ -141,7 +264,36 @@ const transformBSGTemplatesToServices = (bsgTemplates: any[]) => {
 // @access  Private
 router.get('/categories', protect, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   try {
-    // Get ServiceCatalog data with service item counts
+    // PRIORITY: Get BSG categories first (they have working dynamic fields)
+    const bsgCategories = await prisma.bSGTemplateCategory.findMany({
+      where: { isActive: true },
+      include: {
+        _count: {
+          select: {
+            templates: {
+              where: { isActive: true }
+            }
+          }
+        }
+      },
+      orderBy: [
+        { sortOrder: 'asc' },
+        { displayName: 'asc' }
+      ]
+    });
+
+    // Transform BSG categories to frontend format (PRIORITY - these have fields!)
+    const bsgCategoryData = bsgCategories.map(category => ({
+      id: `bsg_${category.id}`,
+      name: category.displayName || category.name,
+      description: category.description || `${category.displayName} services with dynamic fields`,
+      icon: category.icon || getIconForCategory(category.name),
+      serviceCount: category._count?.templates || 0,
+      type: 'bsg_category',
+      priority: 1000 // High priority for BSG categories
+    }));
+
+    // Get ServiceCatalog data with service item counts (secondary)
     const serviceCatalogs = await prisma.serviceCatalog.findMany({
       where: { isActive: true },
       include: {
@@ -165,13 +317,28 @@ router.get('/categories', protect, asyncHandler(async (req: AuthenticatedRequest
         description: catalog.description || `${catalog.name} services and support`,
         icon: getIconForServiceCatalog(catalog.name),
         serviceCount: serviceItemCount,
-        type: 'service_catalog'
+        type: 'service_catalog',
+        priority: 100 // Lower priority
       };
+    });
+
+    // Combine categories with BSG categories first
+    const allCategories = [...bsgCategoryData, ...serviceCatalogCategories];
+
+    // Sort by priority (BSG categories first) then by name
+    allCategories.sort((a, b) => {
+      if (a.priority !== b.priority) return b.priority - a.priority;
+      return a.name.localeCompare(b.name);
+    });
+
+    console.log('📂 Categories returned to customer portal:');
+    allCategories.forEach(cat => {
+      console.log(`  - ${cat.id}: ${cat.name} (${cat.serviceCount} services, Type: ${cat.type})`);
     });
 
     res.json({
       success: true,
-      data: serviceCatalogCategories,
+      data: allCategories,
       userContext: {
         isKasdaUser: req.user?.isKasdaUser || false,
         department: req.user?.departmentId,
@@ -254,10 +421,25 @@ router.get('/category/:categoryId/services', protect, asyncHandler(async (req: A
             serviceItemId: item.id,
             popularity: 0,
             usageCount: 0,
+            hasTemplate: true, // Add hasTemplate for customer portal compatibility
             hasFields: bestTemplate.customFieldDefinitions.length > 0 || serviceFieldCount > 0,
             fieldCount: bestTemplate.customFieldDefinitions.length + serviceFieldCount,
             type: 'service_template',
-            estimatedResolutionTime: bestTemplate.estimatedResolutionTime
+            estimatedResolutionTime: bestTemplate.estimatedResolutionTime,
+            // Add fields for customer portal
+            fields: bestTemplate.customFieldDefinitions.map(field => ({
+              id: field.id,
+              name: field.fieldName,
+              label: field.fieldLabel,
+              type: field.fieldType,
+              required: field.isRequired,
+              description: null,
+              placeholder: field.placeholder,
+              helpText: null,
+              originalFieldType: field.fieldType,
+              isDropdownField: field.fieldType.includes('dropdown'),
+              options: field.options || [] // Include options for checkbox and radio fields
+            }))
           });
         } else {
           // No templates with fields, use service item directly
@@ -270,10 +452,25 @@ router.get('/category/:categoryId/services', protect, asyncHandler(async (req: A
             serviceItemId: item.id,
             popularity: 0,
             usageCount: 0,
+            hasTemplate: serviceFieldCount > 0, // Set hasTemplate to true if there are fields
             hasFields: serviceFieldCount > 0,
             fieldCount: serviceFieldCount,
             type: 'service_item',
-            estimatedResolutionTime: null
+            estimatedResolutionTime: null,
+            // Add fields for customer portal
+            fields: item.service_field_definitions.map(field => ({
+              id: field.id,
+              name: field.fieldName,
+              label: field.fieldLabel,
+              type: field.fieldType,
+              required: field.isRequired,
+              description: null,
+              placeholder: field.placeholder,
+              helpText: null,
+              originalFieldType: field.fieldType,
+              isDropdownField: field.fieldType.includes('dropdown'),
+              options: field.options || [] // Include options for checkbox and radio fields
+            }))
           });
         }
       }
@@ -286,7 +483,7 @@ router.get('/category/:categoryId/services', protect, asyncHandler(async (req: A
       // Handle legacy BSG categories
       const bsgCategoryId = parseInt(categoryId.replace('bsg_', ''));
       
-      // Get BSG templates for this category
+      // Get BSG templates for this category with field data
       const bsgTemplates = await prisma.bSGTemplate.findMany({
         where: {
           categoryId: bsgCategoryId,
@@ -298,6 +495,21 @@ router.get('/category/:categoryId/services', protect, asyncHandler(async (req: A
               name: true,
               displayName: true
             }
+          },
+          fields: {
+            include: {
+              fieldType: {
+                select: {
+                  name: true,
+                  displayName: true,
+                  htmlInputType: true
+                }
+              },
+              options: {
+                orderBy: { sortOrder: 'asc' }
+              }
+            },
+            orderBy: { sortOrder: 'asc' }
           },
           _count: {
             select: {
@@ -1020,6 +1232,24 @@ router.get('/search', protect, asyncHandler(async (req: AuthenticatedRequest, re
       const itemSearchContext = (item.searchContext || '').toLowerCase();
       
       let score = 0;
+      
+      // PRIORITY BOOST: Services with dynamic fields get massive boost
+      if (item.hasFields && item.fieldCount > 0) {
+        score += 1000; // Huge boost for services with actual fields
+        console.log(`🚀 Field boost for ${item.name}: +1000 (${item.fieldCount} fields)`);
+      }
+      
+      // PRIORITY BOOST: BSG templates get extra boost (they have working fields)
+      if (item.type === 'bsg_service' || item.id?.startsWith('bsg_template_')) {
+        score += 500; // Extra boost for BSG templates
+        console.log(`🔥 BSG template boost for ${item.name}: +500`);
+      }
+      
+      // PENALTY: ServiceTemplates with no fields get penalized
+      if (item.type === 'service_template' && (!item.hasFields || item.fieldCount === 0)) {
+        score -= 200; // Penalty for empty ServiceTemplates
+        console.log(`⬇️ Empty ServiceTemplate penalty for ${item.name}: -200`);
+      }
       
       // Check how many search terms are found and where
       searchTerms.forEach(term => {

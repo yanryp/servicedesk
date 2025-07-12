@@ -32,6 +32,9 @@ import businessHoursRoutes from './routes/businessHoursRoutes'; // Import busine
 import holidayCalendarRoutes from './routes/holidayCalendarRoutes'; // Import holiday calendar routes
 import knowledgeBaseRoutes from './routes/knowledgeBaseRoutes'; // Import knowledge base routes
 import ticketAnalyticsRoutes from './routes/ticketAnalyticsRoutes'; // Import ticket analytics routes
+import socAlertRoutes from './routes/socAlertRoutes'; // Import SOC alert routes
+import assetManagementRoutes from './routes/assetManagementRoutes'; // Import asset management routes
+import cmdbRoutes from './routes/cmdbRoutes'; // Import CMDB routes
 import { startEscalationCronJob } from './services/escalationService'; // Import escalation service
 
 const app: Express = express();
@@ -122,6 +125,13 @@ app.use('/api/knowledge-base', knowledgeBaseRoutes); // Knowledge base articles 
 
 // Ticket Analytics System
 app.use('/api/analytics', ticketAnalyticsRoutes); // Ticket analytics and insights
+
+// Security Operations Center
+app.use('/api/soc-alerts', socAlertRoutes); // SOC alert ingestion and management
+
+// Asset Management System
+app.use('/api/assets', assetManagementRoutes); // Asset management and lifecycle
+app.use('/api/cmdb', cmdbRoutes); // Configuration Management Database
 
 // Legacy routes (for backward compatibility)
 app.use('/api/tickets', ticketRouter); // Mount legacy ticket router
