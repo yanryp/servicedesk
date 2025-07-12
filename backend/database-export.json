@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-07-12T05:49:49.815Z",
+  "timestamp": "2025-07-12T05:53:21.682Z",
   "description": "Database data export for dynamic fields and master data",
   "version": "1.0.0",
   "serviceFieldDefinitions": [
@@ -2952,6 +2952,19 @@
     },
     {
       "dataType": "atm",
+      "code": "ATM_UTAMA_001",
+      "name": "ATM BSG UTAMA - Lobby",
+      "displayName": "ATM BSG UTAMA - Lobby",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "BSG UTAMA",
+        "branch_code": "UTAMA"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
       "code": "ATM_003",
       "name": "BSG JAKARTA - Lobby",
       "displayName": "BSG JAKARTA - Lobby",
@@ -3006,6 +3019,2034 @@
       "isActive": true
     },
     {
+      "dataType": "atm",
+      "code": "ATM_UTAMA_002",
+      "name": "ATM BSG UTAMA - Drive Thru",
+      "displayName": "ATM BSG UTAMA - Drive Thru",
+      "metadata": {
+        "type": "Drive Thru",
+        "location": "BSG UTAMA",
+        "branch_code": "UTAMA"
+      },
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_JAKARTA_001",
+      "name": "ATM BSG JAKARTA - Lobby",
+      "displayName": "ATM BSG JAKARTA - Lobby",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "BSG JAKARTA",
+        "branch_code": "JAKARTA"
+      },
+      "sortOrder": 2,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_JAKARTA_002",
+      "name": "ATM BSG JAKARTA - Outdoor",
+      "displayName": "ATM BSG JAKARTA - Outdoor",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "BSG JAKARTA",
+        "branch_code": "JAKARTA"
+      },
+      "sortOrder": 3,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_GORONTALO_001",
+      "name": "ATM BSG GORONTALO - Lobby",
+      "displayName": "ATM BSG GORONTALO - Lobby",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "BSG GORONTALO",
+        "branch_code": "GORONTALO"
+      },
+      "sortOrder": 4,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_BITUNG_001",
+      "name": "ATM CABANG BITUNG - Lobby",
+      "displayName": "ATM CABANG BITUNG - Lobby",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG BITUNG",
+        "branch_code": "BITUNG"
+      },
+      "sortOrder": 5,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TOMOHON_001",
+      "name": "ATM CABANG TOMOHON - Lobby",
+      "displayName": "ATM CABANG TOMOHON - Lobby",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG TOMOHON",
+        "branch_code": "TOMOHON"
+      },
+      "sortOrder": 6,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KELAPA_GADING_001",
+      "name": "ATM CAPEM KELAPA GADING",
+      "displayName": "ATM CAPEM KELAPA GADING",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM KELAPA GADING",
+        "branch_code": "KELAPA_GADING"
+      },
+      "sortOrder": 7,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TUMINTING_001",
+      "name": "ATM CAPEM TUMINTING",
+      "displayName": "ATM CAPEM TUMINTING",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM TUMINTING",
+        "branch_code": "TUMINTING"
+      },
+      "sortOrder": 8,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_WENANG_001",
+      "name": "ATM CAPEM WENANG",
+      "displayName": "ATM CAPEM WENANG",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM WENANG",
+        "branch_code": "WENANG"
+      },
+      "sortOrder": 9,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MANTOS_001",
+      "name": "ATM MANADO TOWN SQUARE - Level 1",
+      "displayName": "ATM MANADO TOWN SQUARE - Level 1",
+      "metadata": {
+        "type": "Mall ATM",
+        "location": "Manado Town Square",
+        "branch_code": "UTAMA"
+      },
+      "sortOrder": 10,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MANTOS_002",
+      "name": "ATM MANADO TOWN SQUARE - Level 2",
+      "displayName": "ATM MANADO TOWN SQUARE - Level 2",
+      "metadata": {
+        "type": "Mall ATM",
+        "location": "Manado Town Square",
+        "branch_code": "UTAMA"
+      },
+      "sortOrder": 11,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MEGA_001",
+      "name": "ATM MEGA MALL MANADO - Ground Floor",
+      "displayName": "ATM MEGA MALL MANADO - Ground Floor",
+      "metadata": {
+        "type": "Mall ATM",
+        "location": "Mega Mall Manado",
+        "branch_code": "MANADO_MEGA"
+      },
+      "sortOrder": 12,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MEGA_002",
+      "name": "ATM MEGA MALL MANADO - Food Court",
+      "displayName": "ATM MEGA MALL MANADO - Food Court",
+      "metadata": {
+        "type": "Mall ATM",
+        "location": "Mega Mall Manado",
+        "branch_code": "MANADO_MEGA"
+      },
+      "sortOrder": 13,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_UNSRAT_001",
+      "name": "ATM UNIVERSITAS SAM RATULANGI",
+      "displayName": "ATM UNIVERSITAS SAM RATULANGI",
+      "metadata": {
+        "type": "University ATM",
+        "location": "UNSRAT Campus",
+        "branch_code": "UTAMA"
+      },
+      "sortOrder": 14,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_UNIMA_001",
+      "name": "ATM UNIVERSITAS NEGERI MANADO",
+      "displayName": "ATM UNIVERSITAS NEGERI MANADO",
+      "metadata": {
+        "type": "University ATM",
+        "location": "UNIMA Campus",
+        "branch_code": "TOMOHON"
+      },
+      "sortOrder": 15,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_RSUP_001",
+      "name": "ATM RSUP PROF. DR. R. D. KANDOU",
+      "displayName": "ATM RSUP PROF. DR. R. D. KANDOU",
+      "metadata": {
+        "type": "Hospital ATM",
+        "location": "RSUP Kandou",
+        "branch_code": "UTAMA"
+      },
+      "sortOrder": 16,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_BANDARA_001",
+      "name": "ATM BANDARA SAM RATULANGI - Arrival",
+      "displayName": "ATM BANDARA SAM RATULANGI - Arrival",
+      "metadata": {
+        "type": "Airport ATM",
+        "location": "Sam Ratulangi Airport",
+        "branch_code": "UTAMA"
+      },
+      "sortOrder": 17,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_BANDARA_002",
+      "name": "ATM BANDARA SAM RATULANGI - Departure",
+      "displayName": "ATM BANDARA SAM RATULANGI - Departure",
+      "metadata": {
+        "type": "Airport ATM",
+        "location": "Sam Ratulangi Airport",
+        "branch_code": "UTAMA"
+      },
+      "sortOrder": 18,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_PEMKOT_001",
+      "name": "ATM BALAI KOTA MANADO",
+      "displayName": "ATM BALAI KOTA MANADO",
+      "metadata": {
+        "type": "Government ATM",
+        "location": "Manado City Hall",
+        "branch_code": "UTAMA"
+      },
+      "sortOrder": 19,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_PEMKAB_001",
+      "name": "ATM PEMKAB MINAHASA",
+      "displayName": "ATM PEMKAB MINAHASA",
+      "metadata": {
+        "type": "Government ATM",
+        "location": "Minahasa Regency Office",
+        "branch_code": "TONDANO"
+      },
+      "sortOrder": 20,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_PEMKAB_002",
+      "name": "ATM PEMKAB MINAHASA UTARA",
+      "displayName": "ATM PEMKAB MINAHASA UTARA",
+      "metadata": {
+        "type": "Government ATM",
+        "location": "North Minahasa Regency Office",
+        "branch_code": "AIRMADIDI"
+      },
+      "sortOrder": 21,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KANWIL_001",
+      "name": "ATM KANWIL BRI SULUT",
+      "displayName": "ATM KANWIL BRI SULUT",
+      "metadata": {
+        "type": "Government ATM",
+        "location": "BRI Regional Office",
+        "branch_code": "UTAMA"
+      },
+      "sortOrder": 22,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_PASAR_001",
+      "name": "ATM PASAR BERSEHATI - Main Gate",
+      "displayName": "ATM PASAR BERSEHATI - Main Gate",
+      "metadata": {
+        "type": "Market ATM",
+        "location": "Pasar Bersehati",
+        "branch_code": "MANADO_PASAR"
+      },
+      "sortOrder": 23,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_PASAR_002",
+      "name": "ATM PASAR BERSEHATI - Food Section",
+      "displayName": "ATM PASAR BERSEHATI - Food Section",
+      "metadata": {
+        "type": "Market ATM",
+        "location": "Pasar Bersehati",
+        "branch_code": "MANADO_PASAR"
+      },
+      "sortOrder": 24,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_PASAR_KAROMBASAN_001",
+      "name": "ATM PASAR KAROMBASAN",
+      "displayName": "ATM PASAR KAROMBASAN",
+      "metadata": {
+        "type": "Market ATM",
+        "location": "Pasar Karombasan",
+        "branch_code": "KAROMBASAN"
+      },
+      "sortOrder": 25,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_SPBU_001",
+      "name": "ATM SPBU PAAL DUA",
+      "displayName": "ATM SPBU PAAL DUA",
+      "metadata": {
+        "type": "Gas Station ATM",
+        "location": "SPBU Paal Dua",
+        "branch_code": "PAAL_DUA"
+      },
+      "sortOrder": 26,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_SPBU_002",
+      "name": "ATM SPBU TIKALA",
+      "displayName": "ATM SPBU TIKALA",
+      "metadata": {
+        "type": "Gas Station ATM",
+        "location": "SPBU Tikala",
+        "branch_code": "TIKALA"
+      },
+      "sortOrder": 27,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_UTAMA_003",
+      "name": "ATM BSG UTAMA - Unit 3",
+      "displayName": "ATM BSG UTAMA - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "BSG UTAMA",
+        "branch_code": "UTAMA"
+      },
+      "sortOrder": 28,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_UTAMA_004",
+      "name": "ATM BSG UTAMA - Unit 4",
+      "displayName": "ATM BSG UTAMA - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "BSG UTAMA",
+        "branch_code": "UTAMA"
+      },
+      "sortOrder": 29,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_UTAMA_005",
+      "name": "ATM BSG UTAMA - Unit 5",
+      "displayName": "ATM BSG UTAMA - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "BSG UTAMA",
+        "branch_code": "UTAMA"
+      },
+      "sortOrder": 30,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_JAKARTA_003",
+      "name": "ATM BSG JAKARTA - Unit 3",
+      "displayName": "ATM BSG JAKARTA - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "BSG JAKARTA",
+        "branch_code": "JAKARTA"
+      },
+      "sortOrder": 31,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_JAKARTA_004",
+      "name": "ATM BSG JAKARTA - Unit 4",
+      "displayName": "ATM BSG JAKARTA - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "BSG JAKARTA",
+        "branch_code": "JAKARTA"
+      },
+      "sortOrder": 32,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_JAKARTA_005",
+      "name": "ATM BSG JAKARTA - Unit 5",
+      "displayName": "ATM BSG JAKARTA - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "BSG JAKARTA",
+        "branch_code": "JAKARTA"
+      },
+      "sortOrder": 33,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_GORONTALO_003",
+      "name": "ATM BSG GORONTALO - Unit 3",
+      "displayName": "ATM BSG GORONTALO - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "BSG GORONTALO",
+        "branch_code": "GORONTALO"
+      },
+      "sortOrder": 34,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_GORONTALO_004",
+      "name": "ATM BSG GORONTALO - Unit 4",
+      "displayName": "ATM BSG GORONTALO - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "BSG GORONTALO",
+        "branch_code": "GORONTALO"
+      },
+      "sortOrder": 35,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_GORONTALO_005",
+      "name": "ATM BSG GORONTALO - Unit 5",
+      "displayName": "ATM BSG GORONTALO - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "BSG GORONTALO",
+        "branch_code": "GORONTALO"
+      },
+      "sortOrder": 36,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_BITUNG_003",
+      "name": "ATM CABANG BITUNG - Unit 3",
+      "displayName": "ATM CABANG BITUNG - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG BITUNG",
+        "branch_code": "BITUNG"
+      },
+      "sortOrder": 37,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_BITUNG_004",
+      "name": "ATM CABANG BITUNG - Unit 4",
+      "displayName": "ATM CABANG BITUNG - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG BITUNG",
+        "branch_code": "BITUNG"
+      },
+      "sortOrder": 38,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_BITUNG_005",
+      "name": "ATM CABANG BITUNG - Unit 5",
+      "displayName": "ATM CABANG BITUNG - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG BITUNG",
+        "branch_code": "BITUNG"
+      },
+      "sortOrder": 39,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TOMOHON_003",
+      "name": "ATM CABANG TOMOHON - Unit 3",
+      "displayName": "ATM CABANG TOMOHON - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG TOMOHON",
+        "branch_code": "TOMOHON"
+      },
+      "sortOrder": 40,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TOMOHON_004",
+      "name": "ATM CABANG TOMOHON - Unit 4",
+      "displayName": "ATM CABANG TOMOHON - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG TOMOHON",
+        "branch_code": "TOMOHON"
+      },
+      "sortOrder": 41,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TOMOHON_005",
+      "name": "ATM CABANG TOMOHON - Unit 5",
+      "displayName": "ATM CABANG TOMOHON - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG TOMOHON",
+        "branch_code": "TOMOHON"
+      },
+      "sortOrder": 42,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KOTAMOBAGU_003",
+      "name": "ATM CABANG KOTAMOBAGU - Unit 3",
+      "displayName": "ATM CABANG KOTAMOBAGU - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG KOTAMOBAGU",
+        "branch_code": "KOTAMOBAGU"
+      },
+      "sortOrder": 43,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KOTAMOBAGU_004",
+      "name": "ATM CABANG KOTAMOBAGU - Unit 4",
+      "displayName": "ATM CABANG KOTAMOBAGU - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG KOTAMOBAGU",
+        "branch_code": "KOTAMOBAGU"
+      },
+      "sortOrder": 44,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KOTAMOBAGU_005",
+      "name": "ATM CABANG KOTAMOBAGU - Unit 5",
+      "displayName": "ATM CABANG KOTAMOBAGU - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG KOTAMOBAGU",
+        "branch_code": "KOTAMOBAGU"
+      },
+      "sortOrder": 45,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TAHUNA_003",
+      "name": "ATM CABANG TAHUNA - Unit 3",
+      "displayName": "ATM CABANG TAHUNA - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG TAHUNA",
+        "branch_code": "TAHUNA"
+      },
+      "sortOrder": 46,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TAHUNA_004",
+      "name": "ATM CABANG TAHUNA - Unit 4",
+      "displayName": "ATM CABANG TAHUNA - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG TAHUNA",
+        "branch_code": "TAHUNA"
+      },
+      "sortOrder": 47,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TAHUNA_005",
+      "name": "ATM CABANG TAHUNA - Unit 5",
+      "displayName": "ATM CABANG TAHUNA - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG TAHUNA",
+        "branch_code": "TAHUNA"
+      },
+      "sortOrder": 48,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MANADO_MEGA_003",
+      "name": "ATM CABANG MANADO MEGA MALL - Unit 3",
+      "displayName": "ATM CABANG MANADO MEGA MALL - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG MANADO MEGA MALL",
+        "branch_code": "MANADO_MEGA"
+      },
+      "sortOrder": 49,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MANADO_MEGA_004",
+      "name": "ATM CABANG MANADO MEGA MALL - Unit 4",
+      "displayName": "ATM CABANG MANADO MEGA MALL - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG MANADO MEGA MALL",
+        "branch_code": "MANADO_MEGA"
+      },
+      "sortOrder": 50,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MANADO_MEGA_005",
+      "name": "ATM CABANG MANADO MEGA MALL - Unit 5",
+      "displayName": "ATM CABANG MANADO MEGA MALL - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG MANADO MEGA MALL",
+        "branch_code": "MANADO_MEGA"
+      },
+      "sortOrder": 51,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MANADO_PASAR_003",
+      "name": "ATM CABANG PASAR SENTRAL - Unit 3",
+      "displayName": "ATM CABANG PASAR SENTRAL - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG PASAR SENTRAL",
+        "branch_code": "MANADO_PASAR"
+      },
+      "sortOrder": 52,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MANADO_PASAR_004",
+      "name": "ATM CABANG PASAR SENTRAL - Unit 4",
+      "displayName": "ATM CABANG PASAR SENTRAL - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG PASAR SENTRAL",
+        "branch_code": "MANADO_PASAR"
+      },
+      "sortOrder": 53,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MANADO_PASAR_005",
+      "name": "ATM CABANG PASAR SENTRAL - Unit 5",
+      "displayName": "ATM CABANG PASAR SENTRAL - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG PASAR SENTRAL",
+        "branch_code": "MANADO_PASAR"
+      },
+      "sortOrder": 54,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TONDANO_003",
+      "name": "ATM CABANG TONDANO - Unit 3",
+      "displayName": "ATM CABANG TONDANO - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG TONDANO",
+        "branch_code": "TONDANO"
+      },
+      "sortOrder": 55,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TONDANO_004",
+      "name": "ATM CABANG TONDANO - Unit 4",
+      "displayName": "ATM CABANG TONDANO - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG TONDANO",
+        "branch_code": "TONDANO"
+      },
+      "sortOrder": 56,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TONDANO_005",
+      "name": "ATM CABANG TONDANO - Unit 5",
+      "displayName": "ATM CABANG TONDANO - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG TONDANO",
+        "branch_code": "TONDANO"
+      },
+      "sortOrder": 57,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_LANGOWAN_003",
+      "name": "ATM CABANG LANGOWAN - Unit 3",
+      "displayName": "ATM CABANG LANGOWAN - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG LANGOWAN",
+        "branch_code": "LANGOWAN"
+      },
+      "sortOrder": 58,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_LANGOWAN_004",
+      "name": "ATM CABANG LANGOWAN - Unit 4",
+      "displayName": "ATM CABANG LANGOWAN - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG LANGOWAN",
+        "branch_code": "LANGOWAN"
+      },
+      "sortOrder": 59,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_LANGOWAN_005",
+      "name": "ATM CABANG LANGOWAN - Unit 5",
+      "displayName": "ATM CABANG LANGOWAN - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG LANGOWAN",
+        "branch_code": "LANGOWAN"
+      },
+      "sortOrder": 60,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_AIRMADIDI_003",
+      "name": "ATM CABANG AIRMADIDI - Unit 3",
+      "displayName": "ATM CABANG AIRMADIDI - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG AIRMADIDI",
+        "branch_code": "AIRMADIDI"
+      },
+      "sortOrder": 61,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_AIRMADIDI_004",
+      "name": "ATM CABANG AIRMADIDI - Unit 4",
+      "displayName": "ATM CABANG AIRMADIDI - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG AIRMADIDI",
+        "branch_code": "AIRMADIDI"
+      },
+      "sortOrder": 62,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_AIRMADIDI_005",
+      "name": "ATM CABANG AIRMADIDI - Unit 5",
+      "displayName": "ATM CABANG AIRMADIDI - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG AIRMADIDI",
+        "branch_code": "AIRMADIDI"
+      },
+      "sortOrder": 63,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MAUMERE_003",
+      "name": "ATM CABANG MAUMERE - Unit 3",
+      "displayName": "ATM CABANG MAUMERE - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG MAUMERE",
+        "branch_code": "MAUMERE"
+      },
+      "sortOrder": 64,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MAUMERE_004",
+      "name": "ATM CABANG MAUMERE - Unit 4",
+      "displayName": "ATM CABANG MAUMERE - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG MAUMERE",
+        "branch_code": "MAUMERE"
+      },
+      "sortOrder": 65,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MAUMERE_005",
+      "name": "ATM CABANG MAUMERE - Unit 5",
+      "displayName": "ATM CABANG MAUMERE - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG MAUMERE",
+        "branch_code": "MAUMERE"
+      },
+      "sortOrder": 66,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_ENDE_003",
+      "name": "ATM CABANG ENDE - Unit 3",
+      "displayName": "ATM CABANG ENDE - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG ENDE",
+        "branch_code": "ENDE"
+      },
+      "sortOrder": 67,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_ENDE_004",
+      "name": "ATM CABANG ENDE - Unit 4",
+      "displayName": "ATM CABANG ENDE - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG ENDE",
+        "branch_code": "ENDE"
+      },
+      "sortOrder": 68,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_ENDE_005",
+      "name": "ATM CABANG ENDE - Unit 5",
+      "displayName": "ATM CABANG ENDE - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG ENDE",
+        "branch_code": "ENDE"
+      },
+      "sortOrder": 69,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KUPANG_003",
+      "name": "ATM CABANG KUPANG - Unit 3",
+      "displayName": "ATM CABANG KUPANG - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG KUPANG",
+        "branch_code": "KUPANG"
+      },
+      "sortOrder": 70,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KUPANG_004",
+      "name": "ATM CABANG KUPANG - Unit 4",
+      "displayName": "ATM CABANG KUPANG - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG KUPANG",
+        "branch_code": "KUPANG"
+      },
+      "sortOrder": 71,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KUPANG_005",
+      "name": "ATM CABANG KUPANG - Unit 5",
+      "displayName": "ATM CABANG KUPANG - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG KUPANG",
+        "branch_code": "KUPANG"
+      },
+      "sortOrder": 72,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TERNATE_003",
+      "name": "ATM CABANG TERNATE - Unit 3",
+      "displayName": "ATM CABANG TERNATE - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG TERNATE",
+        "branch_code": "TERNATE"
+      },
+      "sortOrder": 73,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TERNATE_004",
+      "name": "ATM CABANG TERNATE - Unit 4",
+      "displayName": "ATM CABANG TERNATE - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG TERNATE",
+        "branch_code": "TERNATE"
+      },
+      "sortOrder": 74,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TERNATE_005",
+      "name": "ATM CABANG TERNATE - Unit 5",
+      "displayName": "ATM CABANG TERNATE - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG TERNATE",
+        "branch_code": "TERNATE"
+      },
+      "sortOrder": 75,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_AMBON_003",
+      "name": "ATM CABANG AMBON - Unit 3",
+      "displayName": "ATM CABANG AMBON - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG AMBON",
+        "branch_code": "AMBON"
+      },
+      "sortOrder": 76,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_AMBON_004",
+      "name": "ATM CABANG AMBON - Unit 4",
+      "displayName": "ATM CABANG AMBON - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG AMBON",
+        "branch_code": "AMBON"
+      },
+      "sortOrder": 77,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_AMBON_005",
+      "name": "ATM CABANG AMBON - Unit 5",
+      "displayName": "ATM CABANG AMBON - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG AMBON",
+        "branch_code": "AMBON"
+      },
+      "sortOrder": 78,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_SORONG_003",
+      "name": "ATM CABANG SORONG - Unit 3",
+      "displayName": "ATM CABANG SORONG - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG SORONG",
+        "branch_code": "SORONG"
+      },
+      "sortOrder": 79,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_SORONG_004",
+      "name": "ATM CABANG SORONG - Unit 4",
+      "displayName": "ATM CABANG SORONG - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG SORONG",
+        "branch_code": "SORONG"
+      },
+      "sortOrder": 80,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_SORONG_005",
+      "name": "ATM CABANG SORONG - Unit 5",
+      "displayName": "ATM CABANG SORONG - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG SORONG",
+        "branch_code": "SORONG"
+      },
+      "sortOrder": 81,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_JAYAPURA_003",
+      "name": "ATM CABANG JAYAPURA - Unit 3",
+      "displayName": "ATM CABANG JAYAPURA - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG JAYAPURA",
+        "branch_code": "JAYAPURA"
+      },
+      "sortOrder": 82,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_JAYAPURA_004",
+      "name": "ATM CABANG JAYAPURA - Unit 4",
+      "displayName": "ATM CABANG JAYAPURA - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG JAYAPURA",
+        "branch_code": "JAYAPURA"
+      },
+      "sortOrder": 83,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_JAYAPURA_005",
+      "name": "ATM CABANG JAYAPURA - Unit 5",
+      "displayName": "ATM CABANG JAYAPURA - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG JAYAPURA",
+        "branch_code": "JAYAPURA"
+      },
+      "sortOrder": 84,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_PALU_003",
+      "name": "ATM CABANG PALU - Unit 3",
+      "displayName": "ATM CABANG PALU - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG PALU",
+        "branch_code": "PALU"
+      },
+      "sortOrder": 85,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_PALU_004",
+      "name": "ATM CABANG PALU - Unit 4",
+      "displayName": "ATM CABANG PALU - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG PALU",
+        "branch_code": "PALU"
+      },
+      "sortOrder": 86,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_PALU_005",
+      "name": "ATM CABANG PALU - Unit 5",
+      "displayName": "ATM CABANG PALU - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG PALU",
+        "branch_code": "PALU"
+      },
+      "sortOrder": 87,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KENDARI_003",
+      "name": "ATM CABANG KENDARI - Unit 3",
+      "displayName": "ATM CABANG KENDARI - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG KENDARI",
+        "branch_code": "KENDARI"
+      },
+      "sortOrder": 88,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KENDARI_004",
+      "name": "ATM CABANG KENDARI - Unit 4",
+      "displayName": "ATM CABANG KENDARI - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG KENDARI",
+        "branch_code": "KENDARI"
+      },
+      "sortOrder": 89,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KENDARI_005",
+      "name": "ATM CABANG KENDARI - Unit 5",
+      "displayName": "ATM CABANG KENDARI - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG KENDARI",
+        "branch_code": "KENDARI"
+      },
+      "sortOrder": 90,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MAKASSAR_003",
+      "name": "ATM CABANG MAKASSAR - Unit 3",
+      "displayName": "ATM CABANG MAKASSAR - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG MAKASSAR",
+        "branch_code": "MAKASSAR"
+      },
+      "sortOrder": 91,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MAKASSAR_004",
+      "name": "ATM CABANG MAKASSAR - Unit 4",
+      "displayName": "ATM CABANG MAKASSAR - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG MAKASSAR",
+        "branch_code": "MAKASSAR"
+      },
+      "sortOrder": 92,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MAKASSAR_005",
+      "name": "ATM CABANG MAKASSAR - Unit 5",
+      "displayName": "ATM CABANG MAKASSAR - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG MAKASSAR",
+        "branch_code": "MAKASSAR"
+      },
+      "sortOrder": 93,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_PAREPARE_003",
+      "name": "ATM CABANG PAREPARE - Unit 3",
+      "displayName": "ATM CABANG PAREPARE - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG PAREPARE",
+        "branch_code": "PAREPARE"
+      },
+      "sortOrder": 94,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_PAREPARE_004",
+      "name": "ATM CABANG PAREPARE - Unit 4",
+      "displayName": "ATM CABANG PAREPARE - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG PAREPARE",
+        "branch_code": "PAREPARE"
+      },
+      "sortOrder": 95,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_PAREPARE_005",
+      "name": "ATM CABANG PAREPARE - Unit 5",
+      "displayName": "ATM CABANG PAREPARE - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG PAREPARE",
+        "branch_code": "PAREPARE"
+      },
+      "sortOrder": 96,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_BONE_003",
+      "name": "ATM CABANG BONE - Unit 3",
+      "displayName": "ATM CABANG BONE - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG BONE",
+        "branch_code": "BONE"
+      },
+      "sortOrder": 97,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_BONE_004",
+      "name": "ATM CABANG BONE - Unit 4",
+      "displayName": "ATM CABANG BONE - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG BONE",
+        "branch_code": "BONE"
+      },
+      "sortOrder": 98,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_BONE_005",
+      "name": "ATM CABANG BONE - Unit 5",
+      "displayName": "ATM CABANG BONE - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG BONE",
+        "branch_code": "BONE"
+      },
+      "sortOrder": 99,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_SURABAYA_003",
+      "name": "ATM CABANG SURABAYA - Unit 3",
+      "displayName": "ATM CABANG SURABAYA - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG SURABAYA",
+        "branch_code": "SURABAYA"
+      },
+      "sortOrder": 100,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_SURABAYA_004",
+      "name": "ATM CABANG SURABAYA - Unit 4",
+      "displayName": "ATM CABANG SURABAYA - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG SURABAYA",
+        "branch_code": "SURABAYA"
+      },
+      "sortOrder": 101,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_SURABAYA_005",
+      "name": "ATM CABANG SURABAYA - Unit 5",
+      "displayName": "ATM CABANG SURABAYA - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG SURABAYA",
+        "branch_code": "SURABAYA"
+      },
+      "sortOrder": 102,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MALANG_003",
+      "name": "ATM CABANG MALANG - Unit 3",
+      "displayName": "ATM CABANG MALANG - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG MALANG",
+        "branch_code": "MALANG"
+      },
+      "sortOrder": 103,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MALANG_004",
+      "name": "ATM CABANG MALANG - Unit 4",
+      "displayName": "ATM CABANG MALANG - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG MALANG",
+        "branch_code": "MALANG"
+      },
+      "sortOrder": 104,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MALANG_005",
+      "name": "ATM CABANG MALANG - Unit 5",
+      "displayName": "ATM CABANG MALANG - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG MALANG",
+        "branch_code": "MALANG"
+      },
+      "sortOrder": 105,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_BALIKPAPAN_003",
+      "name": "ATM CABANG BALIKPAPAN - Unit 3",
+      "displayName": "ATM CABANG BALIKPAPAN - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CABANG BALIKPAPAN",
+        "branch_code": "BALIKPAPAN"
+      },
+      "sortOrder": 106,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_BALIKPAPAN_004",
+      "name": "ATM CABANG BALIKPAPAN - Unit 4",
+      "displayName": "ATM CABANG BALIKPAPAN - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CABANG BALIKPAPAN",
+        "branch_code": "BALIKPAPAN"
+      },
+      "sortOrder": 107,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_BALIKPAPAN_005",
+      "name": "ATM CABANG BALIKPAPAN - Unit 5",
+      "displayName": "ATM CABANG BALIKPAPAN - Unit 5",
+      "metadata": {
+        "type": "Mobile ATM",
+        "location": "CABANG BALIKPAPAN",
+        "branch_code": "BALIKPAPAN"
+      },
+      "sortOrder": 108,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KELAPA_GADING_003",
+      "name": "ATM CAPEM KELAPA GADING - Unit 3",
+      "displayName": "ATM CAPEM KELAPA GADING - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM KELAPA GADING",
+        "branch_code": "KELAPA_GADING"
+      },
+      "sortOrder": 109,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KELAPA_GADING_004",
+      "name": "ATM CAPEM KELAPA GADING - Unit 4",
+      "displayName": "ATM CAPEM KELAPA GADING - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM KELAPA GADING",
+        "branch_code": "KELAPA_GADING"
+      },
+      "sortOrder": 110,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TUMINTING_003",
+      "name": "ATM CAPEM TUMINTING - Unit 3",
+      "displayName": "ATM CAPEM TUMINTING - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM TUMINTING",
+        "branch_code": "TUMINTING"
+      },
+      "sortOrder": 111,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TUMINTING_004",
+      "name": "ATM CAPEM TUMINTING - Unit 4",
+      "displayName": "ATM CAPEM TUMINTING - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM TUMINTING",
+        "branch_code": "TUMINTING"
+      },
+      "sortOrder": 112,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_WENANG_003",
+      "name": "ATM CAPEM WENANG - Unit 3",
+      "displayName": "ATM CAPEM WENANG - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM WENANG",
+        "branch_code": "WENANG"
+      },
+      "sortOrder": 113,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_WENANG_004",
+      "name": "ATM CAPEM WENANG - Unit 4",
+      "displayName": "ATM CAPEM WENANG - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM WENANG",
+        "branch_code": "WENANG"
+      },
+      "sortOrder": 114,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MALALAYANG_003",
+      "name": "ATM CAPEM MALALAYANG - Unit 3",
+      "displayName": "ATM CAPEM MALALAYANG - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM MALALAYANG",
+        "branch_code": "MALALAYANG"
+      },
+      "sortOrder": 115,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MALALAYANG_004",
+      "name": "ATM CAPEM MALALAYANG - Unit 4",
+      "displayName": "ATM CAPEM MALALAYANG - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM MALALAYANG",
+        "branch_code": "MALALAYANG"
+      },
+      "sortOrder": 116,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_PAAL_DUA_003",
+      "name": "ATM CAPEM PAAL DUA - Unit 3",
+      "displayName": "ATM CAPEM PAAL DUA - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM PAAL DUA",
+        "branch_code": "PAAL_DUA"
+      },
+      "sortOrder": 117,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_PAAL_DUA_004",
+      "name": "ATM CAPEM PAAL DUA - Unit 4",
+      "displayName": "ATM CAPEM PAAL DUA - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM PAAL DUA",
+        "branch_code": "PAAL_DUA"
+      },
+      "sortOrder": 118,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TIKALA_003",
+      "name": "ATM CAPEM TIKALA - Unit 3",
+      "displayName": "ATM CAPEM TIKALA - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM TIKALA",
+        "branch_code": "TIKALA"
+      },
+      "sortOrder": 119,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TIKALA_004",
+      "name": "ATM CAPEM TIKALA - Unit 4",
+      "displayName": "ATM CAPEM TIKALA - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM TIKALA",
+        "branch_code": "TIKALA"
+      },
+      "sortOrder": 120,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_WANEA_003",
+      "name": "ATM CAPEM WANEA - Unit 3",
+      "displayName": "ATM CAPEM WANEA - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM WANEA",
+        "branch_code": "WANEA"
+      },
+      "sortOrder": 121,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_WANEA_004",
+      "name": "ATM CAPEM WANEA - Unit 4",
+      "displayName": "ATM CAPEM WANEA - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM WANEA",
+        "branch_code": "WANEA"
+      },
+      "sortOrder": 122,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_WINANGUN_003",
+      "name": "ATM CAPEM WINANGUN - Unit 3",
+      "displayName": "ATM CAPEM WINANGUN - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM WINANGUN",
+        "branch_code": "WINANGUN"
+      },
+      "sortOrder": 123,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_WINANGUN_004",
+      "name": "ATM CAPEM WINANGUN - Unit 4",
+      "displayName": "ATM CAPEM WINANGUN - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM WINANGUN",
+        "branch_code": "WINANGUN"
+      },
+      "sortOrder": 124,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KAROMBASAN_003",
+      "name": "ATM CAPEM KAROMBASAN - Unit 3",
+      "displayName": "ATM CAPEM KAROMBASAN - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM KAROMBASAN",
+        "branch_code": "KAROMBASAN"
+      },
+      "sortOrder": 125,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KAROMBASAN_004",
+      "name": "ATM CAPEM KAROMBASAN - Unit 4",
+      "displayName": "ATM CAPEM KAROMBASAN - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM KAROMBASAN",
+        "branch_code": "KAROMBASAN"
+      },
+      "sortOrder": 126,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_WOLTER_MONGINSIDI_003",
+      "name": "ATM CAPEM WOLTER MONGINSIDI - Unit 3",
+      "displayName": "ATM CAPEM WOLTER MONGINSIDI - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM WOLTER MONGINSIDI",
+        "branch_code": "WOLTER_MONGINSIDI"
+      },
+      "sortOrder": 127,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_WOLTER_MONGINSIDI_004",
+      "name": "ATM CAPEM WOLTER MONGINSIDI - Unit 4",
+      "displayName": "ATM CAPEM WOLTER MONGINSIDI - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM WOLTER MONGINSIDI",
+        "branch_code": "WOLTER_MONGINSIDI"
+      },
+      "sortOrder": 128,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KAWANGKOAN_003",
+      "name": "ATM CAPEM KAWANGKOAN - Unit 3",
+      "displayName": "ATM CAPEM KAWANGKOAN - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM KAWANGKOAN",
+        "branch_code": "KAWANGKOAN"
+      },
+      "sortOrder": 129,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KAWANGKOAN_004",
+      "name": "ATM CAPEM KAWANGKOAN - Unit 4",
+      "displayName": "ATM CAPEM KAWANGKOAN - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM KAWANGKOAN",
+        "branch_code": "KAWANGKOAN"
+      },
+      "sortOrder": 130,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TARERAN_003",
+      "name": "ATM CAPEM TARERAN - Unit 3",
+      "displayName": "ATM CAPEM TARERAN - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM TARERAN",
+        "branch_code": "TARERAN"
+      },
+      "sortOrder": 131,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TARERAN_004",
+      "name": "ATM CAPEM TARERAN - Unit 4",
+      "displayName": "ATM CAPEM TARERAN - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM TARERAN",
+        "branch_code": "TARERAN"
+      },
+      "sortOrder": 132,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_RATATOTOK_003",
+      "name": "ATM CAPEM RATATOTOK - Unit 3",
+      "displayName": "ATM CAPEM RATATOTOK - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM RATATOTOK",
+        "branch_code": "RATATOTOK"
+      },
+      "sortOrder": 133,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_RATATOTOK_004",
+      "name": "ATM CAPEM RATATOTOK - Unit 4",
+      "displayName": "ATM CAPEM RATATOTOK - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM RATATOTOK",
+        "branch_code": "RATATOTOK"
+      },
+      "sortOrder": 134,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KAUDITAN_003",
+      "name": "ATM CAPEM KAUDITAN - Unit 3",
+      "displayName": "ATM CAPEM KAUDITAN - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM KAUDITAN",
+        "branch_code": "KAUDITAN"
+      },
+      "sortOrder": 135,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KAUDITAN_004",
+      "name": "ATM CAPEM KAUDITAN - Unit 4",
+      "displayName": "ATM CAPEM KAUDITAN - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM KAUDITAN",
+        "branch_code": "KAUDITAN"
+      },
+      "sortOrder": 136,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_LOLAK_003",
+      "name": "ATM CAPEM LOLAK - Unit 3",
+      "displayName": "ATM CAPEM LOLAK - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM LOLAK",
+        "branch_code": "LOLAK"
+      },
+      "sortOrder": 137,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_LOLAK_004",
+      "name": "ATM CAPEM LOLAK - Unit 4",
+      "displayName": "ATM CAPEM LOLAK - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM LOLAK",
+        "branch_code": "LOLAK"
+      },
+      "sortOrder": 138,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MODAYAG_003",
+      "name": "ATM CAPEM MODAYAG - Unit 3",
+      "displayName": "ATM CAPEM MODAYAG - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM MODAYAG",
+        "branch_code": "MODAYAG"
+      },
+      "sortOrder": 139,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MODAYAG_004",
+      "name": "ATM CAPEM MODAYAG - Unit 4",
+      "displayName": "ATM CAPEM MODAYAG - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM MODAYAG",
+        "branch_code": "MODAYAG"
+      },
+      "sortOrder": 140,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_LIMBOTO_003",
+      "name": "ATM CAPEM LIMBOTO - Unit 3",
+      "displayName": "ATM CAPEM LIMBOTO - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM LIMBOTO",
+        "branch_code": "LIMBOTO"
+      },
+      "sortOrder": 141,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_LIMBOTO_004",
+      "name": "ATM CAPEM LIMBOTO - Unit 4",
+      "displayName": "ATM CAPEM LIMBOTO - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM LIMBOTO",
+        "branch_code": "LIMBOTO"
+      },
+      "sortOrder": 142,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TILAMUTA_003",
+      "name": "ATM CAPEM TILAMUTA - Unit 3",
+      "displayName": "ATM CAPEM TILAMUTA - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM TILAMUTA",
+        "branch_code": "TILAMUTA"
+      },
+      "sortOrder": 143,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TILAMUTA_004",
+      "name": "ATM CAPEM TILAMUTA - Unit 4",
+      "displayName": "ATM CAPEM TILAMUTA - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM TILAMUTA",
+        "branch_code": "TILAMUTA"
+      },
+      "sortOrder": 144,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_BONE_BOLANGO_003",
+      "name": "ATM CAPEM BONE BOLANGO - Unit 3",
+      "displayName": "ATM CAPEM BONE BOLANGO - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM BONE BOLANGO",
+        "branch_code": "BONE_BOLANGO"
+      },
+      "sortOrder": 145,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_BONE_BOLANGO_004",
+      "name": "ATM CAPEM BONE BOLANGO - Unit 4",
+      "displayName": "ATM CAPEM BONE BOLANGO - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM BONE BOLANGO",
+        "branch_code": "BONE_BOLANGO"
+      },
+      "sortOrder": 146,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KWANDANG_003",
+      "name": "ATM CAPEM KWANDANG - Unit 3",
+      "displayName": "ATM CAPEM KWANDANG - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM KWANDANG",
+        "branch_code": "KWANDANG"
+      },
+      "sortOrder": 147,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_KWANDANG_004",
+      "name": "ATM CAPEM KWANDANG - Unit 4",
+      "displayName": "ATM CAPEM KWANDANG - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM KWANDANG",
+        "branch_code": "KWANDANG"
+      },
+      "sortOrder": 148,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MARISA_003",
+      "name": "ATM CAPEM MARISA - Unit 3",
+      "displayName": "ATM CAPEM MARISA - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM MARISA",
+        "branch_code": "MARISA"
+      },
+      "sortOrder": 149,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_MARISA_004",
+      "name": "ATM CAPEM MARISA - Unit 4",
+      "displayName": "ATM CAPEM MARISA - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM MARISA",
+        "branch_code": "MARISA"
+      },
+      "sortOrder": 150,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_PAGUYAMAN_003",
+      "name": "ATM CAPEM PAGUYAMAN - Unit 3",
+      "displayName": "ATM CAPEM PAGUYAMAN - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM PAGUYAMAN",
+        "branch_code": "PAGUYAMAN"
+      },
+      "sortOrder": 151,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_PAGUYAMAN_004",
+      "name": "ATM CAPEM PAGUYAMAN - Unit 4",
+      "displayName": "ATM CAPEM PAGUYAMAN - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM PAGUYAMAN",
+        "branch_code": "PAGUYAMAN"
+      },
+      "sortOrder": 152,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_POPAYATO_003",
+      "name": "ATM CAPEM POPAYATO - Unit 3",
+      "displayName": "ATM CAPEM POPAYATO - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM POPAYATO",
+        "branch_code": "POPAYATO"
+      },
+      "sortOrder": 153,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_POPAYATO_004",
+      "name": "ATM CAPEM POPAYATO - Unit 4",
+      "displayName": "ATM CAPEM POPAYATO - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM POPAYATO",
+        "branch_code": "POPAYATO"
+      },
+      "sortOrder": 154,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TANJUNG_SELOR_003",
+      "name": "ATM CAPEM TANJUNG SELOR - Unit 3",
+      "displayName": "ATM CAPEM TANJUNG SELOR - Unit 3",
+      "metadata": {
+        "type": "Lobby ATM",
+        "location": "CAPEM TANJUNG SELOR",
+        "branch_code": "TANJUNG_SELOR"
+      },
+      "sortOrder": 155,
+      "isActive": true
+    },
+    {
+      "dataType": "atm",
+      "code": "ATM_TANJUNG_SELOR_004",
+      "name": "ATM CAPEM TANJUNG SELOR - Unit 4",
+      "displayName": "ATM CAPEM TANJUNG SELOR - Unit 4",
+      "metadata": {
+        "type": "Outdoor ATM",
+        "location": "CAPEM TANJUNG SELOR",
+        "branch_code": "TANJUNG_SELOR"
+      },
+      "sortOrder": 156,
+      "isActive": true
+    },
+    {
       "dataType": "branch",
       "code": "AIR",
       "name": "AIRMADIDI",
@@ -3034,6 +5075,21 @@
       "displayName": "BSG JAKARTA (CABANG)",
       "metadata": {
         "type": "CABANG"
+      },
+      "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "JAKARTA",
+      "name": "BSG JAKARTA",
+      "displayName": "BSG JAKARTA (CABANG)",
+      "metadata": {
+        "tier": "Tier 1-Strategic",
+        "type": "CABANG",
+        "market": "Large",
+        "region": "Jakarta Business",
+        "province": "DKI Jakarta"
       },
       "sortOrder": 0,
       "isActive": true
@@ -3069,6 +5125,741 @@
         "type": "CAPEM"
       },
       "sortOrder": 0,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "GORONTALO",
+      "name": "BSG GORONTALO",
+      "displayName": "BSG GORONTALO (CABANG)",
+      "metadata": {
+        "tier": "Tier 2-Important",
+        "type": "CABANG",
+        "market": "Medium",
+        "region": "Gorontalo Metro",
+        "province": "Gorontalo"
+      },
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "BITUNG",
+      "name": "CABANG BITUNG",
+      "displayName": "CABANG BITUNG (CABANG)",
+      "metadata": {
+        "tier": "Tier 2-Important",
+        "type": "CABANG",
+        "market": "Medium",
+        "region": "North Coast",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 2,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "TOMOHON",
+      "name": "CABANG TOMOHON",
+      "displayName": "CABANG TOMOHON (CABANG)",
+      "metadata": {
+        "tier": "Tier 3-Standard",
+        "type": "CABANG",
+        "market": "Medium",
+        "region": "Minahasa",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 3,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "KOTAMOBAGU",
+      "name": "CABANG KOTAMOBAGU",
+      "displayName": "CABANG KOTAMOBAGU (CABANG)",
+      "metadata": {
+        "tier": "Tier 3-Standard",
+        "type": "CABANG",
+        "market": "Standard",
+        "region": "Bolaang Mongondow",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 4,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "TAHUNA",
+      "name": "CABANG TAHUNA",
+      "displayName": "CABANG TAHUNA (CABANG)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CABANG",
+        "market": "Standard",
+        "region": "Sangihe Islands",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 5,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "MANADO_MEGA",
+      "name": "CABANG MANADO MEGA MALL",
+      "displayName": "CABANG MANADO MEGA MALL (CABANG)",
+      "metadata": {
+        "tier": "Tier 2-Important",
+        "type": "CABANG",
+        "market": "Medium",
+        "region": "Manado Metro",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 6,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "MANADO_PASAR",
+      "name": "CABANG PASAR SENTRAL",
+      "displayName": "CABANG PASAR SENTRAL (CABANG)",
+      "metadata": {
+        "tier": "Tier 3-Standard",
+        "type": "CABANG",
+        "market": "Medium",
+        "region": "Manado Metro",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 7,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "TONDANO",
+      "name": "CABANG TONDANO",
+      "displayName": "CABANG TONDANO (CABANG)",
+      "metadata": {
+        "tier": "Tier 3-Standard",
+        "type": "CABANG",
+        "market": "Standard",
+        "region": "Minahasa",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 8,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "LANGOWAN",
+      "name": "CABANG LANGOWAN",
+      "displayName": "CABANG LANGOWAN (CABANG)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CABANG",
+        "market": "Standard",
+        "region": "Minahasa",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 9,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "AIRMADIDI",
+      "name": "CABANG AIRMADIDI",
+      "displayName": "CABANG AIRMADIDI (CABANG)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CABANG",
+        "market": "Standard",
+        "region": "Minahasa",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 10,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "MAUMERE",
+      "name": "CABANG MAUMERE",
+      "displayName": "CABANG MAUMERE (CABANG)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CABANG",
+        "market": "Standard",
+        "region": "Flores Extension",
+        "province": "Nusa Tenggara Timur"
+      },
+      "sortOrder": 11,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "ENDE",
+      "name": "CABANG ENDE",
+      "displayName": "CABANG ENDE (CABANG)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CABANG",
+        "market": "Standard",
+        "region": "Flores Extension",
+        "province": "Nusa Tenggara Timur"
+      },
+      "sortOrder": 12,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "KUPANG",
+      "name": "CABANG KUPANG",
+      "displayName": "CABANG KUPANG (CABANG)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CABANG",
+        "market": "Standard",
+        "region": "Timor Extension",
+        "province": "Nusa Tenggara Timur"
+      },
+      "sortOrder": 13,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "TERNATE",
+      "name": "CABANG TERNATE",
+      "displayName": "CABANG TERNATE (CABANG)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CABANG",
+        "market": "Standard",
+        "region": "Maluku Extension",
+        "province": "Maluku Utara"
+      },
+      "sortOrder": 14,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "AMBON",
+      "name": "CABANG AMBON",
+      "displayName": "CABANG AMBON (CABANG)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CABANG",
+        "market": "Standard",
+        "region": "Maluku Extension",
+        "province": "Maluku"
+      },
+      "sortOrder": 15,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "SORONG",
+      "name": "CABANG SORONG",
+      "displayName": "CABANG SORONG (CABANG)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CABANG",
+        "market": "Standard",
+        "region": "Papua Extension",
+        "province": "Papua Barat"
+      },
+      "sortOrder": 16,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "JAYAPURA",
+      "name": "CABANG JAYAPURA",
+      "displayName": "CABANG JAYAPURA (CABANG)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CABANG",
+        "market": "Standard",
+        "region": "Papua Extension",
+        "province": "Papua"
+      },
+      "sortOrder": 17,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "PALU",
+      "name": "CABANG PALU",
+      "displayName": "CABANG PALU (CABANG)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CABANG",
+        "market": "Standard",
+        "region": "Sulawesi Tengah",
+        "province": "Sulawesi Tengah"
+      },
+      "sortOrder": 18,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "KENDARI",
+      "name": "CABANG KENDARI",
+      "displayName": "CABANG KENDARI (CABANG)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CABANG",
+        "market": "Standard",
+        "region": "Sulawesi Tenggara",
+        "province": "Sulawesi Tenggara"
+      },
+      "sortOrder": 19,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "MAKASSAR",
+      "name": "CABANG MAKASSAR",
+      "displayName": "CABANG MAKASSAR (CABANG)",
+      "metadata": {
+        "tier": "Tier 3-Standard",
+        "type": "CABANG",
+        "market": "Medium",
+        "region": "Sulawesi Selatan",
+        "province": "Sulawesi Selatan"
+      },
+      "sortOrder": 20,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "PAREPARE",
+      "name": "CABANG PAREPARE",
+      "displayName": "CABANG PAREPARE (CABANG)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CABANG",
+        "market": "Standard",
+        "region": "Sulawesi Selatan",
+        "province": "Sulawesi Selatan"
+      },
+      "sortOrder": 21,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "BONE",
+      "name": "CABANG BONE",
+      "displayName": "CABANG BONE (CABANG)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CABANG",
+        "market": "Standard",
+        "region": "Sulawesi Selatan",
+        "province": "Sulawesi Selatan"
+      },
+      "sortOrder": 22,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "SURABAYA",
+      "name": "CABANG SURABAYA",
+      "displayName": "CABANG SURABAYA (CABANG)",
+      "metadata": {
+        "tier": "Tier 2-Important",
+        "type": "CABANG",
+        "market": "Medium",
+        "region": "Jawa Timur",
+        "province": "Jawa Timur"
+      },
+      "sortOrder": 23,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "MALANG",
+      "name": "CABANG MALANG",
+      "displayName": "CABANG MALANG (CABANG)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CABANG",
+        "market": "Standard",
+        "region": "Jawa Timur",
+        "province": "Jawa Timur"
+      },
+      "sortOrder": 24,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "BALIKPAPAN",
+      "name": "CABANG BALIKPAPAN",
+      "displayName": "CABANG BALIKPAPAN (CABANG)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CABANG",
+        "market": "Standard",
+        "region": "Kalimantan Timur",
+        "province": "Kalimantan Timur"
+      },
+      "sortOrder": 25,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "KELAPA_GADING",
+      "name": "CAPEM KELAPA GADING",
+      "displayName": "CAPEM KELAPA GADING (CAPEM)",
+      "metadata": {
+        "tier": "Tier 3-Standard",
+        "type": "CAPEM",
+        "market": "Medium",
+        "region": "Jakarta Business",
+        "province": "DKI Jakarta"
+      },
+      "sortOrder": 26,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "TUMINTING",
+      "name": "CAPEM TUMINTING",
+      "displayName": "CAPEM TUMINTING (CAPEM)",
+      "metadata": {
+        "tier": "Tier 3-Standard",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Manado Metro",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 27,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "WENANG",
+      "name": "CAPEM WENANG",
+      "displayName": "CAPEM WENANG (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Manado Metro",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 28,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "MALALAYANG",
+      "name": "CAPEM MALALAYANG",
+      "displayName": "CAPEM MALALAYANG (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Manado Metro",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 29,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "PAAL_DUA",
+      "name": "CAPEM PAAL DUA",
+      "displayName": "CAPEM PAAL DUA (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Manado Metro",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 30,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "TIKALA",
+      "name": "CAPEM TIKALA",
+      "displayName": "CAPEM TIKALA (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Manado Metro",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 31,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "WANEA",
+      "name": "CAPEM WANEA",
+      "displayName": "CAPEM WANEA (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Manado Metro",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 32,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "WINANGUN",
+      "name": "CAPEM WINANGUN",
+      "displayName": "CAPEM WINANGUN (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Manado Metro",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 33,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "KAROMBASAN",
+      "name": "CAPEM KAROMBASAN",
+      "displayName": "CAPEM KAROMBASAN (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Manado Metro",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 34,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "WOLTER_MONGINSIDI",
+      "name": "CAPEM WOLTER MONGINSIDI",
+      "displayName": "CAPEM WOLTER MONGINSIDI (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Manado Metro",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 35,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "KAWANGKOAN",
+      "name": "CAPEM KAWANGKOAN",
+      "displayName": "CAPEM KAWANGKOAN (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Minahasa",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 36,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "TARERAN",
+      "name": "CAPEM TARERAN",
+      "displayName": "CAPEM TARERAN (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Minahasa",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 37,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "RATATOTOK",
+      "name": "CAPEM RATATOTOK",
+      "displayName": "CAPEM RATATOTOK (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "North Coast",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 38,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "KAUDITAN",
+      "name": "CAPEM KAUDITAN",
+      "displayName": "CAPEM KAUDITAN (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "North Coast",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 39,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "LOLAK",
+      "name": "CAPEM LOLAK",
+      "displayName": "CAPEM LOLAK (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Bolaang Mongondow",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 40,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "MODAYAG",
+      "name": "CAPEM MODAYAG",
+      "displayName": "CAPEM MODAYAG (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Bolaang Mongondow",
+        "province": "Sulawesi Utara"
+      },
+      "sortOrder": 41,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "LIMBOTO",
+      "name": "CAPEM LIMBOTO",
+      "displayName": "CAPEM LIMBOTO (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Gorontalo Metro",
+        "province": "Gorontalo"
+      },
+      "sortOrder": 42,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "TILAMUTA",
+      "name": "CAPEM TILAMUTA",
+      "displayName": "CAPEM TILAMUTA (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Gorontalo Rural",
+        "province": "Gorontalo"
+      },
+      "sortOrder": 43,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "BONE_BOLANGO",
+      "name": "CAPEM BONE BOLANGO",
+      "displayName": "CAPEM BONE BOLANGO (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Gorontalo Rural",
+        "province": "Gorontalo"
+      },
+      "sortOrder": 44,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "KWANDANG",
+      "name": "CAPEM KWANDANG",
+      "displayName": "CAPEM KWANDANG (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Gorontalo Rural",
+        "province": "Gorontalo"
+      },
+      "sortOrder": 45,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "MARISA",
+      "name": "CAPEM MARISA",
+      "displayName": "CAPEM MARISA (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Gorontalo Rural",
+        "province": "Gorontalo"
+      },
+      "sortOrder": 46,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "PAGUYAMAN",
+      "name": "CAPEM PAGUYAMAN",
+      "displayName": "CAPEM PAGUYAMAN (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Gorontalo Rural",
+        "province": "Gorontalo"
+      },
+      "sortOrder": 47,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "POPAYATO",
+      "name": "CAPEM POPAYATO",
+      "displayName": "CAPEM POPAYATO (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Gorontalo Rural",
+        "province": "Gorontalo"
+      },
+      "sortOrder": 48,
+      "isActive": true
+    },
+    {
+      "dataType": "branch",
+      "code": "TANJUNG_SELOR",
+      "name": "CAPEM TANJUNG SELOR",
+      "displayName": "CAPEM TANJUNG SELOR (CAPEM)",
+      "metadata": {
+        "tier": "Tier 4-Coverage",
+        "type": "CAPEM",
+        "market": "Standard",
+        "region": "Kalimantan Utara",
+        "province": "Kalimantan Utara"
+      },
+      "sortOrder": 49,
       "isActive": true
     },
     {
@@ -4757,10 +7548,10 @@
     "servicesWithFields": 38,
     "servicesWithoutFields": 202,
     "totalFieldDefinitions": 211,
-    "totalMasterDataEntries": 32,
+    "totalMasterDataEntries": 239,
     "masterDataByType": {
-      "atm": 6,
-      "branch": 6,
+      "atm": 163,
+      "branch": 56,
       "generic": 9,
       "olibs_menu": 11
     }
