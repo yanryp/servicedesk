@@ -66,6 +66,7 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://localhost:3002',
+    'http://localhost:5173', // Vite development server
     ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [])
   ],
   credentials: true,

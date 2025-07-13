@@ -337,7 +337,39 @@ const CustomerTicketCreation: React.FC = () => {
             } else if (fieldLabel.includes('olibs') || fieldName.includes('olibs')) {
               dataType = 'olibs';
             } else if (field.fieldType === 'dropdown') {
-              dataType = 'generic';
+              // Handle basic dropdown fields - comprehensive field type mapping
+              if (fieldLabel.includes('olibs') || fieldLabel.includes('olib') || fieldName.includes('olibs') || fieldName.includes('olib')) {
+                dataType = 'olibs';
+                console.log(`🏛️ Detected OLIBS field: ${field.fieldLabel}, using 'olibs' data type`);
+              } else if (fieldLabel.includes('program') && fieldLabel.includes('fasilitas')) {
+                dataType = 'olibs'; // Program Fasilitas OLIBS should use olibs data type
+                console.log(`🏛️ Detected Program Fasilitas field: ${field.fieldLabel}, using 'olibs' data type`);
+              } else if (fieldLabel.includes('government') || fieldLabel.includes('pemerintah') || fieldName.includes('government')) {
+                dataType = 'government_entity';
+                console.log(`🏛️ Detected Government field: ${field.fieldLabel}, using 'government_entity' data type`);
+              } else if (fieldLabel.includes('access') && fieldLabel.includes('level')) {
+                dataType = 'access_level';
+                console.log(`🔑 Detected Access Level field: ${field.fieldLabel}, using 'access_level' data type`);
+              } else if (fieldLabel.includes('request') && fieldLabel.includes('type')) {
+                dataType = 'request_type';
+                console.log(`📝 Detected Request Type field: ${field.fieldLabel}, using 'request_type' data type`);
+              } else if (fieldLabel.includes('menu') || fieldName.includes('menu')) {
+                dataType = 'olibs'; // Menu fields typically relate to OLIBS
+                console.log(`📋 Detected Menu field: ${field.fieldLabel}, using 'olibs' data type`);
+              } else if (fieldLabel.includes('authority') || fieldLabel.includes('wewenang')) {
+                dataType = 'authority_level';
+                console.log(`👤 Detected Authority field: ${field.fieldLabel}, using 'authority_level' data type`);
+              } else if (fieldLabel.includes('treasury') || fieldLabel.includes('kas')) {
+                dataType = 'treasury_account';
+                console.log(`💰 Detected Treasury field: ${field.fieldLabel}, using 'treasury_account' data type`);
+              } else if (fieldLabel.includes('budget') || fieldLabel.includes('anggaran')) {
+                dataType = 'budget_code';
+                console.log(`💼 Detected Budget field: ${field.fieldLabel}, using 'budget_code' data type`);
+              } else {
+                // For other basic dropdown fields, try to infer from field name
+                dataType = fieldName.replace(/[^a-z]/g, '') || 'generic';
+                console.log(`🔽 Generic dropdown field: ${field.fieldLabel}, using '${dataType}' data type`);
+              }
             }
             
             console.log(`📡 Loading master data for field "${field.fieldLabel}" with data type "${dataType}"`);
@@ -449,22 +481,51 @@ const CustomerTicketCreation: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    console.log('🔵 handleSubmit called');
+    console.log('Current formData:', formData);
+    console.log('Selected service:', selectedService);
+    
     if (!formData.serviceId) {
-      console.error('No service selected');
+      console.error('❌ No service selected');
+      alert('Please select a service before submitting');
       return;
     }
     
     // Validate all fields before submission
+    console.log('🔍 Validating fields...');
     if (!validateFields()) {
+      console.error('❌ Field validation failed');
       return;
     }
     
+    console.log('✅ Validation passed, proceeding with submission');
     setLoading(true);
     
     try {
       // Get dynamic field values from global storage
       const currentFieldValues = globalFieldStorage.getAllValues();
+      console.log('📦 Field values from global storage:', currentFieldValues);
       
+      // Map frontend values to backend enum values
+      const mapRootCause = (value: string): string => {
+        const mapping: Record<string, string> = {
+          'process_error': 'human_error',
+          'system_failure': 'system_error',
+          'external_issue': 'external_factor',
+          'unknown': 'undetermined'
+        };
+        return mapping[value] || 'undetermined';
+      };
+
+      const mapIssueCategory = (value: string): string => {
+        const mapping: Record<string, string> = {
+          'service_request': 'request',
+          'complaint': 'complaint',
+          'problem': 'problem'
+        };
+        return mapping[value] || 'request';
+      };
+
       // Create ticket using the real API with proper field mapping (matching ServiceCatalogPage)
       const ticketData = {
         serviceId: formData.serviceId,
@@ -473,13 +534,15 @@ const CustomerTicketCreation: React.FC = () => {
         priority: formData.priority as 'low' | 'medium' | 'high' | 'urgent',
         fieldValues: currentFieldValues, // Include dynamic field values
         attachments: formData.attachments.length > 0 ? formData.attachments : undefined,
-        // Add optional classification fields from dynamic fields
-        rootCause: currentFieldValues['rootCause'] || undefined,
-        issueCategory: currentFieldValues['issueCategory'] || undefined
+        // Add optional classification fields from dynamic fields with proper enum mapping
+        // Default to 'request' and 'undetermined' if not provided
+        rootCause: mapRootCause(currentFieldValues['rootCause'] || 'unknown'),
+        issueCategory: mapIssueCategory(currentFieldValues['issueCategory'] || 'service_request')
       };
 
-      console.log('Customer Portal - Submitting ticket:', ticketData);
+      console.log('🚀 Customer Portal - Submitting ticket:', ticketData);
       const response = await serviceCatalogService.createTicket(ticketData);
+      console.log('✅ API Response:', response);
       
       // Handle the API response format
       const ticketId = response.data?.ticketId;
@@ -488,10 +551,16 @@ const CustomerTicketCreation: React.FC = () => {
       
       // Clear global storage after successful submission
       globalFieldStorage.clearAll();
+      console.log('🎉 Ticket submitted successfully! ID:', ticketId);
     } catch (error) {
-      console.error('Error creating ticket:', error);
+      console.error('❌ Error creating ticket:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        response: (error as any)?.response?.data,
+        status: (error as any)?.response?.status
+      });
       // Show error message to user
-      alert('Error submitting ticket. Please try again.');
+      alert(`Error submitting ticket: ${error instanceof Error ? error.message : 'Unknown error'}. Please check the console for details.`);
     } finally {
       setLoading(false);
     }
@@ -1340,13 +1409,155 @@ const CustomerTicketCreation: React.FC = () => {
                       const value = globalFieldStorage.getValue(field.fieldName);
                       if (!value) return null;
                       
+                      // Get display value based on field type
+                      let displayValue = value;
+                      
+                      // Handle dropdown fields
+                      if (field.fieldType.includes('dropdown') || field.fieldType === 'select') {
+                        // Try to find the label from master data
+                        const options = masterData[field.fieldName] || field.options || [];
+                        const selectedOption = options.find((opt: any) => 
+                          opt.value === value || opt.id === value
+                        );
+                        if (selectedOption) {
+                          displayValue = selectedOption.label || selectedOption.displayName || selectedOption.name || value;
+                        }
+                      }
+                      
+                      // Handle date fields
+                      else if (field.fieldType === 'date' && value) {
+                        try {
+                          const date = new Date(value);
+                          displayValue = date.toLocaleDateString('id-ID', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          });
+                        } catch (e) {
+                          displayValue = value;
+                        }
+                      }
+                      
+                      // Handle datetime fields
+                      else if (field.fieldType === 'datetime' && value) {
+                        try {
+                          const date = new Date(value);
+                          displayValue = date.toLocaleDateString('id-ID', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          });
+                        } catch (e) {
+                          displayValue = value;
+                        }
+                      }
+                      
+                      // Handle currency fields
+                      else if (field.fieldType === 'currency' && value) {
+                        try {
+                          const amount = parseFloat(value);
+                          displayValue = new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0
+                          }).format(amount);
+                        } catch (e) {
+                          displayValue = `Rp ${value}`;
+                        }
+                      }
+                      
+                      // Handle checkbox fields (comma-separated values)
+                      else if (field.fieldType === 'checkbox' && value) {
+                        if (field.options && field.options.length > 0) {
+                          const selectedValues = value.split(',');
+                          const labels = selectedValues.map((val: string) => {
+                            const option = field.options?.find((opt: any) => opt.value === val);
+                            return option ? (option.label || option.displayName || val) : val;
+                          });
+                          displayValue = labels.join(', ');
+                        } else {
+                          displayValue = value.replace(/,/g, ', ');
+                        }
+                      }
+                      
+                      // Handle radio fields
+                      else if (field.fieldType === 'radio' && field.options) {
+                        const selectedOption = field.options.find((opt: any) => opt.value === value);
+                        if (selectedOption) {
+                          displayValue = selectedOption.label || selectedOption.displayName || value;
+                        }
+                      }
+                      
+                      // Handle issue classification fields specially
+                      if (field.fieldName === 'rootCause') {
+                        const rootCauseLabels: Record<string, string> = {
+                          'human_error': 'User/Process Error',
+                          'system_error': 'Technical/System Error',
+                          'external_factor': 'External Issue',
+                          'undetermined': 'Not Sure / Need Investigation'
+                        };
+                        displayValue = rootCauseLabels[value] || value;
+                      } else if (field.fieldName === 'issueCategory') {
+                        const categoryLabels: Record<string, string> = {
+                          'request': 'Service Request - I need something new or changed',
+                          'complaint': 'Service Complaint - I\'m not satisfied with service quality',
+                          'problem': 'Technical Problem - Something is broken or not working'
+                        };
+                        displayValue = categoryLabels[value] || value;
+                      }
+                      
                       return (
-                        <div key={field.id} className="flex justify-between">
-                          <span className="text-sm font-medium text-slate-700">{field.fieldLabel}:</span>
-                          <span className="text-sm text-slate-600">{value}</span>
+                        <div key={field.id} className="border-b border-slate-100 pb-2 last:border-0 last:pb-0">
+                          <span className="text-sm font-medium text-slate-700 block mb-1">{field.fieldLabel}</span>
+                          <span className="text-sm text-slate-600">{displayValue}</span>
                         </div>
                       );
                     })}
+                  </div>
+                </div>
+              )}
+
+              {/* Issue Classification Review */}
+              {(globalFieldStorage.getValue('rootCause') || globalFieldStorage.getValue('issueCategory')) && (
+                <div>
+                  <h3 className="font-medium text-slate-900 mb-2">Issue Classification</h3>
+                  <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-2">
+                    {globalFieldStorage.getValue('rootCause') && (
+                      <div className="border-b border-slate-100 pb-2 last:border-0 last:pb-0">
+                        <span className="text-sm font-medium text-slate-700 block mb-1">What caused this issue?</span>
+                        <span className="text-sm text-slate-600">
+                          {(() => {
+                            const value = globalFieldStorage.getValue('rootCause');
+                            const rootCauseLabels: Record<string, string> = {
+                              'human_error': 'User/Process Error',
+                              'system_error': 'Technical/System Error',
+                              'external_factor': 'External Issue',
+                              'undetermined': 'Not Sure / Need Investigation'
+                            };
+                            return rootCauseLabels[value] || value;
+                          })()}
+                        </span>
+                      </div>
+                    )}
+                    {globalFieldStorage.getValue('issueCategory') && (
+                      <div className="border-b border-slate-100 pb-2 last:border-0 last:pb-0">
+                        <span className="text-sm font-medium text-slate-700 block mb-1">What type of issue is this?</span>
+                        <span className="text-sm text-slate-600">
+                          {(() => {
+                            const value = globalFieldStorage.getValue('issueCategory');
+                            const categoryLabels: Record<string, string> = {
+                              'request': 'Service Request - I need something new or changed',
+                              'complaint': 'Service Complaint - I\'m not satisfied with service quality',
+                              'problem': 'Technical Problem - Something is broken or not working'
+                            };
+                            return categoryLabels[value] || value;
+                          })()}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -1405,7 +1616,12 @@ const CustomerTicketCreation: React.FC = () => {
             </button>
           ) : (
             <button
-              onClick={handleSubmit}
+              onClick={() => {
+                console.log('🟢 Submit button clicked!');
+                console.log('Current step:', currentStep);
+                console.log('Loading state:', loading);
+                handleSubmit();
+              }}
               disabled={loading}
               className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-2 rounded-lg font-medium hover:from-green-700 hover:to-emerald-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
             >
